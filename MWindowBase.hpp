@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    35     /* Version 35 */
+#define MZC4_MWINDOWBASE_HPP_    36     /* Version 36 */
 
 class MWindowBase;
 class MDialogBase;
@@ -211,11 +211,6 @@ public:
     WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         return DefaultProcDx(hwnd, uMsg, wParam, lParam);
-    }
-
-    LRESULT WindowProcDx()
-    {
-        return WindowProcDx(m_msg.hwnd, m_msg.message, m_msg.wParam, m_msg.lParam);
     }
 
     static LRESULT CALLBACK
