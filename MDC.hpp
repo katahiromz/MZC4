@@ -49,7 +49,7 @@ public:
     virtual ~MDC();
 
     MDC& operator=(HDC hDC);
-    VOID Attach(HDC hDC);
+    BOOL Attach(HDC hDC);
     HDC Detach(VOID);
     HDC Handle() const;
 
@@ -547,7 +547,7 @@ inline MDC& MDC::operator=(HDC hDC)
     return *this;
 }
 
-inline VOID MDC::Attach(HDC hDC)
+inline BOOL MDC::Attach(HDC hDC)
 {
     if (m_hDC)
         DeleteDC();
@@ -556,6 +556,7 @@ inline VOID MDC::Attach(HDC hDC)
            ::GetObjectType(hDC) == OBJ_ENHMETADC);
     assert(m_hDC == NULL);
     m_hDC = hDC;
+    return m_hDC != NULL;
 }
 
 inline HDC MDC::Detach()
@@ -575,15 +576,13 @@ inline BOOL MDC::CreateDC(LPCTSTR pszDriver/* = NULL*/,
     CONST DEVMODE *lpInitData/* = NULL*/)
 {
     assert(m_hDC == NULL);
-    Attach(::CreateDC(pszDriver, pszDevice, pszOutput, lpInitData));
-    return (m_hDC != NULL);
+    return Attach(::CreateDC(pszDriver, pszDevice, pszOutput, lpInitData));
 }
 
 inline BOOL MDC::CreateCompatibleDC(HDC hBaseDC/* = NULL*/)
 {
     assert(m_hDC == NULL);
-    Attach(::CreateCompatibleDC(hBaseDC));
-    return (m_hDC != NULL);
+    return Attach(::CreateCompatibleDC(hBaseDC));
 }
 
 inline MDC::operator HDC() const
@@ -2443,8 +2442,7 @@ inline MMemoryDC::MMemoryDC(HDC hBaseDC)
 inline BOOL MMemoryDC::CreateCompatibleDC(HDC hBaseDC/* = NULL*/)
 {
     assert(m_hDC == NULL);
-    Attach(::CreateCompatibleDC(hBaseDC));
-    return m_hDC != NULL;
+    return Attach(::CreateCompatibleDC(hBaseDC));
 }
 
 inline /*virtual*/ MMemoryDC::~MMemoryDC()

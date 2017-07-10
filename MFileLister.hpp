@@ -30,7 +30,7 @@ public:
     MFileLister& operator=(HANDLE hFind);
     PHANDLE operator&();
 
-    VOID Attach(HANDLE hFind);
+    BOOL Attach(HANDLE hFind);
     HANDLE Detach();
     HANDLE Handle() const;
 
@@ -93,13 +93,14 @@ inline MFileLister& MFileLister::operator=(HANDLE hFind)
     return *this;
 }
 
-inline VOID MFileLister::Attach(HANDLE hFind)
+inline BOOL MFileLister::Attach(HANDLE hFind)
 {
     if (m_hFind != INVALID_HANDLE_VALUE)
         FindClose();
     assert(hFind != INVALID_HANDLE_VALUE);
     assert(m_hFind == INVALID_HANDLE_VALUE);
     m_hFind = hFind;
+    return m_hFind != INVALID_HANDLE_VALUE;
 }
 
 inline HANDLE MFileLister::Detach()

@@ -31,7 +31,7 @@ public:
     MRgn& operator=(HRGN hRgn);
     MRgn& operator=(const MRgn& rgn);
 
-    VOID Attach(HRGN hRgn);
+    BOOL Attach(HRGN hRgn);
     HRGN Detach(VOID);
     HRGN Handle() const;
 
@@ -172,11 +172,11 @@ inline MRgn& MRgn::operator=(const MRgn& rgn)
     return *this;
 }
 
-inline VOID MRgn::Attach(HRGN hRgn)
+inline BOOL MRgn::Attach(HRGN hRgn)
 {
     assert(::GetObjectType(hRgn) == OBJ_REGION);
     assert(m_hGdiObj == NULL);
-    MGdiObject::Attach(hRgn);
+    return MGdiObject::Attach(hRgn);
 }
 
 inline HRGN MRgn::Detach(VOID)
@@ -198,69 +198,59 @@ inline BOOL MRgn::CreateEmptyRgn()
 inline BOOL MRgn::CreateRectRgn(INT x1, INT y1, INT x2, INT y2)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreateRectRgn(x1, y1, x2, y2));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreateRectRgn(x1, y1, x2, y2));
 }
 
 inline BOOL MRgn::CreateRectRgnIndirect(LPCRECT prc)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreateRectRgnIndirect(prc));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreateRectRgnIndirect(prc));
 }
 
 inline BOOL MRgn::CreateEllipticRgn(INT x1, INT y1, INT x2, INT y2)
 {
     assert(Handle() == NULL);
-    Attach(::CreateEllipticRgn(x1, y1, x2, y2));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreateEllipticRgn(x1, y1, x2, y2));
 }
 
 inline BOOL MRgn::CreateEllipticRgnIndirect(LPCRECT prc)
 {
     assert(Handle() == NULL);
-    Attach(::CreateEllipticRgnIndirect(prc));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreateEllipticRgnIndirect(prc));
 }
 
 inline BOOL MRgn::CreatePolygonRgn(LPPOINT ppts, INT nCount, INT nMode)
 {
     assert(Handle() == NULL);
-    Attach(::CreatePolygonRgn(ppts, nCount, nMode));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreatePolygonRgn(ppts, nCount, nMode));
 }
 
 inline BOOL MRgn::CreatePolyPolygonRgn(
     LPPOINT ppts, LPINT lpPolyCounts, INT nCount, INT nPolyFillMode)
 {
     assert(Handle() == NULL);
-    Attach(::CreatePolyPolygonRgn(ppts, lpPolyCounts, nCount, nPolyFillMode));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreatePolyPolygonRgn(ppts, lpPolyCounts, nCount, nPolyFillMode));
 }
 
 inline BOOL MRgn::CreateRoundRectRgn(
     INT x1, INT y1, INT x2, INT y2, INT x3, INT y3)
 {
     assert(Handle() == NULL);
-    Attach(::CreateRoundRectRgn(x1, y1, x2, y2, x3, y3));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreateRoundRectRgn(x1, y1, x2, y2, x3, y3));
 }
 
 inline BOOL MRgn::PathToRegion(HDC hDC)
 {
     assert(Handle() == NULL);
     assert(hDC != NULL);
-    Attach(::PathToRegion(hDC));
-    return (m_hGdiObj != NULL);
+    return Attach(::PathToRegion(hDC));
 }
 
 inline BOOL MRgn::ExtCreateRegion(
     CONST XFORM* lpXForm OPTIONAL, INT nCount, CONST RGNDATA* pRgnData)
 {
     assert(Handle() == NULL);
-    Attach(::ExtCreateRegion(lpXForm, (DWORD) nCount, pRgnData));
-    assert(m_hGdiObj);
-    return (m_hGdiObj != NULL);
+    return Attach(::ExtCreateRegion(lpXForm, (DWORD) nCount, pRgnData));
 }
 
 inline VOID MRgn::SetRectRgn(INT x1, INT y1, INT x2, INT y2)

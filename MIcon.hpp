@@ -32,7 +32,7 @@ public:
     MIcon& operator=(HICON hIcon);
     MIcon& operator=(const MIcon& icon);
 
-    VOID Attach(HICON hIcon);
+    BOOL Attach(HICON hIcon);
     HICON Detach();
 
     BOOL CopyIcon(HICON hIcon);
@@ -139,12 +139,13 @@ inline MIcon& MIcon::operator=(const MIcon& icon)
     return *this;
 }
 
-inline VOID MIcon::Attach(HICON hIcon)
+inline BOOL MIcon::Attach(HICON hIcon)
 {
     if (m_hIcon)
         DestroyIcon();
     assert(m_hIcon == NULL);
     m_hIcon = hIcon;
+    return m_hIcon != NULL;
 }
 
 inline HICON MIcon::Detach()
@@ -156,8 +157,7 @@ inline HICON MIcon::Detach()
 
 inline BOOL MIcon::CopyIcon(HICON hIcon)
 {
-    Attach(::CopyIcon(hIcon));
-    return m_hIcon != NULL;
+    return Attach(::CopyIcon(hIcon));
 }
 
 inline BOOL MIcon::CreateIcon(HINSTANCE hInstance,
@@ -172,12 +172,7 @@ inline BOOL MIcon::CreateIcon(HINSTANCE hInstance,
         hIcon = ::CreateIcon(hInstance, width, height,
                              cPlanes, cBitsPixel, pbANDbits, pbXORbits);
     }
-    if (hIcon)
-    {
-        Attach(hIcon);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hIcon);
 }
 
 inline BOOL MIcon::CreateIcon(HINSTANCE hInstance, SIZE siz, BYTE cPlanes,
@@ -190,17 +185,15 @@ inline BOOL MIcon::CreateIcon(HINSTANCE hInstance, SIZE siz, BYTE cPlanes,
 inline BOOL MIcon::CreateIconFromResource(PBYTE presbits, DWORD dwResSize,
     BOOL fIcon/* = TRUE*/, DWORD dwVer/* = 0x00030000*/)
 {
-    Attach(::CreateIconFromResource(presbits, dwResSize, fIcon, dwVer));
-    return m_hIcon != NULL;
+    return Attach(::CreateIconFromResource(presbits, dwResSize, fIcon, dwVer));
 }
 
 inline BOOL MIcon::CreateIconFromResourceEx(PBYTE presbits,
     DWORD dwResSize, BOOL fIcon/* = TRUE*/, DWORD dwVer/* = 0x00030000*/,
     INT cxDesired/* = 0*/, INT cyDesired/* = 0*/, UINT uFlags/* = LR_DEFAULTCOLOR*/)
 {
-    Attach(::CreateIconFromResourceEx(presbits, dwResSize, fIcon, dwVer,
-        cxDesired, cyDesired, uFlags));
-    return m_hIcon != NULL;
+    return Attach(::CreateIconFromResourceEx(presbits, dwResSize, fIcon, dwVer,
+                                             cxDesired, cyDesired, uFlags));
 }
 
 inline BOOL MIcon::LoadIcon(
@@ -212,12 +205,7 @@ inline BOOL MIcon::LoadIcon(
         hInstance = ::GetModuleHandle(NULL);
         hIcon = ::LoadIcon(hInstance, pszResourceName);
     }
-    if (hIcon)
-    {
-        Attach(hIcon);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hIcon);
 }
 
 inline BOOL MIcon::LoadIcon(UINT nIconID, HINSTANCE hInstance/* = NULL*/)
@@ -238,12 +226,7 @@ inline BOOL MIcon::LoadImage(HINSTANCE hInstance, LPCTSTR pszName,
             ::LoadImage(hInstance, pszName, IMAGE_ICON, cxDesired, cyDesired,
                         fuLoad));
     }
-    if (hIcon)
-    {
-        Attach(hIcon);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hIcon);
 }
 
 inline BOOL MIcon::LoadImageFromFile(HINSTANCE hInstance, LPCTSTR pszName,
@@ -255,8 +238,7 @@ inline BOOL MIcon::LoadImageFromFile(HINSTANCE hInstance, LPCTSTR pszName,
 
 inline BOOL MIcon::CreateIconIndirect(PICONINFO pIconInfo)
 {
-    Attach(::CreateIconIndirect(pIconInfo));
-    return m_hIcon != NULL;
+    return Attach(::CreateIconIndirect(pIconInfo));
 }
 
 inline BOOL MIcon::DestroyIcon()
@@ -304,12 +286,7 @@ inline BOOL MIcon::ExtractIcon(
         hInst = ::GetModuleHandle(NULL);
         hIcon = ::ExtractIcon(hInst, pszFile, nIconIndex);
     }
-    if (hIcon)
-    {
-        Attach(hIcon);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hIcon);
 }
 
 inline UINT MIcon::GetNumberOfIcons(LPCTSTR pszFile) const
@@ -332,12 +309,7 @@ inline BOOL MIcon::ExtractAssociatedIcon(
         hInst = ::GetModuleHandle(NULL);
         hIcon = ::ExtractAssociatedIcon(hInst, pszPath, pnIndex);
     }
-    if (hIcon)
-    {
-        Attach(hIcon);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hIcon);
 }
 
 ////////////////////////////////////////////////////////////////////////////

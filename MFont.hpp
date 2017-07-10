@@ -41,7 +41,7 @@ public:
     MFont& operator=(HFONT hFont);
     MFont& operator=(const MFont& font);
 
-    VOID Attach(HFONT hFont);
+    BOOL Attach(HFONT hFont);
     HFONT Detach(VOID);
 
     BOOL CreateFont(
@@ -217,10 +217,10 @@ inline MFont& MFont::operator=(const MFont& font)
     return *this;
 }
 
-inline VOID MFont::Attach(HFONT hFont)
+inline BOOL MFont::Attach(HFONT hFont)
 {
     assert(::GetObjectType(hFont) == OBJ_FONT);
-    MGdiObject::Attach(hFont);
+    return MGdiObject::Attach(hFont);
 }
 
 inline HFONT MFont::Detach(VOID)
@@ -231,57 +231,49 @@ inline HFONT MFont::Detach(VOID)
 inline BOOL MFont::CreateFontIndirect(CONST LOGFONT *lplf)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreateFontIndirect(lplf));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreateFontIndirect(lplf));
 }
 
 inline BOOL MFont::CreateAnsiFixedFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(ANSI_FIXED_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(ANSI_FIXED_FONT));
 }
 
 inline BOOL MFont::CreateAnsiVarFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(ANSI_VAR_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(ANSI_VAR_FONT));
 }
 
 inline BOOL MFont::CreateDeviceDefaultFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(DEVICE_DEFAULT_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(DEVICE_DEFAULT_FONT));
 }
 
 inline BOOL MFont::CreateDefaultGuiFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(DEFAULT_GUI_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(DEFAULT_GUI_FONT));
 }
 
 inline BOOL MFont::CreateOemFixedFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(OEM_FIXED_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(OEM_FIXED_FONT));
 }
 
 inline BOOL MFont::CreateSystemFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(SYSTEM_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(SYSTEM_FONT));
 }
 
 inline BOOL MFont::CreateSystemFixedFont()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HFONT)::GetStockObject(SYSTEM_FIXED_FONT));
-    return (m_hGdiObj != NULL);
+    return Attach((HFONT)::GetStockObject(SYSTEM_FIXED_FONT));
 }
 
 inline BOOL MFont::CreateFont(LPCTSTR pszFace, INT nHeight,
@@ -295,11 +287,10 @@ inline BOOL MFont::CreateFont(LPCTSTR pszFace, INT nHeight,
     DWORD fdwPitchAndFamily/* = DEFAULT_PITCH | FF_DONTCARE*/)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreateFont(nHeight, nWidth, nEscapement,
+    return Attach(::CreateFont(nHeight, nWidth, nEscapement,
         nOrientation, fnWeight, fdwItalic, fdwUnderline, fdwStrikeOut,
         fdwCharSet, fdwOutputPrecision, fdwClipPrecision,
         fdwQuality, fdwPitchAndFamily, pszFace));
-    return (m_hGdiObj != NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////

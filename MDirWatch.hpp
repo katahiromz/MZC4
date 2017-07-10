@@ -44,7 +44,7 @@ public:
     MDirWatch& operator=(HANDLE hFindChange);
     PHANDLE operator&();
 
-    VOID Attach(HANDLE hFindChange);
+    BOOL Attach(HANDLE hFindChange);
     HANDLE Detach();
     HANDLE Handle() const;
 
@@ -105,13 +105,14 @@ inline MDirWatch& MDirWatch::operator=(HANDLE hFindChange)
     return *this;
 }
 
-inline VOID MDirWatch::Attach(HANDLE hFindChange)
+inline BOOL MDirWatch::Attach(HANDLE hFindChange)
 {
     if (m_hFindChange != INVALID_HANDLE_VALUE)
         FindCloseChangeNotification();
     assert(hFindChange != NULL && hFindChange != INVALID_HANDLE_VALUE);
     assert(m_hFindChange == INVALID_HANDLE_VALUE);
     m_hFindChange = hFindChange;
+    return m_hFindChange != NULL;
 }
 
 inline HANDLE MDirWatch::Detach()

@@ -27,7 +27,7 @@ public:
     MLibrary(LPCTSTR pszFileName, DWORD dwFlags);
     virtual ~MLibrary();
 
-    VOID Attach(HINSTANCE hInstance);
+    BOOL Attach(HINSTANCE hInstance);
     HINSTANCE Detach();
     HINSTANCE Handle() const;
 
@@ -143,7 +143,7 @@ inline MLibrary& MLibrary::operator=(HINSTANCE hInstance)
     return *this;
 }
 
-inline VOID MLibrary::Attach(HINSTANCE hInstance)
+inline BOOL MLibrary::Attach(HINSTANCE hInstance)
 {
     if (m_hInstance)
         FreeLibrary();
@@ -153,6 +153,7 @@ inline VOID MLibrary::Attach(HINSTANCE hInstance)
     TCHAR szFileName[MAX_PATH];
     assert(::GetModuleFileName(m_hInstance, szFileName, MAX_PATH));
 #endif
+    return m_hInstance != NULL;
 }
 
 inline HINSTANCE MLibrary::Detach()

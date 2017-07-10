@@ -34,7 +34,7 @@ public:
     bool operator!=(HGDIOBJ hGdiObj);
     HANDLE Handle() const;
 
-    VOID Attach(HGDIOBJ hGdiObj);
+    BOOL Attach(HGDIOBJ hGdiObj);
     HGDIOBJ Detach();
 
     BOOL GetStockObject(INT nObject);
@@ -74,11 +74,12 @@ inline MGdiObject& MGdiObject::operator=(HGDIOBJ hGdiObj)
     return *this;
 }
 
-inline VOID MGdiObject::Attach(HGDIOBJ hGdiObj)
+inline BOOL MGdiObject::Attach(HGDIOBJ hGdiObj)
 {
     assert(hGdiObj);
     assert(m_hGdiObj == NULL);
     m_hGdiObj = hGdiObj;
+    return m_hGdiObj != NULL;
 }
 
 inline HGDIOBJ MGdiObject::Detach()
@@ -91,8 +92,7 @@ inline HGDIOBJ MGdiObject::Detach()
 inline BOOL MGdiObject::GetStockObject(INT nObject)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::GetStockObject(nObject));
-    return m_hGdiObj != NULL;
+    return Attach(::GetStockObject(nObject));
 }
 
 inline BOOL MGdiObject::DeleteObject(VOID)

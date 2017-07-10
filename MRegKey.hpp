@@ -49,7 +49,7 @@ public:
     bool operator!=(HKEY hKey) const;
     MRegKey& operator=(HKEY hKey);
 
-    VOID Attach(HKEY hKey);
+    BOOL Attach(HKEY hKey);
     HKEY Detach();
     HKEY Handle() const;
 
@@ -376,13 +376,14 @@ inline MRegKey& MRegKey::operator=(HKEY hKey)
     return *this;
 }
 
-inline VOID MRegKey::Attach(HKEY hKey)
+inline BOOL MRegKey::Attach(HKEY hKey)
 {
     if (m_hKey)
         RegCloseKey();
     assert(hKey);
     assert(m_hKey == NULL);
     m_hKey = hKey;
+    return m_hKey != NULL;
 }
 
 inline HKEY MRegKey::Detach()

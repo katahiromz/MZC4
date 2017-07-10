@@ -38,7 +38,7 @@ public:
     VOID operator=(HCURSOR hCursor);
     VOID operator=(const MCursor& cur);
 
-    VOID Attach(HCURSOR hCursor);
+    BOOL Attach(HCURSOR hCursor);
     HCURSOR Detach();
 
     BOOL CopyCursorDx(HCURSOR hCursor);
@@ -134,12 +134,13 @@ inline VOID MCursor::operator=(const MCursor& cur)
         Attach(MCursor::CloneHandleDx(cur));
 }
 
-inline VOID MCursor::Attach(HCURSOR hCursor)
+inline BOOL MCursor::Attach(HCURSOR hCursor)
 {
     if (m_hCursor)
         DestroyCursor();
     assert(m_hCursor == NULL);
     m_hCursor = hCursor;
+    return m_hCursor != NULL;
 }
 
 inline HCURSOR MCursor::Detach()
@@ -151,8 +152,7 @@ inline HCURSOR MCursor::Detach()
 
 inline BOOL MCursor::CopyCursorDx(HCURSOR hCursor)
 {
-    Attach(::CopyCursorDx(hCursor));
-    return m_hCursor != NULL;
+    return Attach(::CopyCursorDx(hCursor));
 }
 
 inline BOOL MCursor::CreateCursor(HINSTANCE hInstance, INT xHotSpot, INT yHotSpot,
@@ -166,30 +166,22 @@ inline BOOL MCursor::CreateCursor(HINSTANCE hInstance, INT xHotSpot, INT yHotSpo
         hCursor = ::CreateCursor(hInstance, xHotSpot, yHotSpot,
                                  width, height, pbANDbits, pbXORbits);
     }
-    if (hCursor)
-    {
-        Attach(hCursor);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hCursor);
 }
 
 inline BOOL MCursor::CreateIconFromResource(PBYTE presbits, DWORD dwResSize,
     BOOL fIcon/* = FALSE*/, DWORD dwVer/* = 0x00030000*/)
 {
     HCURSOR hCursor = ::CreateIconFromResource(presbits, dwResSize, fIcon, dwVer);
-    assert(hCursor);
-    Attach(hCursor);
-    return m_hCursor != NULL;
+    return Attach(hCursor);
 }
 
 inline BOOL MCursor::CreateIconFromResourceEx(PBYTE presbits, DWORD dwResSize,
     BOOL fIcon/* = FALSE*/, DWORD dwVer/* = 0x00030000*/,
     INT cxDesired/* = 0*/, INT cyDesired/* = 0*/, UINT uFlags/* = LR_DEFAULTCOLOR*/)
 {
-    Attach(::CreateIconFromResourceEx(presbits, dwResSize, fIcon, dwVer,
-        cxDesired, cyDesired, uFlags));
-    return m_hCursor != NULL;
+    return Attach(::CreateIconFromResourceEx(presbits, dwResSize, fIcon, dwVer,
+                                             cxDesired, cyDesired, uFlags));
 }
 
 inline BOOL MCursor::LoadCursor(
@@ -201,12 +193,7 @@ inline BOOL MCursor::LoadCursor(
         hInstance = ::GetModuleHandle(NULL);
         hCursor = ::LoadCursor(hInstance, pszResourceName);
     }
-    if (hCursor)
-    {
-        Attach(hCursor);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hCursor);
 }
 
 inline BOOL MCursor::LoadCursor(UINT nCursorID, HINSTANCE hInstance/* = NULL*/)
@@ -216,8 +203,7 @@ inline BOOL MCursor::LoadCursor(UINT nCursorID, HINSTANCE hInstance/* = NULL*/)
 
 inline BOOL MCursor::LoadCursorFromFile(LPCTSTR pszFileName)
 {
-    Attach(::LoadCursorFromFile(pszFileName));
-    return m_hCursor != NULL;
+    return Attach(::LoadCursorFromFile(pszFileName));
 }
 
 inline BOOL MCursor::LoadImage(HINSTANCE hInstance, LPCTSTR pszName,
@@ -233,12 +219,7 @@ inline BOOL MCursor::LoadImage(HINSTANCE hInstance, LPCTSTR pszName,
             ::LoadImage(hInstance, pszName, IMAGE_ICON,
                         cxDesired, cyDesired, fuLoad));
     }
-    if (hCursor)
-    {
-        Attach(hCursor);
-        return TRUE;
-    }
-    return FALSE;
+    return Attach(hCursor);
 }
 
 inline BOOL MCursor::LoadImageFromFile(HINSTANCE hInstance, LPCTSTR pszName,
@@ -252,8 +233,7 @@ inline BOOL MCursor::CreateIconIndirect(PICONINFO pIconInfo)
 {
     assert(pIconInfo);
     assert(pIconInfo->fIcon == FALSE);
-    Attach(reinterpret_cast<HCURSOR>(::CreateIconIndirect(pIconInfo)));
-    return m_hCursor != NULL;
+    return Attach(reinterpret_cast<HCURSOR>(::CreateIconIndirect(pIconInfo)));
 }
 
 inline BOOL MCursor::DestroyCursor()

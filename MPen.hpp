@@ -26,7 +26,7 @@ public:
     MPen& operator=(HPEN hPen);
     MPen& operator=(const MPen& pen);
 
-    VOID Attach(HPEN hPen);
+    BOOL Attach(HPEN hPen);
     HPEN Detach(VOID);
 
     BOOL CreatePen(COLORREF crColor = RGB(0, 0, 0), INT nWidth = 0,
@@ -99,11 +99,11 @@ inline MPen& MPen::operator=(const MPen& pen)
     return *this;
 }
 
-inline VOID MPen::Attach(HPEN hPen)
+inline BOOL MPen::Attach(HPEN hPen)
 {
     assert(::GetObjectType(hPen) == OBJ_PEN);
     assert(m_hGdiObj == NULL);
-    MGdiObject::Attach(hPen);
+    return MGdiObject::Attach(hPen);
 }
 
 inline HPEN MPen::Detach(VOID)
@@ -115,15 +115,13 @@ inline BOOL MPen::CreatePen(COLORREF crColor/* = RGB(0, 0, 0)*/,
     INT nWidth/* = 0*/, INT fnPenStyle/* = PS_SOLID*/)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreatePen(fnPenStyle, nWidth, crColor));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreatePen(fnPenStyle, nWidth, crColor));
 }
 
 inline BOOL MPen::CreatePenIndirect(CONST LOGPEN *lplp)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreatePenIndirect(lplp));
-    return (m_hGdiObj != NULL);
+    return Attach(::CreatePenIndirect(lplp));
 }
 
 inline BOOL MPen::ExtCreatePen(DWORD dwPenStyle, DWORD dwWidth,
@@ -131,8 +129,7 @@ inline BOOL MPen::ExtCreatePen(DWORD dwPenStyle, DWORD dwWidth,
     CONST DWORD *lpStyle/* = NULL*/)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::ExtCreatePen(dwPenStyle, dwWidth, lplb, dwStyleCount, lpStyle));
-    return (m_hGdiObj != NULL);
+    return Attach(::ExtCreatePen(dwPenStyle, dwWidth, lplb, dwStyleCount, lpStyle));
 }
 
 inline /*static*/ HPEN MPen::CloneHandleDx(HPEN hPen)
@@ -157,20 +154,17 @@ inline /*static*/ HPEN MPen::CloneHandleDx(HPEN hPen)
 
 inline BOOL MPen::CreateBlackPen()
 {
-    Attach(CreateBlackPenDx());
-    return TRUE;
+    return Attach(CreateBlackPenDx());
 }
 
 inline BOOL MPen::CreateWhitePen()
 {
-    Attach(CreateWhitePenDx());
-    return TRUE;
+    return Attach(CreateWhitePenDx());
 }
 
 inline BOOL MPen::CreateNullPen()
 {
-    Attach(CreateNullPenDx());
-    return TRUE;
+    return Attach(CreateNullPenDx());
 }
 
 inline HPEN CreateBlackPenDx()

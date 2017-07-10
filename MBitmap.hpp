@@ -41,7 +41,7 @@ public:
     BOOL GetSize(SIZE *psiz) const;
     MBitmap& operator=(HBITMAP hBitmap);
     MBitmap& operator=(const MBitmap& bmp);
-    VOID Attach(HBITMAP hBitmap);
+    BOOL Attach(HBITMAP hBitmap);
     HBITMAP Detach(VOID);
 
     BOOL LoadBitmap(UINT nResourceID, HINSTANCE hInstance = NULL);
@@ -179,11 +179,11 @@ inline MBitmap& MBitmap::operator=(const MBitmap& bmp)
     return *this;
 }
 
-inline VOID MBitmap::Attach(HBITMAP hBitmap)
+inline BOOL MBitmap::Attach(HBITMAP hBitmap)
 {
     assert(::GetObjectType(hBitmap) == OBJ_BITMAP);
     assert(m_hGdiObj == NULL);
-    MGdiObject::Attach(hBitmap);
+    return MGdiObject::Attach(hBitmap);
 }
 
 inline HBITMAP MBitmap::Detach(VOID)

@@ -30,7 +30,7 @@ public:
     MAccel& operator=(HACCEL hAccel);
     MAccel& operator=(const MAccel& accel);
 
-    VOID Attach(HACCEL hAccel);
+    BOOL Attach(HACCEL hAccel);
     HACCEL Detach();
 
     INT GetAcceleratorCount() const;
@@ -100,12 +100,13 @@ inline MAccel& MAccel::operator=(const MAccel& accel)
     return *this;
 }
 
-inline VOID MAccel::Attach(HACCEL hAccel)
+inline BOOL MAccel::Attach(HACCEL hAccel)
 {
     assert(m_hAccel == NULL);
     if (m_hAccel)
         DestroyAcceleratorTable();
     m_hAccel = hAccel;
+    return m_hAccel != NULL;
 }
 
 inline HACCEL MAccel::Detach()

@@ -24,7 +24,7 @@ public:
     MPalette& operator=(HPALETTE hPalette);
     MPalette& operator=(const MPalette& pal);
 
-    VOID Attach(HPALETTE hPalette);
+    BOOL Attach(HPALETTE hPalette);
     HPALETTE Detach(VOID);
 
     WORD GetEntryCount(VOID) const;
@@ -105,11 +105,11 @@ inline MPalette& MPalette::operator=(const MPalette& pal)
     return *this;
 }
 
-inline VOID MPalette::Attach(HPALETTE hPalette)
+inline BOOL MPalette::Attach(HPALETTE hPalette)
 {
     assert(::GetObjectType(hPalette) == OBJ_PAL);
     assert(m_hGdiObj == NULL);
-    MGdiObject::Attach(hPalette);
+    return MGdiObject::Attach(hPalette);
 }
 
 inline HPALETTE MPalette::Detach(VOID)
@@ -140,22 +140,19 @@ inline LOGPALETTE *MPalette::GetLogPalette(VOID) const
 inline BOOL MPalette::CreatePalette(CONST LOGPALETTE *lplp)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreatePalette(lplp));
-    return m_hGdiObj != NULL;
+    return Attach(::CreatePalette(lplp));
 }
 
 inline BOOL MPalette::CreateHalftonePalette(HDC hDC)
 {
     assert(m_hGdiObj == NULL);
-    Attach(::CreateHalftonePalette(hDC));
-    return m_hGdiObj != NULL;
+    return Attach(::CreateHalftonePalette(hDC));
 }
 
 inline BOOL MPalette::CreateDefaultPalette()
 {
     assert(m_hGdiObj == NULL);
-    Attach((HPALETTE)::GetStockObject(DEFAULT_PALETTE));
-    return m_hGdiObj != NULL;
+    return Attach((HPALETTE)::GetStockObject(DEFAULT_PALETTE));
 }
 
 inline UINT MPalette::GetPaletteEntries(

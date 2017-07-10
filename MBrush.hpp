@@ -25,7 +25,7 @@ public:
     MBrush& operator=(HBRUSH hBrush);
     MBrush& operator=(const MBrush& brush);
 
-    VOID Attach(HBRUSH hBrush);
+    BOOL Attach(HBRUSH hBrush);
     HBRUSH Detach(VOID);
 
     BOOL CreateBrushIndirect(CONST LOGBRUSH *lplb);
@@ -122,11 +122,11 @@ inline MBrush& MBrush::operator=(const MBrush& brush)
     return *this;
 }
 
-inline VOID MBrush::Attach(HBRUSH hBrush)
+inline BOOL MBrush::Attach(HBRUSH hBrush)
 {
     assert(::GetObjectType(hBrush) == OBJ_BRUSH);
     assert(m_hGdiObj == NULL);
-    MGdiObject::Attach(hBrush);
+    return MGdiObject::Attach(hBrush);
 }
 
 inline HBRUSH MBrush::Detach(VOID)

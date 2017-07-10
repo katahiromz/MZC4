@@ -64,7 +64,7 @@ public:
     bool operator!=(const MFile& file) const;
 
     MFile& operator=(HANDLE hFile);
-    VOID Attach(HANDLE hFile);
+    BOOL Attach(HANDLE hFile);
     HANDLE Detach();
     HANDLE Handle() const;
     BOOL CloseHandle();
@@ -348,7 +348,7 @@ inline MFile& MFile::operator=(HANDLE hFile)
     return *this;
 }
 
-inline VOID MFile::Attach(HANDLE hFile)
+inline BOOL MFile::Attach(HANDLE hFile)
 {
     if (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE)
         CloseHandle();
@@ -359,6 +359,7 @@ inline VOID MFile::Attach(HANDLE hFile)
     assert(::GetFileInformationByHandle(hFile, &info));
 #endif
     m_hFile = hFile;
+    return m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE;
 }
 
 inline HANDLE MFile::Detach()
@@ -440,9 +441,8 @@ inline BOOL MFile::CreateFile(LPCTSTR pszFileName,
     HANDLE hTemplateFile/* = NULL*/)
 {
     assert(m_hFile == NULL || m_hFile == INVALID_HANDLE_VALUE);
-    Attach(::CreateFile(pszFileName, dwDesiredAccess, dwShareMode,
-        pSA, dwCreationDistribution, dwFlagsAndAttributes, hTemplateFile));
-    return (m_hFile != INVALID_HANDLE_VALUE);
+    return Attach(::CreateFile(pszFileName, dwDesiredAccess, dwShareMode,
+                  pSA, dwCreationDistribution, dwFlagsAndAttributes, hTemplateFile));
 }
 
 inline DWORD MFile::SetFilePointer(
@@ -614,26 +614,22 @@ inline BOOL MFile::WriteFileEx(LPCVOID pBuffer, DWORD cbToWrite,
 
 inline BOOL MFile::GetStdHandle(DWORD dwSTD_)
 {
-    Attach(::GetStdHandle(dwSTD_));
-    return (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE);
+    return Attach(::GetStdHandle(dwSTD_));
 }
 
 inline BOOL MFile::GetStdIn()
 {
-    Attach(::GetStdHandle(STD_INPUT_HANDLE));
-    return (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE);
+    return Attach(::GetStdHandle(STD_INPUT_HANDLE));
 }
 
 inline BOOL MFile::GetStdOut()
 {
-    Attach(::GetStdHandle(STD_OUTPUT_HANDLE));
-    return (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE);
+    return Attach(::GetStdHandle(STD_OUTPUT_HANDLE));
 }
 
 inline BOOL MFile::GetStdErr()
 {
-    Attach(::GetStdHandle(STD_ERROR_HANDLE));
-    return (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE);
+    return Attach(::GetStdHandle(STD_ERROR_HANDLE));
 }
 
 inline BOOL MFile::SetStdHandle(DWORD dwSTD_) const

@@ -30,7 +30,7 @@ public:
     bool operator==(HANDLE hObject) const;
     bool operator!=(HANDLE hObject) const;
 
-    VOID Attach(HANDLE hObject);
+    BOOL Attach(HANDLE hObject);
     HANDLE Detach();
     HANDLE Handle() const;
 
@@ -84,13 +84,14 @@ inline MSyncBase& MSyncBase::operator=(HANDLE hObject)
     return *this;
 }
 
-inline VOID MSyncBase::Attach(HANDLE hObject)
+inline BOOL MSyncBase::Attach(HANDLE hObject)
 {
     if (m_hObject)
         CloseHandle();
     assert(hObject);
     assert(m_hObject == NULL);
     m_hObject = hObject;
+    return m_hObject != NULL;
 }
 
 inline HANDLE MSyncBase::Detach()

@@ -36,7 +36,7 @@ public:
     operator HIMAGELIST() const;
 
     HIMAGELIST Handle() const;
-    VOID Attach(HIMAGELIST hImageList);
+    BOOL Attach(HIMAGELIST hImageList);
     HIMAGELIST Detach();
 
     BOOL Create(INT cx, INT cy, UINT uILC_flags, INT nInitial, INT nGrow);
@@ -152,11 +152,12 @@ inline MImageList& MImageList::operator=(const MImageList& ilist)
     return *this;
 }
 
-inline VOID MImageList::Attach(HIMAGELIST hImageList)
+inline BOOL MImageList::Attach(HIMAGELIST hImageList)
 {
     assert(hImageList);
     assert(m_hImageList == NULL);
     m_hImageList = hImageList;
+    return m_hImageList != NULL;
 }
 
 inline HIMAGELIST MImageList::Detach()
@@ -170,8 +171,7 @@ inline BOOL MImageList::Create(
     INT cx, INT cy, UINT uILC_flags, INT nInitial, INT nGrow)
 {
     assert(m_hImageList == NULL);
-    Attach(ImageList_Create(cx, cy, uILC_flags, nInitial, nGrow));
-    return (m_hImageList != NULL);
+    return Attach(ImageList_Create(cx, cy, uILC_flags, nInitial, nGrow));
 }
 
 inline BOOL MImageList::Create(LPCTSTR lpszBitmapID,
@@ -180,16 +180,14 @@ inline BOOL MImageList::Create(LPCTSTR lpszBitmapID,
     assert(m_hImageList == NULL);
     if (hInstance == NULL)
         hInstance = ::GetModuleHandle(NULL);
-    Attach(ImageList_LoadBitmap(hInstance, lpszBitmapID, cx, nGrow, crMask));
-    return (m_hImageList != NULL);
+    return Attach(ImageList_LoadBitmap(hInstance, lpszBitmapID, cx, nGrow, crMask));
 }
 
 inline BOOL MImageList::Merge(HIMAGELIST hIml1, INT nImage1,
     HIMAGELIST hIml2, INT nImage2, INT dx, INT dy)
 {
     assert(m_hImageList == NULL);
-    Attach(ImageList_Merge(hIml1, nImage1, hIml2, nImage2, dx, dy));
-    return (m_hImageList != NULL);
+    return Attach(ImageList_Merge(hIml1, nImage1, hIml2, nImage2, dx, dy));
 }
 
 inline INT MImageList::GetImageCount() const
