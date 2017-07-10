@@ -34,8 +34,9 @@ public:
     /* after main */
     HDC CreatePrinterDC();
     HDC GetPrinterDC() const;
+    HGLOBAL DetachDevNames();
+    HGLOBAL DetachDevMode();
 
-    MDevMode *GetDevMode() const;
     MString GetDriverName() const;
     MString GetDeviceName() const;
     MString GetPortName() const;
@@ -67,8 +68,8 @@ inline MPrintDialog::MPrintDialog(
 
 inline /*virtual*/ MPrintDialog::~MPrintDialog()
 {
-    GlobalUnlock(m_pd.hDevNames);
-    GlobalUnlock(m_pd.hDevMode);
+    GlobalFree(m_pd.hDevMode);
+    GlobalFree(m_pd.hDevNames);
     DeleteDC(m_pd.hDC);
 }
 
@@ -89,6 +90,7 @@ inline INT MPrintDialog::GetToPage() const
 
 inline HDC MPrintDialog::CreatePrinterDC()
 {
+    ::DeleteDC(m_pd.hDC);
     m_pd.hDC = CreatePrinterDCDx(m_pd.hDevNames, m_pd.hDevMode);
     return m_pd.hDC;
 }
@@ -99,15 +101,24 @@ inline HDC MPrintDialog::GetPrinterDC() const
     return m_pd.hDC;
 }
 
+inline HGLOBAL MPrintDialog::DetachDevNames()
+{
+    HGLOBAL hDevNames = m_pd.hDevNames;
+    m_pd.hDevNames = NULL;
+    return hDevNames;
+}
+
+inline HGLOBAL MPrintDialog::DetachDevMode()
+{
+    HGLOBAL hDevMode = m_pd.hDevMode;
+    m_pd.hDevMode = NULL;
+    return hDevMode;
+}
+
 inline BOOL MPrintDialog::GetDefaults()
 {
     m_pd.Flags |= PD_RETURNDEFAULT;
     return ::PrintDlg(&m_pd);
-}
-
-inline MDevMode *MPrintDialog::GetDevMode() const
-{
-    return (MDevMode *)GlobalLock(m_pd.hDevMode);
 }
 
 inline MString MPrintDialog::GetDriverName() const
