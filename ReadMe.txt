@@ -1,8 +1,8 @@
 WHAT IS THIS?
 -------------
 
-This is a class library for Win32API, written by katahiromz,
-4th (MZC4).
+This is a class library for Win32API, named
+Mad Zombie Classic 4th (MZC4).
 
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [ARMYANT]
