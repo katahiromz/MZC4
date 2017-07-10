@@ -1,8 +1,18 @@
 WHAT IS THIS?
 -------------
 
-This is a class library for Win32API, named
-Mad Zombie Classic 4th (MZC4).
+This is a free class library for Win32API, named "Mad Zombie Classic 4th" (MZC4).
+
+
+The Concept
+-----------
+
+* Providing the powerful framework for daily use
+* A Win32API-friendly design
+* Just copy the headers
+* Absolutely copyright-free, license-free
+
+Pull Requests are welcome! Please improve it!
 
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [ARMYANT]

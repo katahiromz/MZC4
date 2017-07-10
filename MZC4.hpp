@@ -34,8 +34,6 @@
 #include "MCursor.hpp"
 #include "MDateTimePick.hpp"
 #include "MDC.hpp"
-#include "MDevMode.hpp"
-#include "MDevNames.hpp"
 #include "MDialogBase.hpp"
 #include "MDirWatch.hpp"
 #include "MEditCtrl.hpp"
