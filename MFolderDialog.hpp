@@ -209,6 +209,7 @@ MFolderDialog::BrowseCallbackProc(HWND hWnd, UINT uMsg, LPARAM lParam, LPARAM lp
 #ifndef BFFM_IUNKNOWN
     const INT BFFM_IUNKNOWN = 5;
 #endif
+    assert(lpData);
     MFolderDialog *pDialog = reinterpret_cast<MFolderDialog *>(lpData);
     if (pDialog->m_hwnd == NULL)
         pDialog->Attach(hWnd);

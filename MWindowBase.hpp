@@ -690,6 +690,7 @@ MWindowBase::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
         assert(pcs->lpCreateParams);
         base = (MWindowBase *)pcs->lpCreateParams;
+        assert(base);
         base->m_hwnd = hwnd;
     }
     else
@@ -752,14 +753,10 @@ inline BOOL MWindowBase::CreateWindowDx(
     if (!RegisterClassDx())
         return FALSE;
 
-    m_hwnd = ::CreateWindowEx(ExStyle, GetWndClassNameDx(),
+    HWND hwnd = ::CreateWindowEx(ExStyle, GetWndClassNameDx(),
         GetStringDx(pszText), Style, x, y, cx, cy, hwndParent,
         hMenu, GetModuleHandle(NULL), this);
-    if (m_hwnd)
-    {
-        SetUserData(m_hwnd, this);
-    }
-    return (m_hwnd != NULL);
+    return Attach(hwnd);
 }
 
 inline INT
@@ -953,10 +950,11 @@ MDialogBase::DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         assert(lParam);
         base = (MDialogBase *)lParam;
+        assert(base);
         base->m_hwnd = hwnd;
         if (base->m_bModal)
         {
-            SetUserData(hwnd, base);
+            base->Attach(hwnd);
         }
     }
     else
@@ -996,15 +994,11 @@ MDialogBase::CreateDialogIndirectDx(HWND hwndOwner, const VOID *ptr)
         m_hwndOwner = hwndOwner;
     }
     m_bModal = FALSE;
-    m_hwnd = ::CreateDialogIndirectParam(::GetModuleHandle(NULL),
+    HWND hwnd = ::CreateDialogIndirectParam(::GetModuleHandle(NULL),
         reinterpret_cast<const DLGTEMPLATE *>(ptr),
         m_hwndOwner, MDialogBase::DialogProc,
         reinterpret_cast<LPARAM>(this));
-    if (m_hwnd)
-    {
-        SetUserData(m_hwnd, this);
-    }
-    return (m_hwnd != NULL);
+    return Attach(hwnd);
 }
 
 inline INT_PTR
@@ -1031,14 +1025,10 @@ MDialogBase::CreateDialogDx(HWND hwndOwner, LPCTSTR pDialogName)
         m_hwndOwner = hwndOwner;
     }
     m_bModal = FALSE;
-    m_hwnd = ::CreateDialogParam(::GetModuleHandle(NULL), pDialogName,
-                                 m_hwndOwner, MDialogBase::DialogProc,
-                                 reinterpret_cast<LPARAM>(this));
-    if (m_hwnd)
-    {
-        SetUserData(m_hwnd, this);
-    }
-    return (m_hwnd != NULL);
+    HWND hwnd = ::CreateDialogParam(::GetModuleHandle(NULL), pDialogName,
+                                    m_hwndOwner, MDialogBase::DialogProc,
+                                    reinterpret_cast<LPARAM>(this));
+    return Attach(hwnd);
 }
 
 inline INT_PTR
