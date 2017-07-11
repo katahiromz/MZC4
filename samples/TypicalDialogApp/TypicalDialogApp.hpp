@@ -9,7 +9,7 @@
 // resource IDs
 #include "resource.h"
 
-#include "MWindowBase.hpp"      // MZC4 MWindowBase
+#include "MDialogBase.hpp"      // MZC4 MDialogBase
 #include "MResizable.hpp"       // MZC4 MResizable
 #include "MMinMaxInfo.hpp"      // MZC4 MMinMaxInfo
 
