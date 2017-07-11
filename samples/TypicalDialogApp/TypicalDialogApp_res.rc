@@ -1,0 +1,78 @@
+#include "targetver.h"
+#include <windows.h>
+#include <dlgs.h>
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// Encoding
+
+#pragma code_page(65001)    // UTF-8
+
+/////////////////////////////////////////////////////////////////////////////
+// Icon
+
+1 ICON "TypicalDialogApp.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+// Version Info
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     0, 2, 0, 0
+PRODUCTVERSION  0, 2, 0, 0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    // English (U.S.)
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "@PROGRAM_AUTHORS\0"
+            VALUE "FileDescription", "TypicalDialogApp\0"
+            VALUE "FileVersion", "0.2.0\0"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2017 Katayama Hirofumi MZ\0"
+            VALUE "ProductName", "TypicalDialogApp\0"
+            VALUE "ProductVersion", "0.2.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        // English (U.S.)
+        VALUE "Translation", 0x0409, 0x04E4
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// Menu
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+// Dialog
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+1 DIALOG 0, 0, 242, 104
+STYLE DS_CENTER | WS_THICKFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "TypicalDialogApp"
+FONT 10, "MS Shell Dlg"
+BEGIN
+    CONTROL "Hello, everyone! This is a resizable dialog!", stc1, "STATIC", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 5, 6, 42, 72
+    CONTROL "", edt1, "EDIT", ES_LEFT | ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP, 50, 4, 187, 74
+    CONTROL "OK", IDOK, "BUTTON", BS_DEFPUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_GROUP | WS_TABSTOP, 102, 84, 50, 14
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// String Table
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+STRINGTABLE
+BEGIN
+    IDS_APPNAME,   "TypicalDialogApp"
+END
+
+/////////////////////////////////////////////////////////////////////////////

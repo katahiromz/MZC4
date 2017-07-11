@@ -32,7 +32,7 @@ class MResizable;
 #include "MScrollBar.hpp"   // for MSizeGrip
 #include <vector>           // for std::vector
 
-struct MResizable
+class MResizable
 {
 protected:
     struct MCtrlLayout
@@ -57,7 +57,8 @@ public:
     virtual ~MResizable();
 
     // NOTE: Please call OnParentCreate after parent's WM_CREATE.
-    VOID OnParentCreate(HWND hwnd, BOOL bEnableResize);
+    VOID OnParentCreate(HWND hwnd, BOOL bEnableResize = TRUE,
+                        BOOL bShowSizeGrip = TRUE);
 
     // NOTE: Please call OnSize on parent's WM_SIZE.
     VOID OnSize();
@@ -75,7 +76,7 @@ public:
     const layout_type *CtrlLayout(UINT nCtrlID) const;
 
     BOOL IsResizeEnabled() const;
-    VOID EnableResize(BOOL bEnableResize);
+    VOID EnableResize(BOOL bEnableResize, BOOL bShowSizeGrip = TRUE);
     VOID ClearLayouts();
 
 protected:
@@ -239,14 +240,15 @@ inline VOID MResizable::ModifyParentStyle(BOOL bEnableResize)
     ::InvalidateRect(m_hwndParent, NULL, TRUE);
 }
 
-inline VOID MResizable::EnableResize(BOOL bEnableResize)
+inline VOID MResizable::EnableResize(BOOL bEnableResize, BOOL bShowSizeGrip/* = TRUE*/)
 {
-    ShowSizeGrip(bEnableResize);
+    ShowSizeGrip(bEnableResize && bShowSizeGrip);
     ModifyParentStyle(bEnableResize);
     m_bResizeEnabled = bEnableResize;
 }
 
-inline VOID MResizable::OnParentCreate(HWND hwndParent, BOOL bEnableResize)
+inline VOID MResizable::OnParentCreate(HWND hwndParent, BOOL bEnableResize,
+                        BOOL bShowSizeGrip/* = TRUE*/)
 {
     assert(hwndParent);
     assert(::IsWindow(hwndParent));
@@ -255,9 +257,10 @@ inline VOID MResizable::OnParentCreate(HWND hwndParent, BOOL bEnableResize)
 
     ClearLayouts();
 
-    // NOTE: The parent window must be initially WS_THICKFRAME.
+    // NOTE: The parent window must have initially WS_THICKFRAME style.
     assert(::GetWindowLong(hwndParent, GWL_STYLE) & WS_THICKFRAME);
-    EnableResize(bEnableResize);
+
+    EnableResize(bEnableResize, bShowSizeGrip);
 }
 
 inline VOID MResizable::ArrangeLayout(const MRect& ClientRect)
@@ -303,10 +306,7 @@ inline VOID MResizable::ArrangeLayout(const MRect& ClientRect)
                 NewRect.Width(), NewRect.Height(), uFlags);
         }
 
-        TCHAR szClassName[8];
-        ::GetClassName(hwndCtrl, szClassName, 8);
-        if (::lstrcmpi(szClassName, TEXT("STATIC")) == 0)
-            ::InvalidateRect(hwndCtrl, NULL, TRUE);
+        ::InvalidateRect(hwndCtrl, NULL, TRUE);
     }
 
     ::EndDeferWindowPos(hDwp);

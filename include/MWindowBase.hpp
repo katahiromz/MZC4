@@ -703,7 +703,6 @@ MWindowBase::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
         assert(pcs->lpCreateParams);
         base = (MWindowBase *)pcs->lpCreateParams;
-        assert(base);
         base->m_hwnd = hwnd;
     }
     else

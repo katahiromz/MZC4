@@ -360,7 +360,6 @@ INT APIENTRY _tWinMain(
         MMyNotepad app(__argc, __targv, hInstance);
 
         ::InitCommonControls();
-
         HRESULT hres = ::CoInitialize(NULL);
 
         if (app.StartDx(nCmdShow))
