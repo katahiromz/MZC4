@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    39     /* Version 39 */
+#define MZC4_MWINDOWBASE_HPP_    40     /* Version 40 */
 
 class MWindowBase;
 class MDialogBase;
@@ -239,8 +239,8 @@ public:
     BOOL Attach(HWND hwnd)
     {
         m_hwnd = hwnd;
-        SetUserData(hwnd, this);
-        return hwnd != NULL;
+        SetUserData(m_hwnd, this);
+        return m_hwnd != NULL;
     }
 
     HWND Detach()
@@ -550,6 +550,21 @@ public:
     BOOL IsDialogMessage(LPMSG pMsg)
     {
         return ::IsDialogMessage(Handle(), pMsg);
+    }
+
+    BOOL Attach(HWND hwnd)
+    {
+        m_hwnd = hwnd;
+        SetUserData(m_hwnd, this);
+        return m_hwnd != NULL;
+    }
+
+    HWND Detach()
+    {
+        HWND hwnd = m_hwnd;
+        SetUserData(hwnd, NULL);
+        m_hwnd = NULL;
+        return hwnd;
     }
 };
 
@@ -965,7 +980,6 @@ MDialogBase::DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         assert(lParam);
         base = (MDialogBase *)lParam;
         assert(base);
-        base->m_hwnd = hwnd;
         if (base->m_bModal)
         {
             base->Attach(hwnd);

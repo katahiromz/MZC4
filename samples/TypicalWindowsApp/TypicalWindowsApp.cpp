@@ -179,6 +179,7 @@ struct MAboutDialog : public MDialogBase
 
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     {
+        assert(hwnd);
         switch (id)
         {
         case IDOK:
