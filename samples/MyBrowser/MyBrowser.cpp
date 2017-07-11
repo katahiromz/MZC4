@@ -13,6 +13,7 @@ struct MMyBrowser : public MWindowBase
 
     HINSTANCE   m_hInst;        // the instance handle
     HICON       m_hIcon;        // the icon handle
+    HICON       m_hIconSm;      // the small icon handle
     HACCEL      m_hAccel;       // the accelerator handle
     HFONT       m_hFont;        // the UI font
     MWebBrowser m_browser;      // the web browser
@@ -25,8 +26,15 @@ struct MMyBrowser : public MWindowBase
     // constructors
     MMyBrowser(int argc, TCHAR **targv, HINSTANCE hInst) :
         m_argc(argc), m_targv(targv),
-        m_hInst(hInst), m_hIcon(NULL), m_hAccel(NULL), m_hFont(NULL)
+        m_hInst(hInst), m_hIcon(NULL), m_hIconSm(NULL),
+        m_hAccel(NULL), m_hFont(NULL)
     {
+    }
+
+    ~MMyBrowser()
+    {
+        ::DestroyIcon(m_hIcon);
+        ::DestroyIcon(m_hIconSm);
     }
 
     virtual void ModifyWndClassDx(WNDCLASSEX& wcx)
@@ -34,7 +42,7 @@ struct MMyBrowser : public MWindowBase
         MWindowBase::ModifyWndClassDx(wcx);
         wcx.lpszMenuName = MAKEINTRESOURCE(1);
         wcx.hIcon = m_hIcon;
-        wcx.hIconSm = m_hIcon;
+        wcx.hIconSm = m_hIconSm;
     }
 
     virtual LRESULT CALLBACK
@@ -95,7 +103,8 @@ struct MMyBrowser : public MWindowBase
 
     BOOL StartDx(INT nCmdShow)
     {
-        m_hIcon = ::LoadIcon(m_hInst, MAKEINTRESOURCE(1));
+        m_hIcon = LoadIconDx(1);
+        m_hIconSm = LoadSmallIconDx(1);
         m_hAccel = ::LoadAccelerators(m_hInst, MAKEINTRESOURCE(1));
 
         if (!CreateWindowDx(NULL, LoadStringDx(1)))

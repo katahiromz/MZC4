@@ -13,6 +13,7 @@ struct MMyNotepad : public MWindowBase
 
     HINSTANCE   m_hInst;        // the instance handle
     HICON       m_hIcon;        // the icon handle
+    HICON       m_hIconSm;      // the small icon handle
     HACCEL      m_hAccel;       // the accelerator handle
     MEditCtrl   m_edit_ctrl;
     MTextType   m_text_type;
@@ -24,11 +25,8 @@ struct MMyNotepad : public MWindowBase
 
     // constructors
     MMyNotepad(int argc, TCHAR **targv, HINSTANCE hInst) :
-        m_argc(argc),
-        m_targv(targv),
-        m_hInst(hInst),
-        m_hIcon(NULL),
-        m_hAccel(NULL),
+        m_argc(argc), m_targv(targv), m_hInst(hInst),
+        m_hIcon(NULL), m_hIconSm(NULL), m_hAccel(NULL),
         m_hbrBackground(NULL)
     {
         ZeroMemory(&m_lf, sizeof(m_lf));
@@ -43,7 +41,7 @@ struct MMyNotepad : public MWindowBase
         MWindowBase::ModifyWndClassDx(wcx);
         wcx.lpszMenuName = MAKEINTRESOURCE(1);
         wcx.hIcon = m_hIcon;
-        wcx.hIconSm = m_hIcon;
+        wcx.hIconSm = m_hIconSm;
     }
 
     virtual LRESULT CALLBACK
@@ -198,7 +196,8 @@ struct MMyNotepad : public MWindowBase
 
     BOOL StartDx(INT nCmdShow)
     {
-        m_hIcon = ::LoadIcon(m_hInst, MAKEINTRESOURCE(1));
+        m_hIcon = LoadIconDx(1);
+        m_hIconSm = LoadSmallIconDx(1);
         m_hAccel = ::LoadAccelerators(m_hInst, MAKEINTRESOURCE(1));
 
         if (!CreateWindowDx(NULL, LoadStringDx(1)))

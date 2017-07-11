@@ -55,6 +55,7 @@ public:
 
     HINSTANCE       m_hInst;    // the instance handle
     HICON           m_hIcon;    // the icon handle
+    HICON           m_hIconSm;  // the small icon handle
     HFONT           m_hFont;    // font for edt2
 
     // controls
@@ -69,13 +70,14 @@ public:
 
     MMsgCrackApp(int argc, TCHAR **targv, HINSTANCE hInst) :
         m_argc(argc), m_targv(targv),
-        m_hInst(hInst), m_hIcon(NULL), m_hFont(NULL)
+        m_hInst(hInst), m_hIcon(NULL), m_hIconSm(NULL), m_hFont(NULL)
     {
     }
 
     ~MMsgCrackApp()
     {
         DestroyIcon(m_hIcon);
+        DestroyIcon(m_hIconSm);
         DeleteObject(m_hFont);
     }
 
@@ -83,7 +85,8 @@ public:
     BOOL StartDx(INT nCmdShow)
     {
         // load accessories
-        m_hIcon = ::LoadIcon(m_hInst, MAKEINTRESOURCE(1));
+        m_hIcon = LoadIconDx(1);
+        m_hIconSm = LoadSmallIconDx(1);
 
         HFONT hFont = GetStockFont(DEFAULT_GUI_FONT);
 
@@ -187,7 +190,8 @@ public:
 
     BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     {
-        SendMessageDx(WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
+        SendMessageDx(WM_SETICON, ICON_SMALL, (LPARAM)m_hIconSm);
+        SendMessageDx(WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
 
         SubclassChildDx(m_hLst1, lst1);
         SubclassChildDx(m_hEdt1, edt1);

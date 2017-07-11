@@ -13,16 +13,14 @@ struct MTypicalDialogApp : public MDialogBase
 
     HINSTANCE   m_hInst;        // the instance handle
     HICON       m_hIcon;        // the icon handle
+    HICON       m_hIconSm;      // the small icon handle
     HACCEL      m_hAccel;       // the accelerator handle
 
     MResizable  m_resizable;    // realize a resizable dialog
 
     MTypicalDialogApp(int argc, TCHAR **targv, HINSTANCE hInst) :
-        m_argc(argc),
-        m_targv(targv),
-        m_hInst(hInst),
-        m_hIcon(NULL),
-        m_hAccel(NULL)
+        m_argc(argc), m_targv(targv), m_hInst(hInst),
+        m_hIcon(NULL), m_hIconSm(NULL), m_hAccel(NULL)
     {
     }
 
@@ -30,7 +28,8 @@ struct MTypicalDialogApp : public MDialogBase
     BOOL StartDx(INT nCmdShow)
     {
         // load accessories
-        m_hIcon = ::LoadIcon(m_hInst, MAKEINTRESOURCE(1));
+        m_hIcon = LoadIconDx(1);
+        m_hIconSm = LoadSmallIconDx(1);
         m_hAccel = ::LoadAccelerators(m_hInst, MAKEINTRESOURCE(1));
 
         return TRUE;
@@ -46,6 +45,7 @@ struct MTypicalDialogApp : public MDialogBase
     {
         CenterWindowDx();
         ::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
+        ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_hIconSm);
 
         m_resizable.OnParentCreate(hwnd);
         m_resizable.SetLayoutAnchor(stc1, mzcLA_TOP_LEFT);
