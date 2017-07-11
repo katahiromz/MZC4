@@ -43,7 +43,7 @@ enum MTextEncoding
 
 enum MTextNewLineType
 {
-    MNEWLINE_UNKNOWN,
+    MNEWLINE_NOCHANGE,
     MNEWLINE_CRLF,
     MNEWLINE_LF,
     MNEWLINE_CR
@@ -346,12 +346,6 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
 {
     std::wstring ret;
 
-    if (pType)
-    {
-        pType->nNewLine = MNEWLINE_UNKNOWN;
-        pType->nEncoding = MTENC_UNKNOWN;
-    }
-
     if (data == NULL || len == 0)
     {
         // empty
@@ -432,25 +426,28 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
         }
     }
 
-    if (mstr_replace_all(ret, L"\r\n", L"\n"))
+    if (!pType || pType->nNewLine != MNEWLINE_NOCHANGE)
     {
-        if (pType)
+        if (mstr_replace_all(ret, L"\r\n", L"\n"))
         {
-            pType->nNewLine = MNEWLINE_CRLF;
+            if (pType)
+            {
+                pType->nNewLine = MNEWLINE_CRLF;
+            }
         }
-    }
-    if (mstr_replace_all(ret, L"\r", L"\n"))
-    {
-        if (pType && pType->nNewLine != MNEWLINE_CRLF)
+        if (mstr_replace_all(ret, L"\r", L"\n"))
         {
-            pType->nNewLine = MNEWLINE_CR;
+            if (pType && pType->nNewLine != MNEWLINE_CRLF)
+            {
+                pType->nNewLine = MNEWLINE_CR;
+            }
         }
-    }
-    if (mstr_replace_all(ret, L"\n", L"\r\n"))
-    {
-        if (pType && pType->nNewLine != MNEWLINE_CRLF)
+        if (mstr_replace_all(ret, L"\n", L"\r\n"))
         {
-            pType->nNewLine = MNEWLINE_LF;
+            if (pType && pType->nNewLine != MNEWLINE_CRLF)
+            {
+                pType->nNewLine = MNEWLINE_LF;
+            }
         }
     }
 
@@ -465,8 +462,9 @@ mbin_from_str(const std::wstring& str, const MTextType& type)
 
     switch (type.nNewLine)
     {
+    case MNEWLINE_NOCHANGE:
+        break;
     case MNEWLINE_CRLF:
-    case MNEWLINE_UNKNOWN:
         mstr_replace_all(str2, L"\r\n", L"\n");
         mstr_replace_all(str2, L"\r", L"\r\n");
         mstr_replace_all(str2, L"\n", L"\r\n");
