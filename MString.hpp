@@ -53,7 +53,7 @@ struct MTextType
 {
     MTextEncoding       nEncoding;
     MTextNewLineType    nNewLine;
-    BOOL                bHasBOM;
+    bool                bHasBOM;
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -369,7 +369,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
         if (pType)
         {
             pType->nEncoding = MTENC_UNICODE_LE;
-            pType->bHasBOM = TRUE;
+            pType->bHasBOM = true;
         }
         ret.assign((const WCHAR *)data, len / sizeof(WCHAR));
     }
@@ -379,7 +379,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
         if (pType)
         {
             pType->nEncoding = MTENC_UNICODE_BE;
-            pType->bHasBOM = TRUE;
+            pType->bHasBOM = true;
         }
         ret.assign((const WCHAR *)data, len / sizeof(WCHAR));
         mbin_swap_endian(&ret[0], len);
@@ -393,7 +393,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             if (pType)
             {
                 pType->nEncoding = MTENC_UTF8;
-                pType->bHasBOM = TRUE;
+                pType->bHasBOM = true;
             }
             std::string str(&pch[3], len - 3);
             ret = MUtf8ToWide(str);
@@ -404,7 +404,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             if (pType)
             {
                 pType->nEncoding = MTENC_ASCII;
-                pType->bHasBOM = FALSE;
+                pType->bHasBOM = false;
             }
             std::string str(pch, len);
             ret = MAnsiToWide(str);
@@ -415,7 +415,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             if (pType)
             {
                 pType->nEncoding = MTENC_UTF8;
-                pType->bHasBOM = FALSE;
+                pType->bHasBOM = false;
             }
             ret = MUtf8ToWide(pch, len);
         }
@@ -425,7 +425,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             if (pType)
             {
                 pType->nEncoding = MTENC_ANSI;
-                pType->bHasBOM = FALSE;
+                pType->bHasBOM = false;
             }
             std::string str(pch, len);
             ret = MAnsiToWide(str);
