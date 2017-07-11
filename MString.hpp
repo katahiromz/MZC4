@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSTRING_HPP_
-#define MZC4_MSTRING_HPP_       5   /* Version 5 */
+#define MZC4_MSTRING_HPP_       6   /* Version 6 */
 
 // class MString;
 // class MStringA;
@@ -60,14 +60,16 @@ struct MTextType
 
 ////////////////////////////////////////////////////////////////////////////
 
-bool mstr_is_valid_ascii(const char *str, size_t len);
-bool mstr_is_valid_ascii(const std::string& str);
+bool mstr_is_text_ascii(const char *str, size_t len);
+bool mstr_is_text_ascii(const std::string& str);
 
-bool mstr_is_valid_ascii(const wchar_t *str, size_t len);
-bool mstr_is_valid_ascii(const std::wstring& str);
+bool mstr_is_text_ascii(const wchar_t *str, size_t len);
+bool mstr_is_text_ascii(const std::wstring& str);
 
-bool mstr_is_valid_utf8(const char *str, size_t len);
-bool mstr_is_valid_utf8(const std::string& str);
+bool mstr_is_text_utf8(const char *str, size_t len);
+bool mstr_is_text_utf8(const std::string& str);
+
+bool mstr_is_text_unicode(const void *ptr, size_t len);
 
 void mstr_trim(std::string& str, const char *spaces = " \t\r\n");
 void mstr_trim(std::wstring& str, const wchar_t *spaces = L" \t\r\n");
@@ -112,7 +114,7 @@ mstr_join(const T_STR_CONTAINER& container,
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline bool mstr_is_valid_ascii(const char *str, size_t len)
+inline bool mstr_is_text_ascii(const char *str, size_t len)
 {
     if (len == 0)
         return true;
@@ -126,12 +128,12 @@ inline bool mstr_is_valid_ascii(const char *str, size_t len)
     return true;
 }
 
-inline bool mstr_is_valid_ascii(const std::string& str)
+inline bool mstr_is_text_ascii(const std::string& str)
 {
-    return mstr_is_valid_ascii(&str[0], str.size());
+    return mstr_is_text_ascii(&str[0], str.size());
 }
 
-inline bool mstr_is_valid_ascii(const wchar_t *str, size_t len)
+inline bool mstr_is_text_ascii(const wchar_t *str, size_t len)
 {
     if (len == 0)
         return true;
@@ -145,12 +147,12 @@ inline bool mstr_is_valid_ascii(const wchar_t *str, size_t len)
     return true;
 }
 
-inline bool mstr_is_valid_ascii(const std::wstring& str)
+inline bool mstr_is_text_ascii(const std::wstring& str)
 {
-    return mstr_is_valid_ascii(&str[0], str.size());
+    return mstr_is_text_ascii(&str[0], str.size());
 }
 
-inline bool mstr_is_valid_utf8(const char *str, size_t len)
+inline bool mstr_is_text_utf8(const char *str, size_t len)
 {
     if (len == 0)
         return true;
@@ -159,9 +161,16 @@ inline bool mstr_is_valid_utf8(const char *str, size_t len)
     return len != 0;
 }
 
-inline bool mstr_is_valid_utf8(const std::string& str)
+inline bool mstr_is_text_utf8(const std::string& str)
 {
-    return mstr_is_valid_utf8(&str[0], str.size());
+    return mstr_is_text_utf8(&str[0], str.size());
+}
+
+inline bool mstr_is_text_unicode(const void *ptr, size_t len)
+{
+    if (::IsTextUnicode(ptr, int(len), NULL))
+        return true;
+    return false;
 }
 
 inline void mstr_trim(std::string& str, const char *spaces/* = " \t\r\n"*/)
@@ -396,7 +405,7 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
             std::string str(&pch[3], len - 3);
             ret = MUtf8ToWide(str);
         }
-        else if (mstr_is_valid_ascii((const char *)bin, len))
+        else if (mstr_is_text_ascii((const char *)bin, len))
         {
             // ASCII
             if (pType)
@@ -407,7 +416,7 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
             std::string str(pch, len);
             ret = MAnsiToWide(str);
         }
-        else if (mstr_is_valid_utf8((const char *)bin, len))
+        else if (mstr_is_text_utf8((const char *)bin, len))
         {
             // UTF-8
             if (pType)
@@ -417,7 +426,7 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
             }
             ret = MUtf8ToWide(pch, len);
         }
-        else if (::IsTextUnicode(bin, int(len), NULL))
+        else if (mstr_is_text_unicode(bin, int(len)))
         {
             // UTF-16 LE
             if (pType)
