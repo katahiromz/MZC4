@@ -87,6 +87,10 @@ struct MMyNotepad : public MWindowBase
             LoadDx(hwnd, m_targv[1]);
         }
 
+        INT cch = m_edit_ctrl.GetWindowTextLength();
+        m_edit_ctrl.SetSel(cch, cch);
+        ::SetFocus(m_edit_ctrl);
+
         return TRUE;
     }
 
