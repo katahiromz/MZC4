@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    36     /* Version 36 */
+#define MZC4_MWINDOWBASE_HPP_    37     /* Version 37 */
 
 class MWindowBase;
 class MDialogBase;
@@ -763,9 +763,18 @@ MWindowBase::MsgBoxDx(LPCTSTR pszString, LPCTSTR pszTitle,
         Title = LoadStringDx(IDS_APPNAME);
 #else
         if (m_hwnd)
-            Title = GetWindowText();
+        {
+            Title = GetWindowText(GetAncestorDx());
+            size_t i = Title.find(TEXT(" - "));
+            if (i != MString::npos)
+            {
+                Title = Title.substr(i + 3);
+            }
+        }
         else
+        {
             Title = TEXT("ERROR");
+        }
 #endif
     }
     else
