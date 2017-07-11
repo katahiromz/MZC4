@@ -13,7 +13,7 @@ class MToolTipCtrl : public MWindowBase
 {
 public:
     MToolTipCtrl();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     VOID GetText(MString& str, HWND hWnd, UINT nToolID = 0) const;
     BOOL GetToolInfo(LPTOOLINFO lpToolInfo) const;
@@ -66,7 +66,7 @@ inline MToolTipCtrl::MToolTipCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MToolTipCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MToolTipCtrl::GetWndClassNameDx() const
 {
     return TOOLTIPS_CLASS;
 }

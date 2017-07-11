@@ -18,7 +18,7 @@
     {
     public:
         MReBarCtrl();
-        virtual LPCTSTR GetWndClassName() const;
+        virtual LPCTSTR GetWndClassNameDx() const;
 
         virtual HWND SetParent(HWND hWndNewParent);
 
@@ -93,7 +93,7 @@
     {
     }
 
-    inline /*virtual*/ LPCTSTR MReBarCtrl::GetWndClassName() const
+    inline /*virtual*/ LPCTSTR MReBarCtrl::GetWndClassNameDx() const
     {
         return REBARCLASSNAME;
     }

@@ -14,7 +14,7 @@ class MListBox : public MWindowBase
 public:
     MListBox();
 
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     INT GetCount() const;
     INT GetHorizontalExtent() const;
@@ -83,7 +83,7 @@ inline MListBox::MListBox()
 {
 }
 
-inline /*virtual*/ LPCTSTR MListBox::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MListBox::GetWndClassNameDx() const
 {
     return TEXT("LISTBOX");
 }

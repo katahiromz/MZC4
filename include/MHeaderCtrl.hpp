@@ -15,7 +15,7 @@ class MHeaderCtrl : public MWindowBase
 {
 public:
     MHeaderCtrl();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     INT GetItemCount() const;
     BOOL GetItem(INT nPos, HDITEM* pHeaderItem) const;
@@ -51,7 +51,7 @@ inline MHeaderCtrl::MHeaderCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MHeaderCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MHeaderCtrl::GetWndClassNameDx() const
 {
     return WC_HEADER;
 }

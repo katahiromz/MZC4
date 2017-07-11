@@ -16,7 +16,7 @@ class MToolBarCtrl : public MWindowBase
 {
 public:
     MToolBarCtrl();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     virtual HWND SetParent(HWND hWndNewParent);
 
@@ -140,7 +140,7 @@ inline MToolBarCtrl::MToolBarCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MToolBarCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MToolBarCtrl::GetWndClassNameDx() const
 {
     return TOOLBARCLASSNAME;
 }

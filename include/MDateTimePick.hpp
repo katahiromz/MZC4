@@ -18,7 +18,7 @@
     {
     public:
         MDateTimePick();
-        virtual LPCTSTR GetWndClassName() const;
+        virtual LPCTSTR GetWndClassNameDx() const;
 
         BOOL SetFormat(LPCTSTR lpszFormat);
 
@@ -47,7 +47,7 @@
     {
     }
 
-    inline /*virtual*/ LPCTSTR MDateTimePick::GetWndClassName() const
+    inline /*virtual*/ LPCTSTR MDateTimePick::GetWndClassNameDx() const
     {
         return DATETIMEPICK_CLASS;
     }

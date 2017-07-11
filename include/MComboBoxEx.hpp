@@ -14,7 +14,7 @@
     {
     public:
         MComboBoxEx();
-        virtual LPCTSTR GetWndClassName() const;
+        virtual LPCTSTR GetWndClassNameDx() const;
 
         HIMAGELIST GetImageList();
         HIMAGELIST SetImageList(HIMAGELIST hImageList);
@@ -66,7 +66,7 @@
     {
     }
 
-    inline /*virtual*/ LPCTSTR MComboBoxEx::GetWndClassName() const
+    inline /*virtual*/ LPCTSTR MComboBoxEx::GetWndClassNameDx() const
     {
         return WC_COMBOBOXEX;
     }

@@ -13,7 +13,7 @@ class MTreeView : public MWindowBase
 {
 public:
     MTreeView();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     BOOL GetItemRect(HTREEITEM hItem, LPRECT prc, BOOL bTextOnly) const;
     UINT GetCount() const;
@@ -108,7 +108,7 @@ inline MTreeView::MTreeView()
 {
 }
 
-inline /*virtual*/ LPCTSTR MTreeView::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MTreeView::GetWndClassNameDx() const
 {
     return WC_TREEVIEW;
 }

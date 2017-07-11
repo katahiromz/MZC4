@@ -736,7 +736,6 @@ inline BOOL MWindowBase::RegisterClassDx()
 
     WNDCLASSEX wcx;
     LPCTSTR pszClass = GetWndClassNameDx();
-    MessageBox(NULL, pszClass, NULL, 0);
     if (::GetClassInfoEx(NULL, pszClass, &wcx) ||
         ::GetClassInfoEx(hMod, pszClass, &wcx))
     {

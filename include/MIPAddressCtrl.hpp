@@ -18,7 +18,7 @@
     {
     public:
         MIPAddressCtrl();
-        virtual LPCTSTR GetWndClassName() const;
+        virtual LPCTSTR GetWndClassNameDx() const;
 
         BOOL IsBlank() const;
 
@@ -39,7 +39,7 @@
     {
     }
 
-    inline /*virtual*/ LPCTSTR MIPAddressCtrl::GetWndClassName() const
+    inline /*virtual*/ LPCTSTR MIPAddressCtrl::GetWndClassNameDx() const
     {
         return WC_IPADDRESS;
     }

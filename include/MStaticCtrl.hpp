@@ -16,7 +16,7 @@ class MStaticCtrl : public MWindowBase
 public:
     MStaticCtrl();
 
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     HICON GetIcon() const;
     HICON SetIcon(HICON hIcon);
@@ -37,7 +37,7 @@ inline MStaticCtrl::MStaticCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MStaticCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MStaticCtrl::GetWndClassNameDx() const
 {
     return TEXT("STATIC");
 }

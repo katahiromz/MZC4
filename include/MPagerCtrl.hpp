@@ -14,7 +14,7 @@
     {
     public:
         MPagerCtrl();
-        virtual LPCTSTR GetWndClassName() const;
+        virtual LPCTSTR GetWndClassNameDx() const;
 
         INT GetButtonSize() const;
         INT SetButtonSize(INT nButtonSize);
@@ -44,7 +44,7 @@
     {
     }
 
-    inline /*virtual*/ LPCTSTR MPagerCtrl::GetWndClassName() const
+    inline /*virtual*/ LPCTSTR MPagerCtrl::GetWndClassNameDx() const
     {
         return WC_PAGESCROLLER;
     }

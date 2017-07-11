@@ -15,7 +15,7 @@ class MAnimateCtrl : public MWindowBase
 {
 public:
     MAnimateCtrl();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     BOOL Open(LPCTSTR pszFileName);
     BOOL Open(UINT nAVIResourceID);
@@ -31,7 +31,7 @@ inline MAnimateCtrl::MAnimateCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MAnimateCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MAnimateCtrl::GetWndClassNameDx() const
 {
     return ANIMATE_CLASS;
 }

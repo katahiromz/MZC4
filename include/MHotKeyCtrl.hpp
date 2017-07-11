@@ -13,7 +13,7 @@ class MHotKeyCtrl : public MWindowBase
 {
 public:
     MHotKeyCtrl();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     DWORD GetHotKey() const;
     VOID GetHotKey(WORD &wVK_, WORD &wHOTKEYF_flags) const;
@@ -28,7 +28,7 @@ inline MHotKeyCtrl::MHotKeyCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MHotKeyCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MHotKeyCtrl::GetWndClassNameDx() const
 {
     return HOTKEY_CLASS;
 }

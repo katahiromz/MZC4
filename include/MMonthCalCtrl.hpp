@@ -18,7 +18,7 @@
     {
     public:
         MMonthCalCtrl();
-        virtual LPCTSTR GetWndClassName() const;
+        virtual LPCTSTR GetWndClassNameDx() const;
 
         COLORREF GetColor(INT nColorType) const;
         COLORREF SetColor(INT nColorType, COLORREF clr);
@@ -65,7 +65,7 @@
     {
     }
 
-    inline /*virtual*/ LPCTSTR MMonthCalCtrl::GetWndClassName() const
+    inline /*virtual*/ LPCTSTR MMonthCalCtrl::GetWndClassNameDx() const
     {
         return MONTHCAL_CLASS;
     }

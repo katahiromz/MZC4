@@ -22,7 +22,7 @@ class MScrollBar : public MWindowBase
 public:
     MScrollBar();
 
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     INT GetScrollPos() const;
     INT SetScrollPos(INT nPos, BOOL bRedraw = TRUE);
@@ -56,7 +56,7 @@ inline MScrollBar::MScrollBar()
 {
 }
 
-inline /*virtual*/ LPCTSTR MScrollBar::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MScrollBar::GetWndClassNameDx() const
 {
     return TEXT("SCROLLBAR");
 }

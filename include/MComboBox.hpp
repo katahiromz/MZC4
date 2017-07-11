@@ -16,7 +16,7 @@ class MComboBox : public MWindowBase
 public:
     MComboBox();
 
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     INT GetCount() const;
     INT GetCurSel() const;
@@ -81,7 +81,7 @@ inline MComboBox::MComboBox()
 {
 }
 
-inline /*virtual*/ LPCTSTR MComboBox::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MComboBox::GetWndClassNameDx() const
 {
     return TEXT("COMBOBOX");
 }

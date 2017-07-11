@@ -16,7 +16,7 @@ class MButton : public MWindowBase
 public:
     MButton();
 
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     UINT GetState() const;
     VOID SetState(BOOL bHighlight);
@@ -47,7 +47,7 @@ inline MButton::MButton()
 {
 }
 
-inline /*virtual*/ LPCTSTR MButton::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MButton::GetWndClassNameDx() const
 {
     return TEXT("BUTTON");
 }

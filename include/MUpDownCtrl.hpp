@@ -15,7 +15,7 @@ class MUpDownCtrl : public MWindowBase
 {
 public:
     MUpDownCtrl();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     UINT GetAccel(INT nAccel, UDACCEL* pAccel) const;
     BOOL SetAccel(INT nAccel, UDACCEL* pAccel);
@@ -50,7 +50,7 @@ inline MUpDownCtrl::MUpDownCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MUpDownCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MUpDownCtrl::GetWndClassNameDx() const
 {
     return UPDOWN_CLASS;
 }

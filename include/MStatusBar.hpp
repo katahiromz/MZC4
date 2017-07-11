@@ -15,7 +15,7 @@ class MStatusBar : public MWindowBase
 {
 public:
     MStatusBar();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     INT GetText(LPCTSTR lpszText, INT nPane, INT* pnSBT_ = NULL) const;
     MString GetText(INT nPane, INT* pnSBT_ = NULL) const;
@@ -54,7 +54,7 @@ inline MStatusBar::MStatusBar()
 {
 }
 
-inline /*virtual*/ LPCTSTR MStatusBar::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MStatusBar::GetWndClassNameDx() const
 {
     return STATUSCLASSNAME;
 }

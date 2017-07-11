@@ -13,7 +13,7 @@ class MTrackBar : public MWindowBase
 {
 public:
     MTrackBar();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     INT GetLineSize() const;
     INT SetLineSize(INT nSize);
@@ -67,7 +67,7 @@ inline MTrackBar::MTrackBar()
 {
 }
 
-inline /*virtual*/ LPCTSTR MTrackBar::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MTrackBar::GetWndClassNameDx() const
 {
     return TRACKBAR_CLASS;
 }

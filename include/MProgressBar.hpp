@@ -15,7 +15,7 @@ class MProgressBar : public MWindowBase
 {
 public:
     MProgressBar();
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     VOID SetRange(SHORT nLower, SHORT nUpper);
 #if (_WIN32_IE >= 0x0300)
@@ -36,7 +36,7 @@ inline MProgressBar::MProgressBar()
 {
 }
 
-inline /*virtual*/ LPCTSTR MProgressBar::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MProgressBar::GetWndClassNameDx() const
 {
     return PROGRESS_CLASS;
 }

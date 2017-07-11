@@ -17,7 +17,7 @@ class MEditCtrl : public MWindowBase
 public:
     MEditCtrl();
 
-    virtual LPCTSTR GetWndClassName() const;
+    virtual LPCTSTR GetWndClassNameDx() const;
 
     BOOL CanUndo() const;
     INT GetLineCount() const;
@@ -84,7 +84,7 @@ inline MEditCtrl::MEditCtrl()
 {
 }
 
-inline /*virtual*/ LPCTSTR MEditCtrl::GetWndClassName() const
+inline /*virtual*/ LPCTSTR MEditCtrl::GetWndClassNameDx() const
 {
     return TEXT("EDIT");
 }
