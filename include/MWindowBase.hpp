@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    40     /* Version 40 */
+#define MZC4_MWINDOWBASE_HPP_    41     /* Version 41 */
 
 class MWindowBase;
 class MDialogBase;
