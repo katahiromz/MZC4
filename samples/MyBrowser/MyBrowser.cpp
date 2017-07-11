@@ -55,7 +55,7 @@ struct MMyBrowser : public MWindowBase
     {
         m_hFont = GetStockFont(DEFAULT_GUI_FONT);
 
-        MString url = TEXT("about:blank");
+        MString url = TEXT("https://google.co.jp");
 
         DWORD style, exstyle;
 
