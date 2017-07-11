@@ -125,8 +125,7 @@ struct MMyNotepad : public MWindowBase
             m_file_name.c_str(), LoadStringDx(IDS_FILTER));
         if (dialog.GetOpenFileName())
         {
-            MString str = dialog.GetPathName();
-            return LoadDx(hwnd, str.c_str());
+            return LoadDx(hwnd, dialog.GetPathName());
         }
         return FALSE;
     }
@@ -184,7 +183,8 @@ struct MMyNotepad : public MWindowBase
             switch (nID)
             {
             case IDYES:
-                DoSaveAs(hwnd);
+                if (!DoSaveAs(hwnd))
+                    return;
                 break;
             case IDNO:
                 break;

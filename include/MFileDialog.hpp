@@ -30,9 +30,9 @@ public:
     BOOL GetSaveFileName();
 
     // after main
-    MString GetPathName() const;
-    MString GetFileTitle() const;
-    MString GetFileExt() const;
+    LPCTSTR GetPathName() const;
+    LPCTSTR GetFileTitle() const;
+    LPCTSTR GetFileExt() const;
     BOOL GetReadOnly() const;
 
     // dialog properties
@@ -129,19 +129,19 @@ inline BOOL MFileDialog::GetSaveFileName()
     return ::GetSaveFileName(&m_ofn);
 }
 
-inline MString MFileDialog::GetPathName() const
+inline LPCTSTR MFileDialog::GetPathName() const
 {
-    return MString(m_ofn.lpstrFile);
+    return m_ofn.lpstrFile;
 }
 
-inline MString MFileDialog::GetFileTitle() const
+inline LPCTSTR MFileDialog::GetFileTitle() const
 {
-    return MString(&m_ofn.lpstrFile[m_ofn.nFileOffset]);
+    return &m_ofn.lpstrFile[m_ofn.nFileOffset];
 }
 
-inline MString MFileDialog::GetFileExt() const
+inline LPCTSTR MFileDialog::GetFileExt() const
 {
-    return MString(&m_ofn.lpstrFile[m_ofn.nFileExtension]);
+    return &m_ofn.lpstrFile[m_ofn.nFileExtension];
 }
 
 inline MString MFileDialog::GetFilePath() const
