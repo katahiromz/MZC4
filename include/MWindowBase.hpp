@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    38     /* Version 38 */
+#define MZC4_MWINDOWBASE_HPP_    39     /* Version 39 */
 
 class MWindowBase;
 class MDialogBase;
@@ -123,15 +123,20 @@ LPCTSTR MZCAPI GetStringDx(LPCTSTR psz);
 //////////////////////////////////////////////////////////////////////////////
 // Messaging
 
-#define DO_MSG(WM_, fn)    HANDLE_MSG((hwnd), (WM_), (fn))
-
 // LRESULT OnMessage(HWND hwnd, WPARAM wParam, LPARAM lParam);
-#define DO_MESSAGE(uMsg, OnMessage) \
+#define HANDLE_MESSAGE(hwnd, uMsg, OnMessage) \
     case (uMsg): return (OnMessage)((hwnd), (wParam), (lParam))
 
 // LRESULT OnMessageEx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#define DO_MESSAGE_EX(uMsg, OnMessageEx) \
+#define HANDLE_MESSAGE_EX(hwnd, uMsg, OnMessageEx) \
     case (uMsg): return (OnMessageEx)((hwnd), (uMsg), (wParam), (lParam))
+
+#define DO_MSG(WM_, fn) \
+    HANDLE_MSG((hwnd), (WM_), (fn))
+#define DO_MESSAGE(uMsg, OnMessage) \
+    HANDLE_MESSAGE((hwnd), (uMsg), OnMessage)
+#define DO_MESSAGE_EX(uMsg, OnMessageEx) \
+    HANDLE_MESSAGE_EX((hwnd), (uMsg), OnMessage)
 
 //////////////////////////////////////////////////////////////////////////////
 
