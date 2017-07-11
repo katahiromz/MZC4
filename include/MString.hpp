@@ -93,7 +93,7 @@ void mbin_swap_endian(void *ptr, size_t len);
 void mbin_swap_endian(std::string& bin);
 
 std::wstring
-mstr_from_bin(const void *data, size_t len, MTextType *pType = NULL);
+mstr_from_bin(const void *bin, size_t len, MTextType *pType = NULL);
 std::wstring
 mstr_from_bin(const std::string& bin, MTextType *pType = NULL);
 

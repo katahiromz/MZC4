@@ -735,11 +735,15 @@ inline BOOL MWindowBase::RegisterClassDx()
     HMODULE hMod = ::GetModuleHandle(NULL);
 
     WNDCLASSEX wcx;
-    ZeroMemory(&wcx, sizeof(wcx));
     LPCTSTR pszClass = GetWndClassNameDx();
-    if (GetClassInfoEx(hMod, pszClass, &wcx))
+    MessageBox(NULL, pszClass, NULL, 0);
+    if (::GetClassInfoEx(NULL, pszClass, &wcx) ||
+        ::GetClassInfoEx(hMod, pszClass, &wcx))
+    {
         return TRUE;
+    }
 
+    ZeroMemory(&wcx, sizeof(wcx));
     wcx.cbSize = sizeof(wcx);
     wcx.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wcx.lpfnWndProc = MWindowBase::WindowProc;
