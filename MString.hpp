@@ -346,11 +346,11 @@ inline void mbin_swap_endian(std::string& bin)
 }
 
 inline std::wstring
-mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
+mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
 {
     std::wstring ret;
 
-    if (data == NULL || len == 0)
+    if (bin == NULL || len == 0)
     {
         // empty
         if (pType)
@@ -361,7 +361,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
         return ret;
     }
 
-    if (len >= 2 && memcmp(data, "\xFF\xFE", 2) == 0)
+    if (len >= 2 && memcmp(bin, "\xFF\xFE", 2) == 0)
     {
         // UTF-16 LE
         if (pType)
@@ -369,9 +369,9 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             pType->nEncoding = MTENC_UNICODE_LE;
             pType->bHasBOM = true;
         }
-        ret.assign((const WCHAR *)data, len / sizeof(WCHAR));
+        ret.assign((const WCHAR *)bin, len / sizeof(WCHAR));
     }
-    else if (len >= 2 && memcmp(data, "\xFE\xFF", 2) == 0)
+    else if (len >= 2 && memcmp(bin, "\xFE\xFF", 2) == 0)
     {
         // UTF-16 BE
         if (pType)
@@ -379,13 +379,23 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             pType->nEncoding = MTENC_UNICODE_BE;
             pType->bHasBOM = true;
         }
-        ret.assign((const WCHAR *)data, len / sizeof(WCHAR));
+        ret.assign((const WCHAR *)bin, len / sizeof(WCHAR));
         mbin_swap_endian(&ret[0], len);
     }
     else
     {
-        const char *pch = (const char *)data;
-        if (len >= 3 && memcmp(data, "\xEF\xBB\xBF", 3) == 0)
+        const char *pch = (const char *)bin;
+        if (::IsTextUnicode(bin, int(len), NULL))
+        {
+            // UTF-16 LE
+            if (pType)
+            {
+                pType->nEncoding = MTENC_UNICODE_LE;
+                pType->bHasBOM = false;
+            }
+            ret.assign((const WCHAR *)bin, len / sizeof(WCHAR));
+        }
+        else if (len >= 3 && memcmp(bin, "\xEF\xBB\xBF", 3) == 0)
         {
             // UTF-8
             if (pType)
@@ -396,7 +406,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             std::string str(&pch[3], len - 3);
             ret = MUtf8ToWide(str);
         }
-        else if (mstr_is_valid_ascii((const char *)data, len))
+        else if (mstr_is_valid_ascii((const char *)bin, len))
         {
             // ASCII
             if (pType)
@@ -407,7 +417,7 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
             std::string str(pch, len);
             ret = MAnsiToWide(str);
         }
-        else if (mstr_is_valid_utf8((const char *)data, len))
+        else if (mstr_is_valid_utf8((const char *)bin, len))
         {
             // UTF-8
             if (pType)
