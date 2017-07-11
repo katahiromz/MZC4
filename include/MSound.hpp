@@ -469,8 +469,7 @@ inline BOOL MSound::PlayAndWait()
 
 inline BOOL MSound::SaveToWaveFile(LPCTSTR pszFile)
 {
-    BOOL b = PutFileContentsDx(pszFile, &m_binWave[0],
-                               static_cast<DWORD>(m_binWave.size()));
+    BOOL b = PutFileContentsDx(pszFile, &m_binWave[0], m_binWave.size());
     assert(b);
     return b;
 }

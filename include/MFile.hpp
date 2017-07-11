@@ -190,7 +190,7 @@ BOOL DeleteDirectoryDx(LPCTSTR pszDir);
 
 BOOL FileExistsDx(LPCTSTR psz);
 LPBYTE GetFileContentsDx(LPCTSTR pszFile, LPDWORD pdwSize = NULL);
-BOOL PutFileContentsDx(LPCTSTR pszFile, LPCVOID pvContents, DWORD dwSize);
+BOOL PutFileContentsDx(LPCTSTR pszFile, LPCVOID pvContents, size_t size);
 BOOL PutFileContentsDx(LPCTSTR pszFile, LPCTSTR psz);
 BOOL MoveFileDx(LPCTSTR pszExistingFile, LPCTSTR pszNewFile);
 BOOL MoveFileExDx(LPCTSTR pszExistingFile, LPCTSTR pszNewFile, DWORD dwFlags);
@@ -906,14 +906,15 @@ GetFileContentsDx(LPCTSTR pszFile, LPDWORD pdwSize/* = NULL*/)
 }
 
 inline BOOL
-PutFileContentsDx(LPCTSTR pszFile, LPCVOID pvContents, DWORD dwSize)
+PutFileContentsDx(LPCTSTR pszFile, LPCVOID pvContents, size_t size)
 {
     assert(pszFile);
-    assert(pvContents || dwSize == 0);
+    assert(pvContents || size == 0);
 
     HANDLE hFile;
     DWORD cbWritten, dwLastError;
     BOOL bOK = FALSE;
+    DWORD dwSize = (DWORD)size;
 
     hFile = ::CreateFile(pszFile, GENERIC_WRITE, FILE_SHARE_READ, NULL,
         CREATE_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
