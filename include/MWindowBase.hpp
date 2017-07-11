@@ -308,6 +308,12 @@ public:
         CenterWindowDx(m_hwnd);
     }
 
+    INT GetWindowTextLength() const
+    {
+        assert(::IsWindow(Handle()));
+        return ::GetWindowTextLength(Handle());
+    }
+
     static MString GetWindowText(HWND hwnd);
 
     MString GetWindowText() const

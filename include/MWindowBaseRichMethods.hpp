@@ -435,12 +435,6 @@ INT GetWindowRgn(HRGN hRgn) const
     return ::GetWindowRgn(Handle(), hRgn);
 }
 
-INT GetWindowTextLength() const
-{
-    assert(::IsWindow(Handle()));
-    return ::GetWindowTextLength(Handle());
-}
-
 BOOL HideCaret()
 {
     assert(::IsWindow(Handle()));
