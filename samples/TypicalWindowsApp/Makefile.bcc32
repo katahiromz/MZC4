@@ -1,0 +1,28 @@
+# Makefile for Borland C++ Compiler 5.5.1
+
+DOTOBJ = .obj
+DOTEXE = .exe
+
+CXX = bcc32
+RC = brc32
+
+CXXFLAGS = -W -I..\..\include
+RCFLAGS = 
+
+OBJECTS = \
+	build\TypicalWindowsApp$(DOTOBJ)
+
+all: build\TypicalWindowsApp$(DOTEXE)
+
+build:
+	if not exist build mkdir build
+
+build\TypicalWindowsApp$(DOTEXE): $(OBJECTS) build\TypicalWindowsApp_res.res
+	$(CXX) $(CXXFLAGS) -ebuild\TypicalWindowsApp$(DOTEXE) $(OBJECTS)
+	$(RC) $(RCFLAGS) build\TypicalWindowsApp_res.res build\TypicalWindowsApp$(DOTEXE)
+
+build\TypicalWindowsApp$(DOTOBJ): build TypicalWindowsApp.cpp
+	$(CXX) -c $(CXXFLAGS) -obuild\TypicalWindowsApp$(DOTOBJ) TypicalWindowsApp.cpp
+
+build\TypicalWindowsApp_res.res: TypicalWindowsApp_res.rc
+	$(RC) -r $(RCFLAGS) -fobuild\TypicalWindowsApp_res.res TypicalWindowsApp_res.rc

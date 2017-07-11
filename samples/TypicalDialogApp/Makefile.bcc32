@@ -1,0 +1,28 @@
+# Makefile for Borland C++ Compiler 5.5.1
+
+DOTOBJ = .obj
+DOTEXE = .exe
+
+CXX = bcc32
+RC = brc32
+
+CXXFLAGS = -W -I..\..\include
+RCFLAGS = 
+
+OBJECTS = \
+	build\TypicalDialogApp$(DOTOBJ)
+
+all: build\TypicalDialogApp$(DOTEXE)
+
+build:
+	if not exist build mkdir build
+
+build\TypicalDialogApp$(DOTEXE): $(OBJECTS) build\TypicalDialogApp_res.res
+	$(CXX) $(CXXFLAGS) -ebuild\TypicalDialogApp$(DOTEXE) $(OBJECTS)
+	$(RC) $(RCFLAGS) build\TypicalDialogApp_res.res build\TypicalDialogApp$(DOTEXE)
+
+build\TypicalDialogApp$(DOTOBJ): build TypicalDialogApp.cpp
+	$(CXX) -c $(CXXFLAGS) -obuild\TypicalDialogApp$(DOTOBJ) TypicalDialogApp.cpp
+
+build\TypicalDialogApp_res.res: TypicalDialogApp_res.rc
+	$(RC) -r $(RCFLAGS) -fobuild\TypicalDialogApp_res.res TypicalDialogApp_res.rc

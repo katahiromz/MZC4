@@ -1,0 +1,28 @@
+# Makefile for Borland C++ Compiler 5.5.1
+
+DOTOBJ = .obj
+DOTEXE = .exe
+
+CXX = bcc32
+RC = brc32
+
+CXXFLAGS = -W -I..\..\include
+RCFLAGS = 
+
+OBJECTS = \
+	build\MyNotepad$(DOTOBJ)
+
+all: build\MyNotepad$(DOTEXE)
+
+build:
+	if not exist build mkdir build
+
+build\MyNotepad$(DOTEXE): $(OBJECTS) build\MyNotepad_res.res
+	$(CXX) $(CXXFLAGS) -ebuild\MyNotepad$(DOTEXE) $(OBJECTS)
+	$(RC) $(RCFLAGS) build\MyNotepad_res.res build\MyNotepad$(DOTEXE)
+
+build\MyNotepad$(DOTOBJ): build MyNotepad.cpp
+	$(CXX) -c $(CXXFLAGS) -obuild\MyNotepad$(DOTOBJ) MyNotepad.cpp
+
+build\MyNotepad_res.res: MyNotepad_res.rc
+	$(RC) -r $(RCFLAGS) -fobuild\MyNotepad_res.res MyNotepad_res.rc
