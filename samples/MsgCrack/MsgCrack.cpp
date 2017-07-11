@@ -149,6 +149,18 @@ public:
             if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
             {
                 lstrcpy(pch, TEXT("\\..\\..\\DATA.DAT"));
+                if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+                {
+                    lstrcpy(pch, TEXT("\\..\\samples\\MsgCrack\\DATA.DAT"));
+                    if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+                    {
+                        lstrcpy(pch, TEXT("\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
+                        if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+                        {
+                            lstrcpy(pch, TEXT("\\..\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
+                        }
+                    }
+                }
             }
         }
 
