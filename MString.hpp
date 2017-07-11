@@ -30,7 +30,137 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline void mstr_trim(std::string& str, const char *spaces = " \t\r\n")
+enum MTextEncoding
+{
+    MTENC_UNKNOWN = 0,
+    MTENC_ASCII,
+    MTENC_ANSI,
+    MTENC_UNICODE_LE,
+    MTENC_UNICODE_BE,
+    MTENC_UTF8,
+    MTENC_UNICODE = MTENC_UNICODE_LE,
+};
+
+enum MTextNewLineType
+{
+    MNEWLINE_UNKNOWN,
+    MNEWLINE_CRLF,
+    MNEWLINE_LF,
+    MNEWLINE_CR
+};
+
+struct MTextType
+{
+    MTextEncoding       nEncoding;
+    MTextNewLineType    nNewLine;
+    BOOL                bHasBOM;
+};
+
+////////////////////////////////////////////////////////////////////////////
+
+bool mstr_is_valid_ascii(const char *str, int len);
+bool mstr_is_valid_ascii(const std::string& str);
+
+bool mstr_is_valid_ascii(const wchar_t *str, int len);
+bool mstr_is_valid_ascii(const std::wstring& str);
+
+bool mstr_is_valid_utf8(const char *str, int len);
+bool mstr_is_valid_utf8(const std::string& str);
+
+void mstr_trim(std::string& str, const char *spaces = " \t\r\n");
+void mstr_trim(std::wstring& str, const wchar_t *spaces = L" \t\r\n");
+void mstr_trim(char *str, const char *spaces = " \t\r\n");
+void mstr_trim(wchar_t *str, const wchar_t *spaces = L" \t\r\n");
+
+std::string mstr_repeat(const std::string& str, int count);
+std::wstring mstr_repeat(const std::wstring& str, int count);
+
+std::string mstr_escape(const std::string& str);
+std::wstring mstr_escape(const std::wstring& str);
+
+template <typename T_STR>
+bool mstr_replace_all(T_STR& str, const T_STR& from, const T_STR& to);
+template <typename T_STR>
+bool mstr_replace_all(T_STR& str,
+                      const typename T_STR::value_type *from,
+                      const typename T_STR::value_type *to);
+
+void mbin_swap_endian(void *ptr, size_t len);
+void mbin_swap_endian(std::string& bin);
+
+std::wstring
+mstr_from_bin(const void *data, size_t len, MTextType *pType = NULL);
+
+std::string mbin_from_str(const std::wstring& str, const MTextType& type);
+
+std::string mstr_quote(const std::string& str);
+std::wstring mstr_quote(const std::wstring& str);
+
+template <typename T_STR_CONTAINER, typename Pred>
+void mstr_split(T_STR_CONTAINER& container,
+                const typename T_STR_CONTAINER::value_type& str,
+                const typename T_STR_CONTAINER::value_type& chars);
+
+template <typename T_STR_CONTAINER>
+typename T_STR_CONTAINER::value_type
+mstr_join(const T_STR_CONTAINER& container,
+          const typename T_STR_CONTAINER::value_type& sep);
+
+////////////////////////////////////////////////////////////////////////////
+
+inline bool mstr_is_valid_ascii(const char *str, int len)
+{
+    if (len == 0)
+        return true;
+
+    while (len-- > 0)
+    {
+        if ((unsigned char)*str > 0x7F)
+            return false;
+        ++str;
+    }
+    return true;
+}
+
+inline bool mstr_is_valid_ascii(const std::string& str)
+{
+    return mstr_is_valid_ascii(&str[0], int(str.size()));
+}
+
+inline bool mstr_is_valid_ascii(const wchar_t *str, int len)
+{
+    if (len == 0)
+        return true;
+
+    while (len-- > 0)
+    {
+        if ((unsigned short)*str > 0x7F)
+            return false;
+        ++str;
+    }
+    return true;
+}
+
+inline bool mstr_is_valid_ascii(const std::wstring& str)
+{
+    return mstr_is_valid_ascii(&str[0], int(str.size()));
+}
+
+inline bool mstr_is_valid_utf8(const char *str, int len)
+{
+    if (len == 0)
+        return true;
+
+    len = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str, len, NULL, 0);
+    return len != 0;
+}
+
+inline bool mstr_is_valid_utf8(const std::string& str)
+{
+    return mstr_is_valid_utf8(&str[0], int(str.size()));
+}
+
+inline void mstr_trim(std::string& str, const char *spaces/* = " \t\r\n"*/)
 {
     size_t i = str.find_first_not_of(spaces);
     size_t j = str.find_last_not_of(spaces);
@@ -44,7 +174,7 @@ inline void mstr_trim(std::string& str, const char *spaces = " \t\r\n")
     }
 }
 
-inline void mstr_trim(std::wstring& str, const wchar_t *spaces = L" \t\r\n")
+inline void mstr_trim(std::wstring& str, const wchar_t *spaces/* = L" \t\r\n"*/)
 {
     size_t i = str.find_first_not_of(spaces);
     size_t j = str.find_last_not_of(spaces);
@@ -58,14 +188,14 @@ inline void mstr_trim(std::wstring& str, const wchar_t *spaces = L" \t\r\n")
     }
 }
 
-inline void mstr_trim(char *str, const char *spaces = " \t\r\n")
+inline void mstr_trim(char *str, const char *spaces/* = " \t\r\n"*/)
 {
     std::string s = str;
     mstr_trim(s, spaces);
     std::strcpy(str, s.c_str());
 }
 
-inline void mstr_trim(wchar_t *str, const wchar_t *spaces = L" \t\r\n")
+inline void mstr_trim(wchar_t *str, const wchar_t *spaces/* = L" \t\r\n"*/)
 {
     std::wstring s = str;
     mstr_trim(s, spaces);
@@ -167,29 +297,32 @@ inline std::wstring mstr_escape(const std::wstring& str)
 }
 
 template <typename T_STR>
-inline void
+inline bool
 mstr_replace_all(T_STR& str, const T_STR& from, const T_STR& to)
 {
+    bool ret = false;
     size_t i = 0;
     for (;;) {
         i = str.find(from, i);
         if (i == T_STR::npos)
             break;
+        ret = true;
         str.replace(i, from.size(), to);
         i += to.size();
     }
+    return ret;
 }
 template <typename T_STR>
-inline void
+inline bool
 mstr_replace_all(T_STR& str,
                  const typename T_STR::value_type *from,
                  const typename T_STR::value_type *to)
 {
-    mstr_replace_all(str, T_STR(from), T_STR(to));
+    return mstr_replace_all(str, T_STR(from), T_STR(to));
 }
 
 inline void
-mem_swap_endian(void *ptr, long len)
+mbin_swap_endian(void *ptr, size_t len)
 {
     char *pb = (char *)ptr;
     len /= 2;
@@ -203,37 +336,183 @@ mem_swap_endian(void *ptr, long len)
     }
 }
 
+inline void mbin_swap_endian(std::string& bin)
+{
+    mbin_swap_endian(&bin[0], bin.size());
+}
+
 inline std::wstring
-mstr_from_binary(const std::vector<BYTE>& data)
+mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
 {
     std::wstring ret;
-    if (data.size() >= 2 && memcmp(&data[0], "\xFF\xFE", 2) == 0)
+
+    if (pType)
+    {
+        pType->nNewLine = MNEWLINE_UNKNOWN;
+        pType->nEncoding = MTENC_UNKNOWN;
+    }
+
+    if (data == NULL || len == 0)
+    {
+        // empty
+        if (pType)
+        {
+            pType->nNewLine = MNEWLINE_CRLF;
+            pType->nEncoding = MTENC_ASCII;
+        }
+        return ret;
+    }
+
+    if (len >= 2 && memcmp(data, "\xFF\xFE", 2) == 0)
     {
         // UTF-16 LE
-        ret.assign((const WCHAR *)&data[0], data.size() / sizeof(WCHAR));
+        if (pType)
+        {
+            pType->nEncoding = MTENC_UNICODE_LE;
+            pType->bHasBOM = TRUE;
+        }
+        ret.assign((const WCHAR *)data, len / sizeof(WCHAR));
     }
-    else if (data.size() >= 2 && memcmp(&data[0], "\xFE\xFF", 2) == 0)
+    else if (len >= 2 && memcmp(data, "\xFE\xFF", 2) == 0)
     {
         // UTF-16 BE
-        ret.assign((const WCHAR *)&data[0], data.size() / sizeof(WCHAR));
-        mem_swap_endian(&ret[0], ret.size() * sizeof(WCHAR));
-    }
-    else if (data.size() >= 3 && memcmp(&data[0], "\xEF\xBB\xBF", 3) == 0)
-    {
-        // UTF-8
-        std::string str((const char *)&data[3], data.size() - 3);
-        ret = MUtf8ToWide(str);
+        if (pType)
+        {
+            pType->nEncoding = MTENC_UNICODE_BE;
+            pType->bHasBOM = TRUE;
+        }
+        ret.assign((const WCHAR *)data, len / sizeof(WCHAR));
+        mbin_swap_endian(&ret[0], len);
     }
     else
     {
-        // ANSI
-        std::string str((const char *)&data[0], data.size());
-        ret = MAnsiToWide(str);
+        const char *pch = (const char *)data;
+        if (len >= 3 && memcmp(data, "\xEF\xBB\xBF", 3) == 0)
+        {
+            // UTF-8
+            if (pType)
+            {
+                pType->nEncoding = MTENC_UTF8;
+                pType->bHasBOM = TRUE;
+            }
+            std::string str(&pch[3], len - 3);
+            ret = MUtf8ToWide(str);
+        }
+        else if (mstr_is_valid_ascii((const char *)data, len))
+        {
+            // ASCII
+            if (pType)
+            {
+                pType->nEncoding = MTENC_ASCII;
+                pType->bHasBOM = FALSE;
+            }
+            std::string str(pch, len);
+            ret = MAnsiToWide(str);
+        }
+        else if (mstr_is_valid_utf8((const char *)data, len))
+        {
+            // UTF-8
+            if (pType)
+            {
+                pType->nEncoding = MTENC_UTF8;
+                pType->bHasBOM = FALSE;
+            }
+            ret = MUtf8ToWide(pch, len);
+        }
+        else
+        {
+            // ANSI
+            if (pType)
+            {
+                pType->nEncoding = MTENC_ANSI;
+                pType->bHasBOM = FALSE;
+            }
+            std::string str(pch, len);
+            ret = MAnsiToWide(str);
+        }
     }
 
-    mstr_replace_all(ret, L"\r\n", L"\n");
-    mstr_replace_all(ret, L"\r", L"\n");
-    mstr_replace_all(ret, L"\n", L"\r\n");
+    if (mstr_replace_all(ret, L"\r\n", L"\n"))
+    {
+        if (pType)
+        {
+            pType->nNewLine = MNEWLINE_CRLF;
+        }
+    }
+    if (mstr_replace_all(ret, L"\r", L"\n"))
+    {
+        if (pType && pType->nNewLine != MNEWLINE_CRLF)
+        {
+            pType->nNewLine = MNEWLINE_CR;
+        }
+    }
+    if (mstr_replace_all(ret, L"\n", L"\r\n"))
+    {
+        if (pType && pType->nNewLine != MNEWLINE_CRLF)
+        {
+            pType->nNewLine = MNEWLINE_LF;
+        }
+    }
+
+    return ret;
+}
+
+inline std::string
+mbin_from_str(const std::wstring& str, const MTextType& type)
+{
+    std::string ret;
+    std::wstring str2 = str;
+
+    switch (type.nNewLine)
+    {
+    case MNEWLINE_CRLF:
+    case MNEWLINE_UNKNOWN:
+        mstr_replace_all(str2, L"\r\n", L"\n");
+        mstr_replace_all(str2, L"\r", L"\r\n");
+        mstr_replace_all(str2, L"\n", L"\r\n");
+        break;
+    case MNEWLINE_LF:
+        mstr_replace_all(str2, L"\r\n", L"\n");
+        mstr_replace_all(str2, L"\r", L"\n");
+        break;
+    case MNEWLINE_CR:
+        mstr_replace_all(str2, L"\r\n", L"\r");
+        mstr_replace_all(str2, L"\n", L"\r");
+        break;
+    }
+
+    switch (type.nEncoding)
+    {
+    case MTENC_UNKNOWN:
+    case MTENC_ASCII:
+    case MTENC_ANSI:
+    default:
+        ret += MWideToAnsi(str2);
+        break;
+    case MTENC_UNICODE_LE:
+        if (type.bHasBOM)
+        {
+            ret += "\xFF\xFE";
+        }
+        ret.append((const char *)str2.c_str(), str2.size() * sizeof(wchar_t));
+        break;
+    case MTENC_UNICODE_BE:
+        if (type.bHasBOM)
+        {
+            ret += "\xFF\xFE";
+        }
+        ret.append((const char *)str2.c_str(), str2.size() * sizeof(wchar_t));
+        mbin_swap_endian(ret);
+        break;
+    case MTENC_UTF8:
+        if (type.bHasBOM)
+        {
+            ret += "\xEF\xBB\xBF";
+        }
+        ret += MWideToUtf8(str2);
+        break;
+    }
+
     return ret;
 }
 

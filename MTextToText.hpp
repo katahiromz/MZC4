@@ -162,6 +162,7 @@ protected:
 
 class MWideToUtf8
 {
+public:
     MWideToUtf8() { }
     MWideToUtf8(const wchar_t *str);
     MWideToUtf8(const wchar_t *str, INT count);
