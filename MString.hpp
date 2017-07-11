@@ -147,7 +147,7 @@ inline bool mstr_is_valid_ascii(const wchar_t *str, size_t len)
 
 inline bool mstr_is_valid_ascii(const std::wstring& str)
 {
-    return mstr_is_valid_ascii(&str[0], int(str.size()));
+    return mstr_is_valid_ascii(&str[0], str.size());
 }
 
 inline bool mstr_is_valid_utf8(const char *str, size_t len)
