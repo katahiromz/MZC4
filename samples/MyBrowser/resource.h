@@ -12,6 +12,7 @@
 #define IDM_BLANK       5
 #define IDM_ADDRESS     6
 #define IDM_GO          7
+#define IDM_REFRESH     8
 
 #define IDD_ABOUTBOX 1
 

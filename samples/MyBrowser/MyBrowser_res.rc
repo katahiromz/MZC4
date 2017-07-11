@@ -50,6 +50,8 @@ BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
     "D",            IDM_ADDRESS,            VIRTKEY,  ALT
+    "R",            IDM_REFRESH,            VIRTKEY, CONTROL
+    VK_F5,          IDM_REFRESH,            VIRTKEY
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -65,6 +67,8 @@ BEGIN
         MENUITEM "Google",                  IDM_GOOGLE
         MENUITEM "Yahoo!",                  IDM_YAHOO
         MENUITEM "Blank",                   IDM_BLANK
+        MENUITEM SEPARATOR
+        MENUITEM "Refresh\tF5",             IDM_REFRESH
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",           IDM_EXIT
     END

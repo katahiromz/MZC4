@@ -20,6 +20,7 @@ struct MMyBrowser : public MWindowBase
     MEditCtrl   m_address_box;  // the address box
     MButton     m_go_button;    // the "Go!" button
     MStatusBar  m_status_bar;   // the status bar
+    MString     m_url;          // the URL
 
     // constructors
     MMyBrowser(int argc, TCHAR **targv, HINSTANCE hInst) :
@@ -55,7 +56,7 @@ struct MMyBrowser : public MWindowBase
     {
         m_hFont = GetStockFont(DEFAULT_GUI_FONT);
 
-        MString url = TEXT("https://google.co.jp");
+        m_url = TEXT("https://google.co.jp");
 
         DWORD style, exstyle;
 
@@ -67,7 +68,7 @@ struct MMyBrowser : public MWindowBase
         style = ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | 
                 WS_BORDER | WS_TABSTOP | WS_VISIBLE;
         exstyle = WS_EX_CLIENTEDGE;
-        if (!m_address_box.CreateAsChildDx(hwnd, url.c_str(), style, exstyle, edt1))
+        if (!m_address_box.CreateAsChildDx(hwnd, m_url.c_str(), style, exstyle, edt1))
             return FALSE;
 
         style = BS_DEFPUSHBUTTON | BS_CENTER | WS_TABSTOP | WS_VISIBLE;
@@ -80,7 +81,7 @@ struct MMyBrowser : public MWindowBase
         if (!m_status_bar.CreateAsChildDx(hwnd, NULL, style, exstyle, ctl1))
             return FALSE;
 
-        if (!m_browser.Create(hwnd, url.c_str()))
+        if (!m_browser.Create(hwnd, m_url.c_str()))
             return FALSE;
 
         SetWindowFont(m_static, m_hFont, TRUE);
@@ -181,6 +182,7 @@ struct MMyBrowser : public MWindowBase
                 ::SetFocus(hwnd);
             }
         }
+        m_url = pszURL;
         m_address_box.SetWindowText(pszURL);
         m_browser.Navigate(pszURL);
     }
@@ -204,6 +206,11 @@ struct MMyBrowser : public MWindowBase
     void OnBlank()
     {
         Navigate(TEXT("about:blank"));
+    }
+
+    void OnRefresh()
+    {
+        Navigate(m_url.c_str());
     }
 
     void OnAddress()
@@ -247,6 +254,9 @@ struct MMyBrowser : public MWindowBase
         case IDM_GO:
         case psh1:
             OnGo();
+            break;
+        case IDM_REFRESH:
+            OnRefresh();
             break;
         }
         m_status_bar.SetText(TEXT("Ready"));
