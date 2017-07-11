@@ -17,6 +17,7 @@
 #endif
 
 #define IDS_APPNAME     1
+#define IDS_FILTER      3
 
 //////////////////////////////////////////////////////////////////////////////
 // Next default values for new objects

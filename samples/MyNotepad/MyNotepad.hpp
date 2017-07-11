@@ -13,7 +13,7 @@
 #include "MWindowBase.hpp"      // MZC4 MWindowBase
 #include "MString.hpp"          // MZC4 MString
 #include "MEditCtrl.hpp"        // MZC4 MEditCtrl
-#include "MFile.hpp"            // MZC4 MFile
+#include "MFileDialog.hpp"      // MZC4 MFileDialog
 
 //////////////////////////////////////////////////////////////////////////////
 

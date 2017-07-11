@@ -982,7 +982,6 @@ MDialogBase::DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         assert(lParam);
         base = (MDialogBase *)lParam;
-        assert(base);
         if (base->m_bModal)
         {
             base->Attach(hwnd);

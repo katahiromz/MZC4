@@ -16,6 +16,7 @@ struct MMyNotepad : public MWindowBase
     HACCEL      m_hAccel;       // the accelerator handle
     MEditCtrl   m_edit_ctrl;
     MTextType   m_text_type;
+    MString     m_file_name;
 
     // constructors
     MMyNotepad(int argc, TCHAR **targv, HINSTANCE hInst) :
@@ -89,6 +90,7 @@ struct MMyNotepad : public MWindowBase
         m_edit_ctrl.SetWindowText(text);
         delete[] bin;
 
+        m_file_name = pszFileName;
         return TRUE;
     }
 
@@ -97,16 +99,35 @@ struct MMyNotepad : public MWindowBase
         MStringW wide(MTextToWide(m_edit_ctrl.GetWindowText()));
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
         std::string bin = mbin_from_str(wide, m_text_type);
-        return PutFileContentsDx(pszFileName, &bin[0], DWORD(bin.size()));
+        if (PutFileContentsDx(pszFileName, &bin[0], DWORD(bin.size())))
+        {
+            m_file_name = pszFileName;
+            return TRUE;
+        }
+        return FALSE;
     }
 
     BOOL DoOpen(HWND hwnd)
     {
+        MFileDialog dialog(hwnd, TEXT("txt"),
+            m_file_name.c_str(), LoadStringDx(IDS_FILTER));
+        if (dialog.GetOpenFileName())
+        {
+            MString str = dialog.GetPathName();
+            return LoadDx(hwnd, str.c_str());
+        }
 		return FALSE;
     }
 
     BOOL DoSaveAs(HWND hwnd)
     {
+        MFileDialog dialog(hwnd, TEXT("txt"),
+            m_file_name.c_str(), LoadStringDx(IDS_FILTER));
+        if (dialog.GetSaveFileName())
+        {
+            MString str = dialog.GetPathName();
+            return SaveDx(hwnd, str.c_str());
+        }
 		return FALSE;
     }
 

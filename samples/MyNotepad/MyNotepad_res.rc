@@ -97,7 +97,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 STRINGTABLE
 BEGIN
-    IDS_APPNAME,   "MyNotepad"
+    IDS_APPNAME,    "MyNotepad"
+    IDS_FILTER,     "Text Files (*.txt;*.log)|*.txt;*.log|All Files (*.*)|*.*"
 END
 
 /////////////////////////////////////////////////////////////////////////////

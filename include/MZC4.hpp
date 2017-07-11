@@ -40,6 +40,7 @@
 #include "MEnhMetaDC.hpp"
 #include "MEvent.hpp"
 #include "MFile.hpp"
+#include "MFileDialog.hpp"
 #include "MFileLister.hpp"
 #include "MFileVersionInfo.hpp"
 #include "MFindReplaceDialog.hpp"
