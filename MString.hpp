@@ -100,7 +100,7 @@ std::string mbin_from_str(const std::wstring& str, const MTextType& type);
 std::string mstr_quote(const std::string& str);
 std::wstring mstr_quote(const std::wstring& str);
 
-template <typename T_STR_CONTAINER, typename Pred>
+template <typename T_STR_CONTAINER>
 void mstr_split(T_STR_CONTAINER& container,
                 const typename T_STR_CONTAINER::value_type& str,
                 const typename T_STR_CONTAINER::value_type& chars);
@@ -541,7 +541,7 @@ inline std::wstring mstr_quote(const std::wstring& str)
     return ret;
 }
 
-template <typename T_STR_CONTAINER, typename Pred>
+template <typename T_STR_CONTAINER>
 inline void
 mstr_split(T_STR_CONTAINER& container,
            const typename T_STR_CONTAINER::value_type& str,
