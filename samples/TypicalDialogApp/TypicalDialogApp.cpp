@@ -78,6 +78,7 @@ struct MTypicalDialogApp : public MDialogBase
             DO_MSG(WM_INITDIALOG, OnInitDialog);
             DO_MSG(WM_COMMAND, OnCommand);
             DO_MSG(WM_SIZE, OnSize);
+            DO_MSG(WM_GETMINMAXINFO, OnGetMinMaxInfo);
         }
         return DefaultProcDx();
     }
@@ -85,6 +86,13 @@ struct MTypicalDialogApp : public MDialogBase
     void OnSize(HWND hwnd, UINT state, int cx, int cy)
     {
         m_resizable.OnSize();
+    }
+
+    void OnGetMinMaxInfo(HWND hwnd, LPMINMAXINFO lpMinMaxInfo)
+    {
+        MMinMaxInfo *pinfo = (MMinMaxInfo *)lpMinMaxInfo;
+        pinfo->SetMinTrackSize(MSize(200, 200));
+        pinfo->FixWindowRect(m_hwnd);
     }
 }; // MTypicalDialogApp
 
