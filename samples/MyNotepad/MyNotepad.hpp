@@ -1,8 +1,8 @@
-// TypicalWindowsApp.h --- A Win32 application                  -*- C++ -*-
+// MyNotepad.h --- A Win32 application                  -*- C++ -*-
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef TYPICALWINDOWSAPP_HPP_
-#define TYPICALWINDOWSAPP_HPP_
+#ifndef MYNOTEPAD_HPP_
+#define MYNOTEPAD_HPP_
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,10 @@
 #include "resource.h"           // local resource IDs
 
 #include "MWindowBase.hpp"      // MZC4 MWindowBase
+#include "MString.hpp"          // MZC4 MString
+#include "MEditCtrl.hpp"        // MZC4 MEditCtrl
+#include "MFile.hpp"            // MZC4 MFile
 
 //////////////////////////////////////////////////////////////////////////////
 
-#endif  // ndef TYPICALWINDOWSAPP_HPP_
+#endif  // ndef MYNOTEPAD_HPP_
