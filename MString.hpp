@@ -385,17 +385,7 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
     else
     {
         const char *pch = (const char *)bin;
-        if (::IsTextUnicode(bin, int(len), NULL))
-        {
-            // UTF-16 LE
-            if (pType)
-            {
-                pType->nEncoding = MTENC_UNICODE_LE;
-                pType->bHasBOM = false;
-            }
-            ret.assign((const WCHAR *)bin, len / sizeof(WCHAR));
-        }
-        else if (len >= 3 && memcmp(bin, "\xEF\xBB\xBF", 3) == 0)
+        if (len >= 3 && memcmp(bin, "\xEF\xBB\xBF", 3) == 0)
         {
             // UTF-8
             if (pType)
@@ -426,6 +416,16 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
                 pType->bHasBOM = false;
             }
             ret = MUtf8ToWide(pch, len);
+        }
+        else if (::IsTextUnicode(bin, int(len), NULL))
+        {
+            // UTF-16 LE
+            if (pType)
+            {
+                pType->nEncoding = MTENC_UNICODE_LE;
+                pType->bHasBOM = false;
+            }
+            ret.assign((const WCHAR *)bin, len / sizeof(WCHAR));
         }
         else
         {
