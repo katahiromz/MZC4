@@ -91,6 +91,8 @@ void mbin_swap_endian(std::string& bin);
 
 std::wstring
 mstr_from_bin(const void *data, size_t len, MTextType *pType = NULL);
+std::wstring
+mstr_from_bin(const std::string& bin, MTextType *pType = NULL);
 
 std::string mbin_from_str(const std::wstring& str, const MTextType& type);
 
@@ -453,6 +455,12 @@ mstr_from_bin(const void *data, size_t len, MTextType *pType/* = NULL*/)
     }
 
     return ret;
+}
+
+inline std::wstring
+mstr_from_bin(const std::string& bin, MTextType *pType/* = NULL*/)
+{
+    return mstr_from_bin(&bin[0], bin.size(), pType);
 }
 
 inline std::string
