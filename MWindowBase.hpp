@@ -62,8 +62,6 @@ class MDialogBase;
 #include <cassert>          // assert
 #include <cstring>          // C string library
 
-#include "resource.h"       // local resource IDs
-
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef _countof
