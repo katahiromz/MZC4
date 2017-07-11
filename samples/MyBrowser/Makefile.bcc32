@@ -1,0 +1,28 @@
+# Makefile for Borland C++ Compiler 5.5.1
+
+DOTOBJ = .obj
+DOTEXE = .exe
+
+CXX = bcc32
+RC = brc32
+
+CXXFLAGS = -W -I..\..\include
+RCFLAGS = 
+
+OBJECTS = \
+	build\MyBrowser$(DOTOBJ)
+
+all: build\MyBrowser$(DOTEXE)
+
+build:
+	if not exist build mkdir build
+
+build\MyBrowser$(DOTEXE): $(OBJECTS) build\MyBrowser_res.res
+	$(CXX) $(CXXFLAGS) -ebuild\MyBrowser$(DOTEXE) $(OBJECTS)
+	$(RC) $(RCFLAGS) build\MyBrowser_res.res build\MyBrowser$(DOTEXE)
+
+build\MyBrowser$(DOTOBJ): build MyBrowser.cpp
+	$(CXX) -c $(CXXFLAGS) -obuild\MyBrowser$(DOTOBJ) MyBrowser.cpp
+
+build\MyBrowser_res.res: MyBrowser_res.rc
+	$(RC) -r $(RCFLAGS) -fobuild\MyBrowser_res.res MyBrowser_res.rc

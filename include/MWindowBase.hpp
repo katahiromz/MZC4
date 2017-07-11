@@ -235,6 +235,11 @@ public:
                         INT x = CW_USEDEFAULT, INT y = CW_USEDEFAULT,
                         INT cx = CW_USEDEFAULT, INT cy = CW_USEDEFAULT,
                         HMENU hMenu = NULL);
+    BOOL CreateAsChildDx(HWND hwndParent, LPCTSTR pszText,
+                         DWORD Style = WS_CHILD, DWORD ExStyle = 0,
+                         INT nCtrlID = -1,
+                         INT x = CW_USEDEFAULT, INT y = CW_USEDEFAULT,
+                         INT cx = CW_USEDEFAULT, INT cy = CW_USEDEFAULT);
 
     BOOL Attach(HWND hwnd)
     {
@@ -784,6 +789,19 @@ inline BOOL MWindowBase::CreateWindowDx(
         GetStringDx(pszText), Style, x, y, cx, cy, hwndParent,
         hMenu, GetModuleHandle(NULL), this);
     return Attach(hwnd);
+}
+
+inline BOOL
+MWindowBase::CreateAsChildDx(
+    HWND hwndParent, LPCTSTR pszText,
+    DWORD Style/* = WS_CHILD*/,
+    DWORD ExStyle/* = 0*/, INT nCtrlID/* = -1*/,
+    INT x/* = CW_USEDEFAULT*/, INT y/* = CW_USEDEFAULT*/,
+    INT cx/* = CW_USEDEFAULT*/, INT cy/* = CW_USEDEFAULT*/)
+{
+    Style |= WS_CHILD;
+    return CreateWindowDx(hwndParent, pszText, Style, ExStyle,
+        x, y, cx, cy, (HMENU)(INT_PTR)nCtrlID);
 }
 
 inline INT
