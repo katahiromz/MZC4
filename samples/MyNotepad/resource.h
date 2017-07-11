@@ -11,6 +11,13 @@
 #define IDM_SAVEAS      4
 #define IDM_SETCOLOR    5
 #define IDM_SETFONT     6
+#define IDM_CUT         7
+#define IDM_COPY        8
+#define IDM_PASTE       9
+#define IDM_DELETE      10
+#define IDM_SELECTALL   11
+#define IDM_UNDO        12
+#define IDM_DATETIME    13
 
 #define IDD_ABOUTBOX 1
 

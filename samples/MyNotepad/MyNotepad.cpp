@@ -70,7 +70,7 @@ struct MMyNotepad : public MWindowBase
     {
         ::DragAcceptFiles(hwnd, TRUE);
 
-        DWORD style = ES_AUTOHSCROLL | ES_LEFT | ES_MULTILINE | ES_NOHIDESEL |
+        DWORD style = ES_AUTOHSCROLL | ES_LEFT | ES_MULTILINE | 
                       WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL;
         DWORD exstyle = WS_EX_CLIENTEDGE;
 
@@ -275,6 +275,21 @@ struct MMyNotepad : public MWindowBase
         }
     }
 
+    void OnDateTime()
+    {
+        TCHAR szDate[64], szTime[64];
+        ::GetDateFormat(LOCALE_USER_DEFAULT, 0,
+            NULL, TEXT("yyyy/MM/dd"), szDate, _countof(szDate));
+        ::GetTimeFormat(LOCALE_USER_DEFAULT, 0,
+            NULL, TEXT("HH:mm:ss"), szTime, _countof(szTime));
+
+        MString str = szDate;
+        str += TEXT(" ");
+        str += szTime;
+        m_edit_ctrl.ReplaceSel(str.c_str(), TRUE);
+        ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+    }
+
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     {
         switch (id)
@@ -296,6 +311,33 @@ struct MMyNotepad : public MWindowBase
             break;
         case IDM_ABOUT:
             OnAbout();
+            break;
+        case IDM_CUT:
+            m_edit_ctrl.Cut();
+            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+            break;
+        case IDM_COPY:
+            m_edit_ctrl.Copy();
+            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+            break;
+        case IDM_PASTE:
+            m_edit_ctrl.Paste();
+            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+            break;
+        case IDM_DELETE:
+            m_edit_ctrl.Clear();
+            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+            break;
+        case IDM_SELECTALL:
+            m_edit_ctrl.SelectAll();
+            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+            break;
+        case IDM_UNDO:
+            m_edit_ctrl.Undo();
+            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
+            break;
+        case IDM_DATETIME:
+            OnDateTime();
             break;
         }
     }

@@ -51,6 +51,16 @@ BEGIN
     "/",            IDM_ABOUT,              ASCII,  ALT
     "O",            IDM_OPEN,               CONTROL, VIRTKEY
     "S",            IDM_SAVEAS,             CONTROL, VIRTKEY
+    "Z",            IDM_UNDO,               CONTROL, VIRTKEY
+    "X",            IDM_CUT,                CONTROL, VIRTKEY
+    "C",            IDM_COPY,               CONTROL, VIRTKEY
+    "V",            IDM_PASTE,              CONTROL, VIRTKEY
+    VK_DELETE,      IDM_DELETE,             VIRTKEY
+    "A",            IDM_SELECTALL,          CONTROL, VIRTKEY
+    VK_DELETE,      IDM_CUT,                SHIFT, CONTROL, VIRTKEY
+    VK_INSERT,      IDM_COPY,               CONTROL, VIRTKEY
+    VK_INSERT,      IDM_PASTE,              SHIFT, VIRTKEY
+    VK_F5,          IDM_DATETIME,           VIRTKEY
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,6 +80,19 @@ BEGIN
         MENUITEM "Set &Font",               IDM_SETFONT
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",           IDM_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",           IDM_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cut\tCtrl+X",             IDM_CUT
+        MENUITEM "Copy\tCtrl+C",            IDM_COPY
+        MENUITEM "Paste\tCtrl+V",           IDM_PASTE
+        MENUITEM "Delete\tDel",             IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select All\tCtrl+A",      IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Date and Time\tF5",       IDM_DATETIME
     END
     POPUP "&Help"
     BEGIN
