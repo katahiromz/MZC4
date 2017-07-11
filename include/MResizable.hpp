@@ -240,7 +240,8 @@ inline VOID MResizable::ModifyParentStyle(BOOL bEnableResize)
     ::InvalidateRect(m_hwndParent, NULL, TRUE);
 }
 
-inline VOID MResizable::EnableResize(BOOL bEnableResize, BOOL bShowSizeGrip/* = TRUE*/)
+inline VOID
+MResizable::EnableResize(BOOL bEnableResize, BOOL bShowSizeGrip/* = TRUE*/)
 {
     ShowSizeGrip(bEnableResize && bShowSizeGrip);
     ModifyParentStyle(bEnableResize);
@@ -248,7 +249,7 @@ inline VOID MResizable::EnableResize(BOOL bEnableResize, BOOL bShowSizeGrip/* = 
 }
 
 inline VOID MResizable::OnParentCreate(HWND hwndParent, BOOL bEnableResize,
-                        BOOL bShowSizeGrip/* = TRUE*/)
+                                       BOOL bShowSizeGrip/* = TRUE*/)
 {
     assert(hwndParent);
     assert(::IsWindow(hwndParent));
