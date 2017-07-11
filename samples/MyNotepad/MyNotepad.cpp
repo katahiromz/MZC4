@@ -65,8 +65,8 @@ struct MMyNotepad : public MWindowBase
     {
         ::DragAcceptFiles(hwnd, TRUE);
 
-        DWORD style = ES_AUTOHSCROLL | ES_LEFT | ES_MULTILINE | 
-                      WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL;
+        DWORD style = ES_LEFT | ES_MULTILINE | WS_CHILD | WS_VISIBLE |
+                      WS_TABSTOP | WS_VSCROLL;
         DWORD exstyle = WS_EX_CLIENTEDGE;
 
         if (!m_edit_ctrl.CreateWindowDx(hwnd, TEXT("This is a sample."), style, exstyle))
