@@ -885,11 +885,18 @@ MWindowBase::SetWindowPosDx(
 
 inline /*static*/ HWND MWindowBase::GetAncestorDx(HWND hTarget)
 {
+    HWND hwndParent;
     for (;;)
     {
-        HWND hwndParent = ::GetParent(hTarget);
+        hwndParent = ::GetParent(hTarget);
         if (hwndParent == NULL)
-            break;
+        {
+            hwndParent = ::GetWindow(hTarget, GW_OWNER);
+            if (hwndParent == NULL)
+            {
+                break;
+            }
+        }
         hTarget = hwndParent;
     }
     return hTarget;
