@@ -209,7 +209,7 @@ inline void mstr_trim(wchar_t *str, const wchar_t *spaces/* = L" \t\r\n"*/)
 inline std::string mstr_repeat(const std::string& str, size_t count)
 {
     std::string ret;
-    for (size_t i = 0; i < count; ++i)
+    while (count-- > 0)
     {
         ret += str;
     }
@@ -219,7 +219,7 @@ inline std::string mstr_repeat(const std::string& str, size_t count)
 inline std::wstring mstr_repeat(const std::wstring& str, size_t count)
 {
     std::wstring ret;
-    for (size_t i = 0; i < count; ++i)
+    while (count-- > 0)
     {
         ret += str;
     }
