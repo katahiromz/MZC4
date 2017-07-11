@@ -49,6 +49,8 @@ END
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
+    "O",            IDM_OPEN,               CONTROL, VIRTKEY
+    "S",            IDM_SAVEAS,             CONTROL, VIRTKEY
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -99,6 +101,9 @@ STRINGTABLE
 BEGIN
     IDS_APPNAME,    "MyNotepad"
     IDS_FILTER,     "Text Files (*.txt;*.log)|*.txt;*.log|All Files (*.*)|*.*"
+    IDS_CANNOTOPEN, "Cannot open."
+    IDS_CANNOTSAVE, "Cannot save."
+    IDS_QUERYSAVE,  "You modified. Save now?"
 END
 
 /////////////////////////////////////////////////////////////////////////////

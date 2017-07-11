@@ -44,6 +44,7 @@ struct MMyNotepad : public MWindowBase
             DO_MSG(WM_SIZE, OnSize);
             DO_MSG(WM_DROPFILES, OnDropFiles);
             DO_MSG(WM_DESTROY, OnDestroy);
+            DO_MSG(WM_CLOSE, OnClose);
         default:
             return DefaultProcDx(hwnd, uMsg, wParam, lParam);
         }
@@ -61,6 +62,11 @@ struct MMyNotepad : public MWindowBase
         if (!m_edit_ctrl.CreateWindowDx(hwnd, TEXT("This is a sample."), style, exstyle))
         {
             return FALSE;
+        }
+
+        if (m_argc >= 2)
+        {
+            LoadDx(hwnd, m_targv[1]);
         }
 
         return TRUE;
@@ -81,16 +87,20 @@ struct MMyNotepad : public MWindowBase
         DWORD dwSize;
         LPBYTE bin = GetFileContentsDx(pszFileName, &dwSize);
         if (bin == NULL)
+        {
+            MsgBoxDx(IDS_CANNOTOPEN, IDS_APPNAME, MB_ICONERROR);
             return FALSE;
+        }
 
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
         MStringW wide = mstr_from_bin(bin, dwSize, &m_text_type);
 
         MWideToText text(wide);
         m_edit_ctrl.SetWindowText(text);
-        delete[] bin;
+        free(bin);
 
         m_file_name = pszFileName;
+        m_edit_ctrl.SetModify(FALSE);
         return TRUE;
     }
 
@@ -102,8 +112,10 @@ struct MMyNotepad : public MWindowBase
         if (PutFileContentsDx(pszFileName, &bin[0], DWORD(bin.size())))
         {
             m_file_name = pszFileName;
+            m_edit_ctrl.SetModify(FALSE);
             return TRUE;
         }
+        MsgBoxDx(IDS_CANNOTSAVE, IDS_APPNAME, MB_ICONERROR);
         return FALSE;
     }
 
@@ -116,7 +128,7 @@ struct MMyNotepad : public MWindowBase
             MString str = dialog.GetPathName();
             return LoadDx(hwnd, str.c_str());
         }
-		return FALSE;
+        return FALSE;
     }
 
     BOOL DoSaveAs(HWND hwnd)
@@ -128,7 +140,7 @@ struct MMyNotepad : public MWindowBase
             MString str = dialog.GetPathName();
             return SaveDx(hwnd, str.c_str());
         }
-		return FALSE;
+        return FALSE;
     }
 
     BOOL StartDx(INT nCmdShow)
@@ -161,6 +173,26 @@ struct MMyNotepad : public MWindowBase
             }
         }
         return INT(msg.wParam);
+    }
+
+    void OnClose(HWND hwnd)
+    {
+        if (m_edit_ctrl.GetModify())
+        {
+            INT nID = MsgBoxDx(IDS_QUERYSAVE, IDS_APPNAME,
+                MB_ICONINFORMATION | MB_YESNOCANCEL);
+            switch (nID)
+            {
+            case IDYES:
+                DoSaveAs(hwnd);
+                break;
+            case IDNO:
+                break;
+            case IDCANCEL:
+                return;
+            }
+        }
+        ::DestroyWindow(m_hwnd);
     }
 
     void OnDestroy(HWND hwnd)

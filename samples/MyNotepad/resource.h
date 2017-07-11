@@ -18,6 +18,9 @@
 
 #define IDS_APPNAME     1
 #define IDS_FILTER      3
+#define IDS_CANNOTOPEN  4
+#define IDS_CANNOTSAVE  5
+#define IDS_QUERYSAVE   6
 
 //////////////////////////////////////////////////////////////////////////////
 // Next default values for new objects

@@ -378,13 +378,13 @@ MFileDialog::OFNHookProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
 
     MFileDialog *base;
-	OPENFILENAME *pofn;
+    OPENFILENAME *pofn;
     if (uMsg == WM_INITDIALOG)
     {
         assert(lParam);
         pofn = (OPENFILENAME *)lParam;
-		assert(pofn->lCustData);
-		base = (MFileDialog *)pofn->lCustData;
+        assert(pofn->lCustData);
+        base = (MFileDialog *)pofn->lCustData;
         base->Attach(hwnd);
     }
 
