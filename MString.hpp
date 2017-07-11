@@ -442,6 +442,10 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
 
     if (!pType || pType->nNewLine != MNEWLINE_NOCHANGE)
     {
+        if (pType)
+        {
+            pType->nNewLine = MNEWLINE_UNKNOWN;
+        }
         if (mstr_replace_all(ret, L"\r\n", L"\n"))
         {
             if (pType)
