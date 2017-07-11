@@ -17,8 +17,6 @@ struct MMyNotepad : public MWindowBase
     MEditCtrl   m_edit_ctrl;
     MTextType   m_text_type;
     MString     m_file_name;
-    COLORREF    m_text_color;
-    COLORREF    m_bk_color;
     HFONT       m_hFont;
     LOGFONT     m_lf;
 
@@ -31,13 +29,11 @@ struct MMyNotepad : public MWindowBase
         m_hInst(hInst),
         m_hIcon(NULL),
         m_hAccel(NULL),
-        m_text_color(::GetSysColor(COLOR_WINDOWTEXT)),
-        m_bk_color(RGB(255, 255, 0)),
         m_hbrBackground(NULL)
     {
         ZeroMemory(&m_lf, sizeof(m_lf));
         m_lf.lfCharSet = DEFAULT_CHARSET;
-        m_lf.lfPitchAndFamily = FIXED_PITCH | FF_ROMAN;
+        m_lf.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
         m_lf.lfQuality = ANTIALIASED_QUALITY;
         m_hFont = ::CreateFontIndirect(&m_lf);
     }
@@ -59,7 +55,6 @@ struct MMyNotepad : public MWindowBase
             DO_MSG(WM_DROPFILES, OnDropFiles);
             DO_MSG(WM_DESTROY, OnDestroy);
             DO_MSG(WM_CLOSE, OnClose);
-            DO_MSG(WM_CTLCOLOREDIT, OnCtlColor);
         default:
             return DefaultProcDx(hwnd, uMsg, wParam, lParam);
         }
@@ -79,8 +74,6 @@ struct MMyNotepad : public MWindowBase
             return FALSE;
         }
         SetWindowFont(m_edit_ctrl, m_hFont, TRUE);
-
-        m_hbrBackground = ::CreateSolidBrush(m_bk_color);
 
         if (m_argc >= 2)
         {
@@ -240,28 +233,6 @@ struct MMyNotepad : public MWindowBase
         ::DestroyWindow(m_hwnd);
     }
 
-    void DoSetColor(HWND hwnd)
-    {
-        MColorDialog dialog(hwnd, m_text_color, CC_SOLIDCOLOR | CC_FULLOPEN);
-        if (dialog.ChooseColor())
-        {
-            m_text_color = dialog.GetColor();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
-        }
-    }
-
-    HBRUSH OnCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
-    {
-        if (type == CTLCOLOR_EDIT)
-        {
-            ::SetTextColor(hdc, m_text_color);
-            ::SetBkColor(hdc, m_text_color);
-            ::SetBkMode(hdc, TRANSPARENT);
-            return m_hbrBackground;
-        }
-        return (HBRUSH)DefaultProcDx();
-    }
-
     void DoSetFont(HWND hwnd)
     {
         MFontDialog dialog(hwnd, &m_lf, CF_SCREENFONTS | CF_NOVERTFONTS);
@@ -287,7 +258,6 @@ struct MMyNotepad : public MWindowBase
         str += TEXT(" ");
         str += szTime;
         m_edit_ctrl.ReplaceSel(str.c_str(), TRUE);
-        ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
     }
 
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -300,9 +270,6 @@ struct MMyNotepad : public MWindowBase
         case IDM_SAVEAS:
             DoSaveAs(hwnd);
             break;
-        case IDM_SETCOLOR:
-            DoSetColor(hwnd);
-            break;
         case IDM_SETFONT:
             DoSetFont(hwnd);
             break;
@@ -314,27 +281,21 @@ struct MMyNotepad : public MWindowBase
             break;
         case IDM_CUT:
             m_edit_ctrl.Cut();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
             break;
         case IDM_COPY:
             m_edit_ctrl.Copy();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
             break;
         case IDM_PASTE:
             m_edit_ctrl.Paste();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
             break;
         case IDM_DELETE:
             m_edit_ctrl.Clear();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
             break;
         case IDM_SELECTALL:
             m_edit_ctrl.SelectAll();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
             break;
         case IDM_UNDO:
             m_edit_ctrl.Undo();
-            ::InvalidateRect(m_edit_ctrl, NULL, TRUE);
             break;
         case IDM_DATETIME:
             OnDateTime();

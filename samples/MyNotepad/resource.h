@@ -9,7 +9,6 @@
 #define IDM_ABOUT       2
 #define IDM_OPEN        3
 #define IDM_SAVEAS      4
-#define IDM_SETCOLOR    5
 #define IDM_SETFONT     6
 #define IDM_CUT         7
 #define IDM_COPY        8
