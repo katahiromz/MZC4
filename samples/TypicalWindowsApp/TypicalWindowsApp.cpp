@@ -29,6 +29,8 @@ struct MTypicalWindowsApp : public MWindowBase
     {
         MWindowBase::ModifyWndClassDx(wcx);
         wcx.lpszMenuName = MAKEINTRESOURCE(1);
+        wcx.hIcon = m_hIcon;
+        wcx.hIconSm = m_hIcon;
     }
 
     BOOL StartDx(INT nCmdShow)
