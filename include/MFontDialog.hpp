@@ -17,10 +17,15 @@ public:
     CHOOSEFONT  m_cf;
     LOGFONT     m_lf;
 
+    // before main
     MFontDialog(HWND hwndOwner, LPLOGFONT plfInitial = NULL,
                 DWORD dwCF_ = CF_EFFECTS | CF_SCREENFONTS,
                 HDC hdcPrinter = NULL);
-    virtual INT_PTR DoModal();
+
+    // main
+    BOOL ChooseFont();
+
+    // after main
     COLORREF GetColor() const;
     VOID GetCurrentFont(LPLOGFONT plf);
     MString GetFaceName() const;
@@ -42,6 +47,8 @@ MFontDialog::MFontDialog(HWND hwndOwner,
                          HDC hdcPrinter/* = NULL*/)
     : MCommonDialog(hwndOwner)
 {
+    m_bModal = TRUE;
+
     ZeroMemory(&m_cf, sizeof(m_cf));
     m_cf.lStructSize = sizeof(m_cf);
     m_cf.hwndOwner = hwndOwner;
@@ -63,13 +70,14 @@ MFontDialog::MFontDialog(HWND hwndOwner,
     }
 }
 
-inline /*virtual*/ INT_PTR MFontDialog::DoModal()
+inline BOOL MFontDialog::ChooseFont()
 {
-    return (::ChooseFont(&m_cf) ? IDOK : IDCANCEL);
+    return ::ChooseFont(&m_cf);
 }
 
 inline COLORREF MFontDialog::GetColor() const
 {
+    assert(m_cf.Flags & CF_EFFECTS);
     return (COLORREF)m_cf.rgbColors;
 }
 

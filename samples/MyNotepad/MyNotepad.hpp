@@ -14,6 +14,8 @@
 #include "MString.hpp"          // MZC4 MString
 #include "MEditCtrl.hpp"        // MZC4 MEditCtrl
 #include "MFileDialog.hpp"      // MZC4 MFileDialog
+#include "MFontDialog.hpp"      // MZC4 MFontDialog
+#include "MColorDialog.hpp"     // MZC4 MColorDialog
 
 //////////////////////////////////////////////////////////////////////////////
 

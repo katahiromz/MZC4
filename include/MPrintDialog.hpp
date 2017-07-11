@@ -663,8 +663,9 @@ inline MPrintDialog::MPrintDialog(
     HWND hwndOwner,
     DWORD dwPD_/* = PD_ALLPAGES | PD_USEDEVMODECOPIES | PD_NOPAGENUMS | \
                     PD_HIDEPRINTTOFILE | PD_NOSELECTION*/,
-    BOOL bPrintSetup/* = FALSE*/)
+    BOOL bPrintSetup/* = FALSE*/) : MCommonDialog(hwndOwner)
 {
+    m_bModal = TRUE;
     ZeroMemory(&m_pd, sizeof(m_pd));
     m_pd.lStructSize = sizeof(m_pd);
     m_pd.hwndOwner = hwndOwner;

@@ -16,14 +16,19 @@ class MColorDialog : public MCommonDialog
 public:
     CHOOSECOLOR m_cc;
 
+    // before main
     MColorDialog(HWND hwndOwner, COLORREF clrInit = RGB(0, 0, 0),
                  DWORD dwCC_ = 0);
 
+    // main
     BOOL ChooseColor();
+
+    // after main
     COLORREF GetColor() const;
-    static COLORREF *GetSavedCustomColors();
+
     VOID SetCurrentColor(COLORREF clr);
-    virtual BOOL OnColorOK();
+
+    static COLORREF *GetSavedCustomColors();
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -34,6 +39,8 @@ MColorDialog::MColorDialog(HWND hwndOwner,
                            DWORD dwCC_/* = 0*/)
     : MCommonDialog(hwndOwner)
 {
+    m_bModal = TRUE;
+
     ZeroMemory(&m_cc, sizeof(m_cc));
     m_cc.lStructSize = sizeof(CHOOSECOLOR);
     m_cc.hwndOwner = hwndOwner;
@@ -55,11 +62,6 @@ inline COLORREF MColorDialog::GetColor() const
 inline VOID MColorDialog::SetCurrentColor(COLORREF clr)
 {
     m_cc.rgbResult = clr;
-}
-
-inline /*virtual*/ BOOL MColorDialog::OnColorOK()
-{
-    return TRUE;
 }
 
 inline /*static*/ COLORREF *MColorDialog::GetSavedCustomColors()

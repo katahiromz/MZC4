@@ -87,6 +87,7 @@ MFileDialog::MFileDialog(HWND hwndOwner, LPCTSTR pszDefExt/* = NULL*/,
                          LPCTSTR pszFilter/* = NULL*/,
                          LPCTSTR pszTitle/* = NULL*/,
                          DWORD dwOFN_/* = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT*/)
+    : MCommonDialog(hwndOwner)
 {
     m_bModal = TRUE;
 

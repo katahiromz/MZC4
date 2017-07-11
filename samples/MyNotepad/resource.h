@@ -5,10 +5,12 @@
 // Microsoft Visual C++ generated include file.
 // Used by MyNotepad.rc
 
-#define IDM_EXIT    1
-#define IDM_ABOUT   2
-#define IDM_OPEN    3
-#define IDM_SAVEAS  4
+#define IDM_EXIT        1
+#define IDM_ABOUT       2
+#define IDM_OPEN        3
+#define IDM_SAVEAS      4
+#define IDM_SETCOLOR    5
+#define IDM_SETFONT     6
 
 #define IDD_ABOUTBOX 1
 

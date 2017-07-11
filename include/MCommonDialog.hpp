@@ -26,7 +26,7 @@ public:
     {
     }
 
-    MCommonDialog(HWND hwndParent) : MDialogBase(hwndParent)
+    MCommonDialog(HWND hwndOwner) : MDialogBase(hwndOwner)
     {
     }
 
