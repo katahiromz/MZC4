@@ -55,6 +55,7 @@ struct MMyNotepad : public MWindowBase
             DO_MSG(WM_DROPFILES, OnDropFiles);
             DO_MSG(WM_DESTROY, OnDestroy);
             DO_MSG(WM_CLOSE, OnClose);
+            DO_MSG(WM_INITMENU, OnInitMenu);
         default:
             return DefaultProcDx(hwnd, uMsg, wParam, lParam);
         }
@@ -85,6 +86,42 @@ struct MMyNotepad : public MWindowBase
         ::SetFocus(m_edit_ctrl);
 
         return TRUE;
+    }
+
+    void OnInitMenu(HWND hwnd, HMENU hMenu)
+    {
+        if (m_edit_ctrl.CanUndo())
+        {
+            ::EnableMenuItem(hMenu, IDM_UNDO, MF_BYCOMMAND | MF_ENABLED);
+        }
+        else
+        {
+            ::EnableMenuItem(hMenu, IDM_UNDO, MF_BYCOMMAND | MF_GRAYED);
+        }
+
+        INT start, end;
+        m_edit_ctrl.GetSel(start, end);
+        if (start == end)
+        {
+            ::EnableMenuItem(hMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
+            ::EnableMenuItem(hMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+            ::EnableMenuItem(hMenu, IDM_DELETE, MF_BYCOMMAND | MF_GRAYED);
+        }
+        else
+        {
+            ::EnableMenuItem(hMenu, IDM_CUT, MF_BYCOMMAND | MF_ENABLED);
+            ::EnableMenuItem(hMenu, IDM_COPY, MF_BYCOMMAND | MF_ENABLED);
+            ::EnableMenuItem(hMenu, IDM_DELETE, MF_BYCOMMAND | MF_ENABLED);
+        }
+
+        if (::IsClipboardFormatAvailable(CF_TEXT))
+        {
+            ::EnableMenuItem(hMenu, IDM_PASTE, MF_BYCOMMAND | MF_ENABLED);
+        }
+        else
+        {
+            ::EnableMenuItem(hMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
+        }
     }
 
     void OnDropFiles(HWND hwnd, HDROP hdrop)

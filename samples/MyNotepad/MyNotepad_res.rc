@@ -76,7 +76,7 @@ BEGIN
         MENUITEM "&Open...\tCtrl+O",        IDM_OPEN
         MENUITEM "&Save As...\tCtrl+S",     IDM_SAVEAS
         MENUITEM SEPARATOR
-        MENUITEM "Set &Font",               IDM_SETFONT
+        MENUITEM "Set &Font...",            IDM_SETFONT
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",           IDM_EXIT
     END
