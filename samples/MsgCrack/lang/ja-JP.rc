@@ -1,0 +1,37 @@
+/////////////////////////////////////////////////////////////////////////////
+
+#pragma code_page(65001)    // UTF-8
+
+// Japanese (Japan)
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+
+/////////////////////////////////////////////////////////////////////////////
+// Dialog
+
+1 DIALOG 0, 0, 270, 210
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "MsgCrack 1.3 by 片山博文MZ"
+FONT 10, "MS Shell Dlg"
+{
+    CONTROL "1. あなたが探しているウィンドウメッセージの最初の何文字かを入力して下さい(&T)。", -1, "STATIC", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 5, 7, 260, 14
+    CONTROL "", edt1, "EDIT", ES_LEFT | ES_AUTOHSCROLL | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP, 5, 20, 260, 14
+    CONTROL "2. お望みのメッセージをクリックして下さい(&W)。", -1, "STATIC", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 5, 42, 260, 14
+    CONTROL "", lst1, "LISTBOX", LBS_DISABLENOSCROLL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY | WS_BORDER | WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL, 5, 55, 260, 78
+    CONTROL "3. 下のテキストをコピーして下さい（[Enter]キーでもOKです）。", -1, "STATIC", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 5, 137, 260, 14
+    CONTROL "", edt2, "EDIT", ES_LEFT | ES_MULTILINE | ES_READONLY | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP, 5, 150, 260, 35
+    CONTROL "", stc1, "STATIC", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 5, 192, 85, 14
+    CONTROL "クリップボードにコピー(&C)", IDOK, "BUTTON", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 100, 190, 100, 14
+    CONTROL "終了(&X)", IDCANCEL, "BUTTON", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 205, 190, 60, 14
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// String Table
+
+STRINGTABLE
+BEGIN
+    IDS_APPNAME,   "MsgCrack"
+    2,   "データファイル (DATA.DAT) を見つけることができませんでした！"
+    3,   "コピーしました。"
+END
+
+/////////////////////////////////////////////////////////////////////////////

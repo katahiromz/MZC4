@@ -1,0 +1,28 @@
+# Makefile for Borland C++ Compiler 5.5.1
+
+DOTOBJ = .obj
+DOTEXE = .exe
+
+CXX = bcc32
+RC = brc32
+
+CXXFLAGS = -W -I..\..\include
+RCFLAGS = 
+
+OBJECTS = \
+	build\MsgCrack$(DOTOBJ)
+
+all: build\MsgCrack$(DOTEXE)
+
+build:
+	if not exist build mkdir build
+
+build\MsgCrack$(DOTEXE): $(OBJECTS) build\MsgCrack_res.res
+	$(CXX) $(CXXFLAGS) -ebuild\MsgCrack$(DOTEXE) $(OBJECTS)
+	$(RC) $(RCFLAGS) build\MsgCrack_res.res build\MsgCrack$(DOTEXE)
+
+build\MsgCrack$(DOTOBJ): build MsgCrack.cpp
+	$(CXX) -c $(CXXFLAGS) -obuild\MsgCrack$(DOTOBJ) MsgCrack.cpp
+
+build\MsgCrack_res.res: MsgCrack_res.rc lang\en-US.rc lang\ja-JP.rc
+	$(RC) -r $(RCFLAGS) -fobuild\MsgCrack_res.res MsgCrack_res.rc

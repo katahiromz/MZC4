@@ -76,6 +76,13 @@ public:
 
     BOOL SetReadOnly(BOOL bReadOnly = TRUE);
     INT GetFirstVisibleLine() const;
+
+    static void SetCtrlAHookDx(BOOL bHook);
+
+protected:
+    static HHOOK& OldHookProc();
+    static LRESULT CALLBACK
+    CtrlAMsgProcDx(INT nCode, WPARAM wParam, LPARAM lParam);
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -314,6 +321,61 @@ inline INT MEditCtrl::GetFirstVisibleLine() const
 inline TCHAR MEditCtrl::GetPasswordChar() const
 {
     return (TCHAR)SendMessageDx(EM_GETPASSWORDCHAR);
+}
+
+inline /*static*/ HHOOK& MEditCtrl::OldHookProc()
+{
+    static HHOOK s_hHook = NULL;
+    return s_hHook;
+}
+
+inline /*static*/ LRESULT CALLBACK
+MEditCtrl::CtrlAMsgProcDx(INT nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode < 0)
+        return ::CallNextHookEx(OldHookProc(), nCode, wParam, lParam);
+
+    MSG *pMsg = (MSG *)lParam;
+    TCHAR szClassName[8];
+    HWND hWnd;
+    if (pMsg->message == WM_KEYDOWN)
+    {
+        if ((INT) pMsg->wParam == 'A' &&
+            ::GetAsyncKeyState(VK_CONTROL) < 0 &&
+            ::GetAsyncKeyState(VK_SHIFT) >= 0 &&
+            ::GetAsyncKeyState(VK_MENU) >= 0)
+        {
+            // Ctrl+A is pressed
+            hWnd = ::GetFocus();
+            if (hWnd != NULL)
+            {
+                ::GetClassName(hWnd, szClassName, _countof(szClassName));
+                if (lstrcmpi(szClassName, TEXT("EDIT")) == 0)
+                {
+                    ::SendMessage(hWnd, EM_SETSEL, 0, -1);
+                    return 1;
+                }
+            }
+        }
+    }
+    return ::CallNextHookEx(OldHookProc(), nCode, wParam, lParam);
+}
+
+inline /*static*/ void MEditCtrl::SetCtrlAHookDx(BOOL bHook)
+{
+    if (bHook)
+    {
+        assert(OldHookProc() == NULL);
+        OldHookProc() = ::SetWindowsHookEx(
+            WH_MSGFILTER, MEditCtrl::CtrlAMsgProcDx, NULL,
+            ::GetCurrentThreadId());
+    }
+    else
+    {
+        assert(OldHookProc() != NULL);
+        ::UnhookWindowsHookEx(OldHookProc());
+        OldHookProc() = NULL;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////

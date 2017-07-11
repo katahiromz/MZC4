@@ -1,0 +1,71 @@
+#include "targetver.h"
+#include <windows.h>
+#include <dlgs.h>
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// Encoding
+
+#pragma code_page(65001)    // UTF-8
+
+/////////////////////////////////////////////////////////////////////////////
+// Icon
+
+1 ICON "MsgCrack.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+// Version Info
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     1, 3, 0, 0
+PRODUCTVERSION  1, 3, 0, 0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    // English (U.S.)
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Katayama Hirofumi MZ\0"
+            VALUE "FileDescription", "MsgCrack\0"
+            VALUE "FileVersion", "1.3\0"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2017 Katayama Hirofumi MZ\0"
+            VALUE "ProductName", "MsgCrack\0"
+            VALUE "ProductVersion", "1.3\0"
+        END
+    END
+#ifndef NO_JAP_ALLOWED
+    // Japanese
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041103A4"
+        BEGIN
+            VALUE "CompanyName", "•ÐŽR”Ž•¶MZ\0"
+            VALUE "FileDescription", "MsgCrack\0"
+            VALUE "FileVersion", "1.3\0"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2017 •ÐŽR”Ž•¶MZ\0"
+            VALUE "ProductName", "MsgCrack\0"
+            VALUE "ProductVersion", "1.3\0"
+        END
+    END
+#endif
+    BLOCK "VarFileInfo"
+    BEGIN
+#ifndef NO_JAP_ALLOWED
+        // English (U.S.)
+        VALUE "Translation", 0x0409, 0x04E4
+#else
+        // Japanese
+        VALUE "Translation", 0x0411, 0x03A4
+#endif
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+
+#include "lang/en-US.rc"
+
+#ifndef NO_JAP_ALLOWED
+    #include "lang/ja-JP.rc"
+#endif

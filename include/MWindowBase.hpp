@@ -324,6 +324,12 @@ public:
         return GetWindowText(::GetDlgItem(m_hwnd, nCtrlID));
     }
 
+    BOOL SetWindowText(LPCTSTR pszText = NULL)
+    {
+        assert(::IsWindow(Handle()));
+        return ::SetWindowText(Handle(), pszText);
+    }
+
     static VOID CenterWindowDx(HWND hwnd);
 
     VOID SetWindowPosDx(LPPOINT ppt = NULL, LPSIZE psiz = NULL,

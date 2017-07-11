@@ -60,7 +60,7 @@ public:
 
     INT GetItemHeight(INT nIndex) const;
     INT SetItemHeight(INT nIndex, UINT cyItemHeight);
-    INT FindStringExact(INT nIndexStart, LPCTSTR lpszFind) const;
+
     INT GetCaretIndex() const;
     INT SetCaretIndex(INT nIndex, BOOL bScroll = TRUE);
 
@@ -71,6 +71,8 @@ public:
     INT Dir(UINT attr, LPCTSTR lpszWildCard);
 
     INT FindString(INT nStartAfter, LPCTSTR lpszItem) const;
+    INT FindStringExact(INT nIndexStart, LPCTSTR lpszFind) const;
+
     INT SelectString(INT nStartAfter, LPCTSTR lpszItem);
     INT SelItemRange(BOOL bSelect, INT nFirstItem, INT nLastItem);
     VOID SelectAll();

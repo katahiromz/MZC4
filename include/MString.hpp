@@ -168,7 +168,7 @@ inline bool mstr_is_text_utf8(const std::string& str)
 
 inline bool mstr_is_text_unicode(const void *ptr, size_t len)
 {
-    if (::IsTextUnicode(ptr, int(len), NULL))
+    if (::IsTextUnicode(const_cast<void *>(ptr), int(len), NULL))
         return true;
     return false;
 }

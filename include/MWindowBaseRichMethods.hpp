@@ -722,12 +722,6 @@ INT SetWindowRgn(HRGN hRgn = NULL, BOOL bRedraw = TRUE)
     return ::SetWindowRgn(Handle(), hRgn, bRedraw);
 }
 
-BOOL SetWindowText(LPCTSTR pszText = NULL)
-{
-    assert(::IsWindow(Handle()));
-    return ::SetWindowText(Handle(), pszText);
-}
-
 BOOL ShowCaret()
 {
     assert(::IsWindow(Handle()));
