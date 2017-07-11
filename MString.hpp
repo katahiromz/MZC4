@@ -60,13 +60,13 @@ struct MTextType
 
 ////////////////////////////////////////////////////////////////////////////
 
-bool mstr_is_valid_ascii(const char *str, int len);
+bool mstr_is_valid_ascii(const char *str, size_t len);
 bool mstr_is_valid_ascii(const std::string& str);
 
-bool mstr_is_valid_ascii(const wchar_t *str, int len);
+bool mstr_is_valid_ascii(const wchar_t *str, size_t len);
 bool mstr_is_valid_ascii(const std::wstring& str);
 
-bool mstr_is_valid_utf8(const char *str, int len);
+bool mstr_is_valid_utf8(const char *str, size_t len);
 bool mstr_is_valid_utf8(const std::string& str);
 
 void mstr_trim(std::string& str, const char *spaces = " \t\r\n");
@@ -112,7 +112,7 @@ mstr_join(const T_STR_CONTAINER& container,
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline bool mstr_is_valid_ascii(const char *str, int len)
+inline bool mstr_is_valid_ascii(const char *str, size_t len)
 {
     if (len == 0)
         return true;
@@ -128,10 +128,10 @@ inline bool mstr_is_valid_ascii(const char *str, int len)
 
 inline bool mstr_is_valid_ascii(const std::string& str)
 {
-    return mstr_is_valid_ascii(&str[0], int(str.size()));
+    return mstr_is_valid_ascii(&str[0], str.size());
 }
 
-inline bool mstr_is_valid_ascii(const wchar_t *str, int len)
+inline bool mstr_is_valid_ascii(const wchar_t *str, size_t len)
 {
     if (len == 0)
         return true;
@@ -150,18 +150,18 @@ inline bool mstr_is_valid_ascii(const std::wstring& str)
     return mstr_is_valid_ascii(&str[0], int(str.size()));
 }
 
-inline bool mstr_is_valid_utf8(const char *str, int len)
+inline bool mstr_is_valid_utf8(const char *str, size_t len)
 {
     if (len == 0)
         return true;
 
-    len = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str, len, NULL, 0);
+    len = ::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str, int(len), NULL, 0);
     return len != 0;
 }
 
 inline bool mstr_is_valid_utf8(const std::string& str)
 {
-    return mstr_is_valid_utf8(&str[0], int(str.size()));
+    return mstr_is_valid_utf8(&str[0], str.size());
 }
 
 inline void mstr_trim(std::string& str, const char *spaces/* = " \t\r\n"*/)
