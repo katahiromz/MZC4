@@ -74,8 +74,8 @@ void mstr_trim(std::wstring& str, const wchar_t *spaces = L" \t\r\n");
 void mstr_trim(char *str, const char *spaces = " \t\r\n");
 void mstr_trim(wchar_t *str, const wchar_t *spaces = L" \t\r\n");
 
-std::string mstr_repeat(const std::string& str, int count);
-std::wstring mstr_repeat(const std::wstring& str, int count);
+std::string mstr_repeat(const std::string& str, size_t count);
+std::wstring mstr_repeat(const std::wstring& str, size_t count);
 
 std::string mstr_escape(const std::string& str);
 std::wstring mstr_escape(const std::wstring& str);
@@ -206,20 +206,20 @@ inline void mstr_trim(wchar_t *str, const wchar_t *spaces/* = L" \t\r\n"*/)
     std::wcscpy(str, s.c_str());
 }
 
-inline std::string mstr_repeat(const std::string& str, int count)
+inline std::string mstr_repeat(const std::string& str, size_t count)
 {
     std::string ret;
-    for (int i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i)
     {
         ret += str;
     }
     return ret;
 }
 
-inline std::wstring mstr_repeat(const std::wstring& str, int count)
+inline std::wstring mstr_repeat(const std::wstring& str, size_t count)
 {
     std::wstring ret;
-    for (int i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i)
     {
         ret += str;
     }
