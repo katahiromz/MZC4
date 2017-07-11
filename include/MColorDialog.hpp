@@ -26,7 +26,7 @@ public:
     // after main
     COLORREF GetColor() const;
 
-    VOID SetCurrentColor(COLORREF clr);
+    VOID SetColor(COLORREF clr);
 
     static COLORREF *GetSavedCustomColors();
 };
@@ -59,7 +59,7 @@ inline COLORREF MColorDialog::GetColor() const
     return m_cc.rgbResult;
 }
 
-inline VOID MColorDialog::SetCurrentColor(COLORREF clr)
+inline VOID MColorDialog::SetColor(COLORREF clr)
 {
     m_cc.rgbResult = clr;
 }
