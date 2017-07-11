@@ -43,6 +43,7 @@ enum MTextEncoding
 
 enum MTextNewLineType
 {
+    MNEWLINE_UNKNOWN,
     MNEWLINE_NOCHANGE,
     MNEWLINE_CRLF,
     MNEWLINE_LF,
@@ -462,6 +463,7 @@ mbin_from_str(const std::wstring& str, const MTextType& type)
 
     switch (type.nNewLine)
     {
+    case MNEWLINE_UNKNOWN:
     case MNEWLINE_NOCHANGE:
         break;
     case MNEWLINE_CRLF:
