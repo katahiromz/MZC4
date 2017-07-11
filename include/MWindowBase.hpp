@@ -132,11 +132,11 @@ LPCTSTR MZCAPI GetStringDx(LPCTSTR psz);
     case (uMsg): return (OnMessageEx)((hwnd), (uMsg), (wParam), (lParam))
 
 #define DO_MSG(WM_, fn) \
-    HANDLE_MSG((hwnd), (WM_), (fn))
+    case (WM_): return HANDLE_##WM_(hwnd, (wParam), (lParam), (fn))
 #define DO_MESSAGE(uMsg, OnMessage) \
-    HANDLE_MESSAGE((hwnd), (uMsg), OnMessage)
+    HANDLE_MESSAGE(hwnd, uMsg, OnMessage)
 #define DO_MESSAGE_EX(uMsg, OnMessageEx) \
-    HANDLE_MESSAGE_EX((hwnd), (uMsg), OnMessage)
+    HANDLE_MESSAGE_EX(hwnd, uMsg, OnMessage)
 
 //////////////////////////////////////////////////////////////////////////////
 
