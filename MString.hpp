@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSTRING_HPP_
-#define MZC4_MSTRING_HPP_       2   /* Version 2 */
+#define MZC4_MSTRING_HPP_       3   /* Version 3 */
 
 // class MString;
 // class MStringA;
