@@ -260,7 +260,8 @@ struct MMyNotepad : public MWindowBase
 
     void OnSize(HWND hwnd, UINT state, int cx, int cy)
     {
-        RECT rc = GetClientRect();
+        RECT rc;
+        ::GetClientRect(hwnd, &rc);
         SIZE siz = SizeFromRectDx(&rc);
         ::MoveWindow(m_edit_ctrl, rc.left, rc.top, siz.cx, siz.cy, TRUE);
     }

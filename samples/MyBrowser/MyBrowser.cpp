@@ -154,7 +154,8 @@ struct MMyBrowser : public MWindowBase
 
     void OnSize(HWND hwnd, UINT state, int cx, int cy)
     {
-        RECT rc = GetClientRect();
+        RECT rc;
+        GetClientRect(hwnd, &rc);
         SIZE siz = SizeFromRectDx(&rc);
         
         SIZE sizGo, sizAddress;
@@ -167,7 +168,8 @@ struct MMyBrowser : public MWindowBase
         sizAddress.cx += 8;
 
         m_status_bar.SendMessageDx(WM_SIZE);
-        RECT rcStatus = m_status_bar.GetWindowRect();
+        RECT rcStatus;
+        ::GetWindowRect(m_status_bar, &rcStatus);
         SIZE sizStatus = SizeFromRectDx(&rcStatus);
 
         ::MoveWindow(m_static,
