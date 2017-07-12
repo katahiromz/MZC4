@@ -294,7 +294,7 @@ public:
         {
             EmptyClipboard();
 
-            DWORD Size = (str.size() + 1) * sizeof(TCHAR);
+            DWORD Size = DWORD((str.size() + 1) * sizeof(TCHAR));
             LPVOID pText = GlobalAllocPtr(GHND | GMEM_SHARE, Size);
             if (pText)
             {

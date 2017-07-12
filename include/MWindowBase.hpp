@@ -536,7 +536,7 @@ public:
     }
     BOOL SetDefID(UINT nID)
     {
-        return SendMessageDx(DM_SETDEFID, (WPARAM)nID);
+        return (BOOL)SendMessageDx(DM_SETDEFID, (WPARAM)nID);
     }
 
     BOOL EndDialog(INT_PTR nResult)

@@ -424,7 +424,7 @@ mstr_from_bin(const void *bin, size_t len, MTextType *pType/* = NULL*/)
                 pType->nEncoding = MTENC_UTF8;
                 pType->bHasBOM = false;
             }
-            ret = MUtf8ToWide(pch, len);
+            ret = MUtf8ToWide(pch, INT(len));
         }
         else if (mstr_is_text_unicode(bin, int(len)))
         {

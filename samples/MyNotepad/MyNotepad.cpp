@@ -161,7 +161,7 @@ struct MMyNotepad : public MWindowBase
         MStringW wide(MTextToWide(m_edit_ctrl.GetWindowText()));
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
         std::string bin = mbin_from_str(wide, m_text_type);
-        if (PutFileContentsDx(pszFileName, &bin[0], bin.size()));
+        if (PutFileContentsDx(pszFileName, &bin[0], bin.size()))
         {
             m_file_name = pszFileName;
             m_edit_ctrl.SetModify(FALSE);
