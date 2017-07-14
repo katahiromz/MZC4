@@ -9,6 +9,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "resource.h"           // local resource IDs
+#include "targetver.h"          // target version
 
 #include "MWindowBase.hpp"      // MZC4 MWindowBase
 
