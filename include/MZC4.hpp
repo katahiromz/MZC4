@@ -11,7 +11,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#include "targetver.h"
 #include "pstdint.h"
 
 #include "MWindowBase.hpp"
@@ -42,6 +41,7 @@
 #include "MFile.hpp"
 #include "MFileDialog.hpp"
 #include "MFileLister.hpp"
+#include "MFileMapping.hpp"
 #include "MFileVersionInfo.hpp"
 #include "MFindReplaceDialog.hpp"
 #include "MFolderDialog.hpp"

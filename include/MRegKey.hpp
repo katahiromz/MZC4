@@ -48,6 +48,7 @@ public:
     bool operator==(HKEY hKey) const;
     bool operator!=(HKEY hKey) const;
     MRegKey& operator=(HKEY hKey);
+    MRegKey& operator=(MRegKey& key);
 
     BOOL Attach(HKEY hKey);
     HKEY Detach();
@@ -152,11 +153,6 @@ public:
 
 protected:
     HKEY m_hKey;
-
-private:
-    // NOTE: MRegKey is not copyable.
-    MRegKey(const MRegKey& key);
-    MRegKey& operator=(const MRegKey& key);
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -373,6 +369,16 @@ inline MRegKey& MRegKey::operator=(HKEY hKey)
 {
     if (m_hKey != hKey)
         Attach(hKey);
+    return *this;
+}
+
+inline MRegKey& MRegKey::operator=(MRegKey& key)
+{
+    if (this != &key && m_hKey != key.m_hKey)
+    {
+        HKEY hKey = CloneHandleDx(key);
+        Attach(hKey);
+    }
     return *this;
 }
 
