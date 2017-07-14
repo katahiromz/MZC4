@@ -92,7 +92,8 @@ public:
     MSharedView(LPVOID pv) : m_pv(pv)
     {
     }
-    ~MSharedView()
+
+    virtual ~MSharedView()
     {
         ::UnmapViewOfFile(m_pv);
     }
