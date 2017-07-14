@@ -74,6 +74,8 @@ public:
     operator T*() const;
     T *Ptr() const;
     bool operator!() const;
+    T& operator*() const;
+    T *operator->() const;
 
     BOOL FlushViewOfFile(DWORD dwNumberOfBytes = 0);
 };
@@ -467,6 +469,18 @@ template <typename T>
 inline BOOL MTypedMapView<T>::FlushViewOfFile(DWORD dwNumberOfBytes/* = 0*/)
 {
     return m_map_view.FlushViewOfFile(dwNumberOfBytes);
+}
+
+template <typename T>
+inline T *MTypedMapView<T>::operator->() const
+{
+    return Ptr();
+}
+
+template <typename T>
+inline T& MTypedMapView<T>::operator*() const
+{
+    return *Ptr();
 }
 
 ////////////////////////////////////////////////////////////////////////////
