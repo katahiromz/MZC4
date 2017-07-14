@@ -118,7 +118,7 @@ inline MFileMappingView::MFileMappingView(MFileMappingView& view)
 inline MFileMappingView&
 MFileMappingView::operator=(MFileMappingView& view)
 {
-    if (this != &view)
+    if (this != &view && m_pView != view.m_pView)
     {
         if (m_pView)
             m_pView->Release();
