@@ -5,7 +5,10 @@
 #ifndef MZC4_MFILEMAPPING_HPP_
 #define MZC4_MFILEMAPPING_HPP_      2       /* Version 2 */
 
-class MFileMappingView;
+class MMapView;
+    template <typename T>
+    class MTypedMapView;
+
 class MFileMapping;
 
 ////////////////////////////////////////////////////////////////////////////
@@ -17,24 +20,59 @@ class MFileMapping;
 
 ////////////////////////////////////////////////////////////////////////////
 
+#ifndef LOLONG
+    #define LOLONG(dwl) static_cast<DWORD>(dwl)
+#endif
+#ifndef HILONG
+    #define HILONG(dwl) static_cast<DWORD>(((dwl) >> 32) & 0xFFFFFFFF)
+#endif
+#ifndef MAKELONGLONG
+    #define MAKELONGLONG(lo,hi) \
+        (static_cast<DWORD>(lo) | \
+            (static_cast<DWORDLONG>(static_cast<DWORD>(hi)) << 32))
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+
 #include "MUnknown.hpp"
 
-class MFileMappingView
+class MMapView
 {
 public:
     class MSharedView;
-
     MSharedView *m_pView;
 
-    MFileMappingView();
-    MFileMappingView(LPVOID pv);
-    MFileMappingView(MFileMappingView& view);
-    ~MFileMappingView();
+    MMapView();
+    MMapView(LPVOID pv);
+    MMapView(MMapView& view);
+    ~MMapView();
 
-    MFileMappingView& operator=(MFileMappingView& view);
+    MMapView& operator=(MMapView& view);
 
     operator LPVOID() const;
     LPVOID Ptr() const;
+    bool operator!() const;
+
+    BOOL FlushViewOfFile(DWORD dwNumberOfBytes = 0);
+};
+
+////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+class MTypedMapView
+{
+public:
+    MMapView m_map_view;
+
+    MTypedMapView();
+    MTypedMapView(LPVOID pv);
+    MTypedMapView(MMapView& map_view);
+    MTypedMapView(MTypedMapView<T>& map_view);
+    MTypedMapView<T>& operator=(MMapView& map_view);
+    MTypedMapView<T>& operator=(MTypedMapView<T>& map_view);
+
+    operator T*() const;
+    T *Ptr() const;
     bool operator!() const;
 
     BOOL FlushViewOfFile(DWORD dwNumberOfBytes = 0);
@@ -48,6 +86,7 @@ public:
     MFileMapping();
     MFileMapping(HANDLE hMapping);
     MFileMapping(MFileMapping& mapping);
+    MFileMapping& operator=(MFileMapping& mapping);
     ~MFileMapping();
 
     HANDLE Handle() const;
@@ -67,24 +106,35 @@ public:
 
     BOOL CloseHandle();
 
-    MFileMappingView
+    MMapView
     MapViewOfFile(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
                   DWORD dwNumberOfBytes = 0);
-    MFileMappingView
+    MMapView
+    MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+                  DWORD dwNumberOfBytes = 0);
+    MMapView
     MapViewOfFileEx(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
                     DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
 
     static HANDLE CloneHandleDx(HANDLE hMapping);
 
-    MFileMapping& operator=(MFileMapping& mapping);
+    DWORDLONG Seek(LONGLONG offset, BOOL bAbsolute = FALSE);
+    BOOL ReadData(LPVOID pvData, DWORD dwDataSize);
+    BOOL WriteData(LPCVOID pvData, DWORD dwDataSize);
+
+    MMapView GetData(DWORD dwDataSize,
+                     DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
+    template <typename T>
+    MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
 
 protected:
     HANDLE m_hMapping;
+    DWORDLONG m_index;
 };
 
 ////////////////////////////////////////////////////////////////////////////
 
-class MFileMappingView::MSharedView : public MUnknown
+class MMapView::MSharedView : public MUnknown
 {
 public:
     LPVOID m_pv;
@@ -99,24 +149,24 @@ public:
     }
 };
 
-inline MFileMappingView::MFileMappingView() : m_pView(NULL)
+inline MMapView::MMapView() : m_pView(NULL)
 {
 }
 
-inline MFileMappingView::MFileMappingView(LPVOID pv)
+inline MMapView::MMapView(LPVOID pv)
     : m_pView(new MSharedView(pv))
 {
 }
 
-inline MFileMappingView::MFileMappingView(MFileMappingView& view)
+inline MMapView::MMapView(MMapView& view)
     : m_pView(view.m_pView)
 {
     if (m_pView)
         m_pView->AddRef();
 }
 
-inline MFileMappingView&
-MFileMappingView::operator=(MFileMappingView& view)
+inline MMapView&
+MMapView::operator=(MMapView& view)
 {
     if (this != &view && m_pView != view.m_pView)
     {
@@ -129,31 +179,31 @@ MFileMappingView::operator=(MFileMappingView& view)
     return *this;
 }
 
-inline MFileMappingView::~MFileMappingView()
+inline MMapView::~MMapView()
 {
     if (m_pView)
         m_pView->Release();
 }
 
-inline LPVOID MFileMappingView::Ptr() const
+inline LPVOID MMapView::Ptr() const
 {
     if (this && m_pView)
         return m_pView->m_pv;
     return NULL;
 }
 
-inline MFileMappingView::operator LPVOID() const
+inline MMapView::operator LPVOID() const
 {
     return Ptr();
 }
 
-inline bool MFileMappingView::operator!() const
+inline bool MMapView::operator!() const
 {
     return Ptr() == NULL;
 }
 
 inline BOOL
-MFileMappingView::FlushViewOfFile(DWORD dwNumberOfBytes/* = 0*/)
+MMapView::FlushViewOfFile(DWORD dwNumberOfBytes/* = 0*/)
 {
     assert(m_pView);
     return ::FlushViewOfFile(Ptr(), dwNumberOfBytes);
@@ -161,13 +211,20 @@ MFileMappingView::FlushViewOfFile(DWORD dwNumberOfBytes/* = 0*/)
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline MFileMapping::MFileMapping() : m_hMapping(NULL)
+inline MFileMapping::MFileMapping() : m_hMapping(NULL), m_index(0)
 {
 }
 
-inline MFileMapping::MFileMapping(HANDLE hMapping) : m_hMapping(hMapping)
+inline MFileMapping::MFileMapping(HANDLE hMapping)
+    : m_hMapping(hMapping), m_index(0)
 {
 }
+
+inline MFileMapping::MFileMapping(MFileMapping& mapping)
+    : m_hMapping(CloneHandleDx(mapping.m_hMapping)), m_index(mapping.m_index)
+{
+}
+
 
 inline MFileMapping::~MFileMapping()
 {
@@ -230,7 +287,7 @@ inline BOOL MFileMapping::CloseHandle()
     return FALSE;
 }
 
-inline MFileMappingView
+inline MMapView
 MFileMapping::MapViewOfFile(
     DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
     DWORD dwNumberOfBytes/* = 0*/)
@@ -239,17 +296,17 @@ MFileMapping::MapViewOfFile(
                                   dwOffsetLow, dwNumberOfBytes);
     if (pMap)
     {
-        MFileMappingView view(pMap);
+        MMapView view(pMap);
         return view;
     }
     else
     {
-        MFileMappingView view;
+        MMapView view;
         return view;
     }
 }
 
-inline MFileMappingView
+inline MMapView
 MFileMapping::MapViewOfFileEx(
     DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
     DWORD dwNumberOfBytes/* = 0*/, LPVOID lpBaseAddress/* = NULL*/)
@@ -259,12 +316,12 @@ MFileMapping::MapViewOfFileEx(
                                     lpBaseAddress);
     if (pMap)
     {
-        MFileMappingView view(pMap);
+        MMapView view(pMap);
         return view;
     }
     else
     {
-        MFileMappingView view;
+        MMapView view;
         return view;
     }
 }
@@ -281,11 +338,6 @@ inline /*static*/ HANDLE MFileMapping::CloneHandleDx(HANDLE hMapping)
     return hDup;
 }
 
-inline MFileMapping::MFileMapping(MFileMapping& mapping)
-    : m_hMapping(CloneHandleDx(mapping.m_hMapping))
-{
-}
-
 inline MFileMapping& MFileMapping::operator=(MFileMapping& mapping)
 {
     if (this != &mapping && m_hMapping != mapping.m_hMapping)
@@ -293,6 +345,128 @@ inline MFileMapping& MFileMapping::operator=(MFileMapping& mapping)
         HANDLE hMapping = CloneHandleDx(mapping);
         Attach(hMapping);
     }
+    m_index = mapping.m_index;
+}
+
+inline MMapView
+MFileMapping::MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+                              DWORD dwNumberOfBytes/* = 0*/)
+{
+    return MapViewOfFile(dwFILE_MAP_, HILONG(dwlOffset), LOLONG(dwlOffset),
+                         dwNumberOfBytes);
+}
+
+inline DWORDLONG
+MFileMapping::Seek(LONGLONG offset, BOOL bAbsolute/* = FALSE*/)
+{
+    if (bAbsolute)
+    {
+        m_index = offset;
+    }
+    else
+    {
+        m_index += offset;
+    }
+    return m_index;
+}
+
+inline MMapView
+MFileMapping::GetData(DWORD dwDataSize,
+                      DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/)
+{
+    MMapView view(MapViewOfFile64(dwFILE_MAP_, m_index, dwDataSize));
+    return view;
+}
+
+template <typename T>
+inline MTypedMapView<T>
+MFileMapping::GetTypedData(DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/)
+{
+    MTypedMapView<T> view(MapViewOfFile64(dwFILE_MAP_, m_index, sizeof(T)));
+    return view;
+}
+
+inline BOOL MFileMapping::ReadData(LPVOID pvData, DWORD dwDataSize)
+{
+    MMapView view = GetData(dwDataSize, FILE_MAP_READ);
+    if (!view)
+        return FALSE;
+    CopyMemory(pvData, view, dwDataSize);
+    m_index += dwDataSize;
+    return TRUE;
+}
+
+inline BOOL MFileMapping::WriteData(LPCVOID pvData, DWORD dwDataSize)
+{
+    MMapView view = GetData(dwDataSize, FILE_MAP_WRITE);
+    if (!view)
+        return FALSE;
+    CopyMemory(view, pvData, dwDataSize);
+    m_index += dwDataSize;
+    return TRUE;
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+inline MTypedMapView<T>::MTypedMapView()
+{
+}
+
+template <typename T>
+inline MTypedMapView<T>::MTypedMapView(LPVOID pv) : m_map_view(pv)
+{
+}
+
+template <typename T>
+inline MTypedMapView<T>::MTypedMapView(MMapView& map_view)
+    : m_map_view(map_view)
+{
+}
+
+template <typename T>
+inline MTypedMapView<T>::MTypedMapView(MTypedMapView<T>& map_view)
+    : m_map_view(map_view.m_map_view)
+{
+}
+
+template <typename T>
+inline MTypedMapView<T>& MTypedMapView<T>::operator=(MMapView& map_view)
+{
+    m_map_view = map_view;
+    return *this;
+}
+
+template <typename T>
+inline MTypedMapView<T>&
+MTypedMapView<T>::operator=(MTypedMapView<T>& map_view)
+{
+    m_map_view = map_view.m_map_view;
+    return *this;
+}
+
+template <typename T>
+inline MTypedMapView<T>::operator T*() const
+{
+    return Ptr();
+}
+
+template <typename T>
+inline T *MTypedMapView<T>::Ptr() const
+{
+    return reinterpret_cast<T *>(m_map_view.Ptr());
+}
+
+template <typename T>
+inline bool MTypedMapView<T>::operator!() const
+{
+    return !m_map_view;
+}
+
+template <typename T>
+inline BOOL MTypedMapView<T>::FlushViewOfFile(DWORD dwNumberOfBytes/* = 0*/)
+{
+    return m_map_view.FlushViewOfFile(dwNumberOfBytes);
 }
 
 ////////////////////////////////////////////////////////////////////////////
