@@ -89,18 +89,14 @@ class MFileMappingView::MSharedView : public MUnknown
 public:
     LPVOID m_pv;
 
-    MSharedView(LPVOID pv);
-    ~MSharedView();
+    MSharedView(LPVOID pv) : m_pv(pv)
+    {
+    }
+    ~MSharedView()
+    {
+        ::UnmapViewOfFile(m_pv);
+    }
 };
-
-inline MFileMappingView::MSharedView::MSharedView(LPVOID pv) : m_pv(pv)
-{
-}
-
-inline /*virtual*/ MFileMappingView::MSharedView::~MSharedView()
-{
-    ::UnmapViewOfFile(m_pv);
-}
 
 inline MFileMappingView::MFileMappingView() : m_pView(NULL)
 {
