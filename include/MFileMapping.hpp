@@ -125,10 +125,9 @@ public:
     MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
                       DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
 
-    static HANDLE CloneHandleDx(HANDLE hMapping);
-
-    DWORD Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow, BOOL bAbsolute = FALSE);
+    DWORD     Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow, BOOL bAbsolute = FALSE);
     DWORDLONG Seek64(LONGLONG offset, BOOL bAbsolute = FALSE);
+
     BOOL ReadData(LPVOID pvData, DWORD dwDataSize);
     BOOL WriteData(LPCVOID pvData, DWORD dwDataSize);
 
@@ -136,6 +135,8 @@ public:
                      DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
     template <typename T>
     MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
+
+    static HANDLE CloneHandleDx(HANDLE hMapping);
 
 protected:
     HANDLE m_hMapping;
