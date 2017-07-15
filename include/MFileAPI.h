@@ -110,6 +110,7 @@
 /* pathname */
 
 bool MPath_Exists(const MChar *pathname);
+MChar *MPath_GetFull(MChar *full, const MChar *relative);
 MChar *MPath_AddSep(MChar *pathname);
 MChar *MPath_RemoveSep(MChar *pathname);
 MChar *MPath_FindTitle(MChar *pathname);
@@ -119,7 +120,6 @@ MChar *MPath_SetDotExt(MChar *pathname, const MChar *dot_ext);
 bool MPath_IsDots(const MChar *name);
 void MPath_BackslashToSlash(MChar *pathname);
 void MPath_SlashToBackslash(MChar *pathname);
-MChar *MPath_GetFull(MChar *full, const MChar *relative);
 
 /**************************************************************************/
 /* directory */
