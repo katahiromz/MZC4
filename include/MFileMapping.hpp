@@ -127,7 +127,8 @@ public:
 
     static HANDLE CloneHandleDx(HANDLE hMapping);
 
-    DWORDLONG Seek(LONGLONG offset, BOOL bAbsolute = FALSE);
+    DWORD Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow, BOOL bAbsolute = FALSE);
+    DWORDLONG Seek64(LONGLONG offset, BOOL bAbsolute = FALSE);
     BOOL ReadData(LPVOID pvData, DWORD dwDataSize);
     BOOL WriteData(LPCVOID pvData, DWORD dwDataSize);
 
@@ -382,8 +383,14 @@ MFileMapping::MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
                          dwNumberOfBytes);
 }
 
+inline DWORD
+Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow, BOOL bAbsolute/* = FALSE*/)
+{
+    return (DWORD)Seek64(MAKELONGLONG(dwOffsetLow, dwOffsetHigh), bAbsolute);
+}
+
 inline DWORDLONG
-MFileMapping::Seek(LONGLONG offset, BOOL bAbsolute/* = FALSE*/)
+MFileMapping::Seek64(LONGLONG offset, BOOL bAbsolute/* = FALSE*/)
 {
     if (bAbsolute)
     {
