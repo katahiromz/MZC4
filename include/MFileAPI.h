@@ -7,6 +7,7 @@
 
 /**************************************************************************/
 
+/* C99 and C++11 */
 #if __STDC_VERSION__ >= 199901L && !defined(C99)
     #define C99             1
 #endif
@@ -58,6 +59,7 @@
         #include <stdlib.h>
         #include <stdio.h>
     #endif
+
     #include <sys/stat.h>
     #include <sys/types.h>
 
@@ -72,6 +74,7 @@
         typedef char MChar;
         #define MChar MChar
     #endif
+
     #ifndef MAX_PATH
         #define MAX_PATH 256
     #endif
@@ -80,11 +83,17 @@
 #ifdef __cplusplus
     #include <cassert>          /* assert */
     #include <cstring>          /* strlen, wcslen */
-    #define optional_(def) = def
 #else
     #include <assert.h>
     #include <string.h>
-    #define optional_(def)      /*empty*/
+#endif
+
+#ifndef optional_
+    #ifdef __cplusplus
+        #define optional_(def) = def
+    #else
+        #define optional_(def)      /*empty*/
+    #endif
 #endif
 
 /**************************************************************************/
@@ -131,9 +140,12 @@ bool        Dir_Close(MZC_DIR handle);
 
 bool File_Exists(const MChar *filename);
 
-uint8_t *File_GetContents(const MChar *filename, size_t *psize optional_(NULL));
+uint8_t *
+File_GetContents(const MChar *filename, size_t *psize optional_(NULL));
+bool
+File_PutContents(const MChar *filename, const void *pvContents, size_t size);
+
 bool File_PutText(const MChar *filename, const MChar *psz);
-bool File_PutContents(const MChar *filename, const void *pvContents, size_t size);
 
 bool File_Move(const MChar *existing_file, const MChar *new_file);
 bool File_Copy(const MChar *existing_file, const MChar *new_file,
@@ -676,13 +688,11 @@ inline bool Path_IsDots(const MChar *name)
 {
 #ifdef _WIN32
     return name[0] == TEXT('.') && (
-        name[1] == 0 ||
-        (name[1] == TEXT('.') && name[2] == 0)
+        name[1] == 0 || (name[1] == TEXT('.') && name[2] == 0)
     );
 #else
     return name[0] == '.' && (
-        name[1] == 0 ||
-        (name[1] == '.' && name[2] == 0)
+        name[1] == 0 || (name[1] == '.' && name[2] == 0)
     );
 #endif
 }
