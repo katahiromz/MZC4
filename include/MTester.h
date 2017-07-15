@@ -1,11 +1,11 @@
-// MTester.h --- MZC4 tester                                    -*- C++ -*-
-// This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
-//////////////////////////////////////////////////////////////////////////////
+/* MTester.h --- MZC4 tester                                    -*- C++ -*- */
+/* This file is part of MZC4.  See file "ReadMe.txt" and "License.txt". */
+/****************************************************************************/
 
 #ifndef MZC4_MTESTER_H_
 #define MZC4_MTESTER_H_     5   /* Version 5 */
 
-//////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
 
 #ifdef __cplusplus
     #include <cstdio>
@@ -15,7 +15,7 @@
     #include <string.h>
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
 
 #ifndef USING_NAMESPACE_STD
     #ifdef __cplusplus
@@ -25,6 +25,7 @@
     #endif
 #endif
 
+/* C99 and C++11 */
 #if __STDC_VERSION__ >= 199901L && !defined(C99)
     #define C99             1
 #endif
@@ -44,8 +45,8 @@
     #define MTESTER_MAX_BUFFER_SIZE     512
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// types
+/****************************************************************************/
+/* types */
 
 typedef void (*MTEST_FUNC)(void);
 
@@ -61,8 +62,8 @@ typedef struct MTEST_BUFFER
     char buffer[MTESTER_MAX_BUFFER_COUNT][MTESTER_MAX_BUFFER_SIZE];
 } MTEST_BUFFER;
 
-//////////////////////////////////////////////////////////////////////////////
-// global variables
+/****************************************************************************/
+/* global variables */
 
 extern int              g_executed;
 extern int              g_failures;
@@ -71,8 +72,8 @@ extern MTEST_BUFFER     g_test_buffer;
 extern const int        g_testcase_count;
 extern MTESTCASE        g_testcases[];
 
-//////////////////////////////////////////////////////////////////////////////
-// mtester functions
+/****************************************************************************/
+/* mtester functions */
 
 inline int MTester_finish(const char *name)
 {
@@ -229,8 +230,8 @@ inline char *MTester_sprintf(const char *fmt, ...)
     return buffer;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// macros
+/****************************************************************************/
+/* macros */
 
 #define START_TEST(name) void func_#name(void)
 #define DECLARE_TEST(name)  void func_#name(void);
@@ -290,8 +291,8 @@ inline char *MTester_sprintf(const char *fmt, ...)
                         "%s expected not %s.\n", #expr, std::string(value).c_str())
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// Win32API
+/****************************************************************************/
+/* Win32API */
 
 #ifdef _WIN32
     inline const char *MTester_point(const POINT *ppt)
@@ -330,6 +331,6 @@ inline char *MTester_sprintf(const char *fmt, ...)
     }
 #endif  /* _WIN32 */
 
-//////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
 
 #endif  /* ndef MZC4_MTESTER_H_ */
