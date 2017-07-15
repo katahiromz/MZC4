@@ -497,22 +497,19 @@ inline MChar *MPath_AddSep(MChar *pathname)
 inline MChar *MPath_FindDotExt(MChar *pathname)
 {
     USING_NAMESPACE_STD;
-    MChar *title;
-    MChar *pch;
+    MChar *title, *dot_ext;
     assert(pathname);
     title = MPath_FindTitle(pathname);
 #ifdef _WIN32
-    pch = _tcsrchr(title, TEXT('.'));
-    if (pch)
-        return pch;
-    else
-        return pathname + lstrlen(pathname);
+    dot_ext = _tcsrchr(title, TEXT('.'));
+    if (dot_ext)
+        return dot_ext;
+    return pathname + _tcslen(pathname);
 #else
-    pch = strrchr(title, '.');
-    if (pch)
-        return pch;
-    else
-        return pathname + strlen(pathname);
+    dot_ext = strrchr(title, '.');
+    if (dot_ext)
+        return dot_ext;
+    return pathname + strlen(pathname);
 #endif
 }
 
