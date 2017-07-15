@@ -158,47 +158,47 @@ inline DWORD MFileLister::GetFileAttributes() const
 
 inline BOOL MFileLister::MatchesMask(DWORD dwMask) const
 {
-    return MFileLister::GetFileAttributes() & dwMask;
+    return (MFileLister::GetFileAttributes() & dwMask) != 0;
 }
 
 inline BOOL MFileLister::IsReadOnly() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_READONLY;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
 }
 
 inline BOOL MFileLister::IsDirectory() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
 inline BOOL MFileLister::IsCompressed() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED) != 0;
 }
 
 inline BOOL MFileLister::IsSystem() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) != 0;
 }
 
 inline BOOL MFileLister::IsHidden() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0;
 }
 
 inline BOOL MFileLister::IsTemporary() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY) != 0;
 }
 
 inline BOOL MFileLister::IsNormal() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_NORMAL;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) != 0;
 }
 
 inline BOOL MFileLister::IsArchived() const
 {
-    return m_find.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE;
+    return (m_find.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0;
 }
 
 inline LPCTSTR MFileLister::GetRootDir() const
