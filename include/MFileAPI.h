@@ -15,12 +15,16 @@
 #endif
 
 /* <stdbool.h> and <stdint.h> */
-#ifndef __cplusplus
+#ifdef __cplusplus
+    #ifdef CXX11
+        #include <cstdint>
+    #else
+        #include "pstdint.h"
+    #endif
+#else
     #if C99 && !defined(__cplusplus)
         #include <stdbool.h>
         #include <stdint.h>
-    #elif CXX11
-        #include <cstdint.h>
     #else
         #include "pstdbool.h"
         #include "pstdint.h"
@@ -47,12 +51,20 @@
         #define MChar MChar
     #endif
 #else
-    #include <stdio.h>
-    #include <io.h>
+    #ifdef __cplusplus
+        #include <cstdlib>
+        #include <cstdio>
+    #else
+        #include <stdlib.h>
+        #include <stdio.h>
+    #endif
     #include <sys/stat.h>
+    #include <sys/types.h>
+
     #ifdef MSDOS
         #include <direct.h>
     #else
+        #include <unistd.h>
         #include <dirent.h>     /* opendir, ... */
     #endif
 
@@ -72,7 +84,7 @@
 #else
     #include <assert.h>
     #include <string.h>
-    #define optional_(def)      /* empty */
+    #define optional_(def)      /*empty*/
 #endif
 
 /**************************************************************************/
@@ -358,8 +370,10 @@ inline bool Dir_Create(const MChar *pathname)
     USING_NAMESPACE_STD;
 #ifdef _WIN32
     return !!CreateDirectory(pathname, NULL);
-#else
+#elif defined(MSDOS)
     return mkdir(pathname) == 0;
+#else
+    return mkdir(pathname, 0755) == 0;
 #endif
 }
 
@@ -487,7 +501,11 @@ inline MChar *Path_RemoveBackslash(MChar *pathname)
     MChar *prev;
 
     assert(pathname);
+#ifdef _WIN32
     path_len = _tcslen(pathname);
+#else
+    path_len = strlen(pathname);
+#endif
     if (path_len == 0)
         return pathname;
 
@@ -580,7 +598,7 @@ Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info)
     ent = readdir(dirp);
     if (!ent)
     {
-        closedir(dir);
+        closedir(dirp);
         return NULL;
     }
 
