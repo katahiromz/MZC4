@@ -486,7 +486,7 @@ inline MChar *MPath_FindDotExt(MChar *pathname)
     MChar *pch;
     assert(pathname);
     title = MPath_FindTitle(pathname);
-#ifdef WIN32
+#ifdef _WIN32
     pch = _tcsrchr(title, TEXT('.'));
     if (pch)
         return pch;
