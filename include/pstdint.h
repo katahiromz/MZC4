@@ -31,24 +31,27 @@
     typedef unsigned char           uint8_t;
     typedef unsigned short          uint16_t;
     typedef unsigned int            uint32_t;
-    #if defined(_I64_MAX)
-        typedef __int64             int64_t;
-        typedef unsigned __int64    uint64_t;
-    #else
-        typedef long long           int64_t;
-        typedef unsigned long long  uint64_t;
+    #ifndef MSDOS
+        #if defined(_I64_MAX)
+            typedef __int64             int64_t;
+            typedef unsigned __int64    uint64_t;
+        #else
+            typedef long long           int64_t;
+            typedef unsigned long long  uint64_t;
+        #endif
     #endif
 #endif
 
-typedef char PSTDINT_TEST_00_[(sizeof(int8_t) == 1) ? 1 : -1];
-typedef char PSTDINT_TEST_01_[(sizeof(int16_t) == 2) ? 1 : -1];
-typedef char PSTDINT_TEST_02_[(sizeof(int32_t) == 4) ? 1 : -1];
-typedef char PSTDINT_TEST_03_[(sizeof(int64_t) == 8) ? 1 : -1];
-typedef char PSTDINT_TEST_04_[(sizeof(uint8_t) == 1) ? 1 : -1];
-typedef char PSTDINT_TEST_05_[(sizeof(uint16_t) == 2) ? 1 : -1];
+typedef char PSTDINT_TEST_01_[(sizeof(int8_t) == 1) ? 1 : -1];
+typedef char PSTDINT_TEST_02_[(sizeof(uint8_t) == 1) ? 1 : -1];
+typedef char PSTDINT_TEST_03_[(sizeof(int16_t) == 2) ? 1 : -1];
+typedef char PSTDINT_TEST_04_[(sizeof(uint16_t) == 2) ? 1 : -1];
+typedef char PSTDINT_TEST_05_[(sizeof(int32_t) == 4) ? 1 : -1];
 typedef char PSTDINT_TEST_06_[(sizeof(uint32_t) == 4) ? 1 : -1];
-typedef char PSTDINT_TEST_07_[(sizeof(uint64_t) == 8) ? 1 : -1];
-
+#ifndef MSDOS
+    typedef char PSTDINT_TEST_07_[(sizeof(int64_t) == 8) ? 1 : -1];
+    typedef char PSTDINT_TEST_08_[(sizeof(uint64_t) == 8) ? 1 : -1];
+#endif
 /****************************************************************************/
 
 #endif  /* ndef MZC4_PSTDINT_H_ */

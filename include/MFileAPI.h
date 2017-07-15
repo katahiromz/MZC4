@@ -162,7 +162,7 @@ bool MFile_PutText(const MChar *filename, const MChar *psz);
 
 bool MFile_Move(const MChar *existing_file, const MChar *new_file);
 bool MFile_Copy(const MChar *existing_file, const MChar *new_file,
-               bool bFailIfExists optional_(false));
+                bool bFailIfExists optional_(false));
 bool MFile_Delete(const MChar *filename);
 
 /**************************************************************************/
