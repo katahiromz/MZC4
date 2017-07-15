@@ -3,16 +3,18 @@
 /****************************************************************************/
 
 #ifndef MZC4_MTESTER_H_
-#define MZC4_MTESTER_H_     5   /* Version 5 */
+#define MZC4_MTESTER_H_     6   /* Version 6 */
 
 /****************************************************************************/
 
 #ifdef __cplusplus
     #include <cstdio>
     #include <cstring>
+    #include <cstdarg>
 #else
     #include <stdio.h>
     #include <string.h>
+    #include <stdarg.h>
 #endif
 
 /****************************************************************************/
