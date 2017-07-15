@@ -12,5 +12,5 @@
         #define false       0
         typedef char        bool;
     #endif
-    #define __bool_true_false_are_defined 1
+    #define __bool_true_false_are_defined   1
 #endif  /* ndef __bool_true_false_are_defined */

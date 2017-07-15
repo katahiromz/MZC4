@@ -128,7 +128,6 @@ bool MDir_Create(const MChar *pathname);
 bool MDir_Remove(const MChar *pathname);
 bool MDir_Get(MChar *pathname, size_t maxbuf optional_(MAX_PATH));
 bool MDir_Set(const MChar *pathname);
-bool MDir_Delete(const MChar *dir);
 bool MDir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
 
 #ifndef MSDOS
@@ -146,6 +145,8 @@ bool MDir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
     MZC_DIR_P MDir_FindFirstItem(const MChar *pathname, MZC_DIR_INFO *info);
     bool      MDir_FindNextItem(MZC_DIR_P dirp, MZC_DIR_INFO *info);
     bool      MDir_FindClose(MZC_DIR_P dirp);
+
+    bool MDir_Delete(const MChar *dir);
 #endif  /* ndef MSDOS */
 
 /**************************************************************************/
@@ -498,6 +499,7 @@ inline MChar *MPath_FindDotExt(MChar *pathname)
         return pch;
     else
         return pathname + strlen(pathname);
+#endif
 }
 
 inline MChar *MPath_RemoveSep(MChar *pathname)
@@ -661,6 +663,45 @@ inline bool MDir_Remove(const MChar *pathname)
         return closedir(dirp) == 0;
     #endif
     }
+
+    inline bool MDir_Delete(const MChar *dir)
+    {
+    #ifdef _WIN32
+        TCHAR dir_old[MAX_PATH];
+    #else
+        char dir_old[MAX_PATH];
+    #endif
+        MZC_DIR_INFO info;
+        MZC_DIR_P dirp;
+
+        assert(dir);
+
+        if (!MDir_Exists(dir))
+            return false;
+
+        MDir_Get(dir_old, MAX_PATH);
+        if (!MDir_Set(dir))
+            return false;
+
+        dirp = MDir_FindFirstItem(TEXT("."), &info);
+        if (dirp)
+        {
+            do
+            {
+                if (!MPath_IsDots(info.cFileName))
+                {
+                    if (MDir_Exists(info.cFileName))
+                        MDir_Delete(info.cFileName);
+                    else
+                        MFile_Delete(info.cFileName);
+                }
+            } while(MDir_FindNextItem(dirp, &info));
+            MDir_FindClose(dirp);
+        }
+        MDir_Set(dir_old);
+
+        return MDir_Remove(dir);
+    }
 #endif  /* ndef MSDOS */
 
 inline bool MDir_Get(MChar *pathname, size_t maxbuf)
@@ -702,41 +743,6 @@ inline bool MPath_IsDots(const MChar *name)
     );
 }
 
-inline bool MDir_Delete(const MChar *dir)
-{
-    TCHAR dir_old[MAX_PATH];
-    MZC_DIR_INFO info;
-    MZC_DIR_P dirp;
-
-    assert(dir);
-
-    if (!MDir_Exists(dir))
-        return false;
-
-    MDir_Get(dir_old);
-    if (!MDir_Set(dir))
-        return false;
-
-    dirp = MDir_FindFirstItem(TEXT("."), &info);
-    if (dirp)
-    {
-        do
-        {
-            if (!MPath_IsDots(info.cFileName))
-            {
-                if (MDir_Exists(info.cFileName))
-                    MDir_Delete(info.cFileName);
-                else
-                    MFile_Delete(info.cFileName);
-            }
-        } while(MDir_FindNextItem(dirp, &info));
-        MDir_FindClose(dirp);
-    }
-    MDir_Set(dir_old);
-
-    return MDir_Remove(dir);
-}
-
 inline bool
 MDir_CreateRecurse(const MChar *path, bool fForce)
 {
@@ -774,7 +780,7 @@ MDir_CreateRecurse(const MChar *path, bool fForce)
             if (last_sep)
             {
                 *last_sep = 0;
-                if (MDir_CreateRecurse(new_path))
+                if (MDir_CreateRecurse(new_path, fForce))
                 {
                     free(new_path);
                     return MDir_Create(path);
