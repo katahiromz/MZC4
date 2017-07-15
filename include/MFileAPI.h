@@ -78,6 +78,10 @@
     #ifndef MAX_PATH
         #define MAX_PATH 256
     #endif
+
+    #ifndef TEXT
+        #define TEXT(str)   str
+    #endif
 #endif
 
 #ifdef __cplusplus
@@ -100,13 +104,15 @@
 /* pathname */
 
 bool Path_Exists(const MChar *pathname);
-MChar *Path_AddBackslash(MChar *pathname);
-MChar *Path_RemoveBackslash(MChar *pathname);
+MChar *Path_AddSep(MChar *pathname);
+MChar *Path_RemoveSep(MChar *pathname);
 MChar *Path_FindTitle(MChar *pathname);
 MChar *Path_SetTitle(MChar *pathname, const MChar *title);
 MChar *Path_FindDotExt(MChar *pathname);
 MChar *Path_SetDotExt(MChar *pathname, const MChar *dot_ext);
 bool Path_IsDots(const MChar *name);
+void Path_BackslashToSlash(MChar *pathname);
+void Path_SlashToBackslash(MChar *pathname);
 
 /**************************************************************************/
 /* directory */
@@ -115,25 +121,24 @@ bool Dir_Exists(const MChar *pathname);
 bool Dir_Create(const MChar *pathname);
 bool Dir_Remove(const MChar *pathname);
 bool Dir_Get(MChar *pathname, size_t maxbuf optional_(MAX_PATH));
-bool Dir_Change(const MChar *pathname);
-
-/* bool Dir_Delete(const MChar *pathname); */
-/* bool Dir_CreateRecurse(const MChar *pathname, bool fForce optional_(false)); */
+bool Dir_Set(const MChar *pathname);
+bool Dir_Delete(const MChar *dir);
+bool Dir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
 
 #ifdef _WIN32
     typedef WIN32_FIND_DATA     MZC_DIR_INFO;
-    typedef HANDLE              MZC_DIR;
+    typedef HANDLE              MZC_DIR_P;
 #else
     typedef struct MZC_DIR_INFO
     {
         MChar   cFileName[MAX_PATH];
     } MZC_DIR_INFO;
-    typedef DIR *MZC_DIR;
+    typedef DIR *MZC_DIR_P;
 #endif
 
-MZC_DIR     Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info);
-bool        Dir_NextItem(MZC_DIR handle, MZC_DIR_INFO *info);
-bool        Dir_Close(MZC_DIR handle);
+MZC_DIR_P     Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info);
+bool        Dir_NextItem(MZC_DIR_P handle, MZC_DIR_INFO *info);
+bool        Dir_Close(MZC_DIR_P handle);
 
 /**************************************************************************/
 /* file */
@@ -429,41 +434,25 @@ inline MChar *Path_SetDotExt(MChar *pathname, const MChar *dot_ext)
     return pathname;
 }
 
-inline MChar *Path_AddBackslash(MChar *pathname)
+inline MChar *Path_AddSep(MChar *pathname)
 {
     USING_NAMESPACE_STD;
     size_t path_len;
 
 #ifdef _WIN32
-    #ifdef UNICODE
-        LPWSTR prev;
+    MChar *prev;
 
-        assert(pathname);
-        path_len = lstrlenW(pathname);
-        if (path_len == 0)
-            return pathname;
+    assert(pathname);
+    path_len = _tcslen(pathname);
+    if (path_len == 0)
+        return pathname;
 
-        prev = &pathname[path_len - 1];
-        if (*prev != L'\\' && *prev != L'/')
-        {
-            pathname[path_len++] = L'\\';
-            pathname[path_len] = 0;
-        }
-    #else
-        LPSTR prev;
-
-        assert(pathname);
-        path_len = lstrlenA(pathname);
-        if (path_len == 0)
-            return pathname;
-
-        prev = CharPrevA(pathname, pathname + path_len);
-        if (*prev != '\\' && *prev != '/')
-        {
-            pathname[path_len++] = '\\';
-            pathname[path_len] = 0;
-        }
-    #endif
+    prev = CharPrev(pathname, pathname + path_len);
+    if (*prev != TEXT('\\') && *prev != TEXT('/'))
+    {
+        pathname[path_len++] = TEXT('\\');
+        pathname[path_len] = 0;
+    }
 #else
     char *prev;
 
@@ -491,7 +480,7 @@ inline MChar *Path_FindDotExt(MChar *pathname)
     title = Path_FindTitle(pathname);
     {
 #ifdef WIN32
-        MChar *pch = _tcsrchr(title, _T('.'));
+        MChar *pch = _tcsrchr(title, TEXT('.'));
         if (pch)
             return pch;
         else
@@ -506,7 +495,7 @@ inline MChar *Path_FindDotExt(MChar *pathname)
     }
 }
 
-inline MChar *Path_RemoveBackslash(MChar *pathname)
+inline MChar *Path_RemoveSep(MChar *pathname)
 {
     USING_NAMESPACE_STD;
     size_t path_len;
@@ -585,15 +574,15 @@ inline bool Dir_Remove(const MChar *pathname)
 #endif
 }
 
-inline MZC_DIR
+inline MZC_DIR_P
 Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
     MChar spec[MAX_PATH];
-    MZC_DIR handle;
+    MZC_DIR_P handle;
     lstrcpy(spec, pathname);
-    Path_AddBackslash(spec);
+    Path_AddSep(spec);
     lstrcat(spec, TEXT("*"));
     handle = FindFirstFile(spec, info);
     if (handle == INVALID_HANDLE_VALUE)
@@ -619,7 +608,7 @@ Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info)
 #endif
 }
 
-inline bool Dir_NextItem(MZC_DIR handle, MZC_DIR_INFO *info)
+inline bool Dir_NextItem(MZC_DIR_P handle, MZC_DIR_INFO *info)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -642,7 +631,7 @@ inline bool Dir_NextItem(MZC_DIR handle, MZC_DIR_INFO *info)
 #endif
 }
 
-inline bool Dir_Close(MZC_DIR handle)
+inline bool Dir_Close(MZC_DIR_P handle)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -674,7 +663,7 @@ inline bool Dir_Get(MChar *pathname, size_t maxbuf)
 #endif
 }
 
-inline bool Dir_Change(const MChar *pathname)
+inline bool Dir_Set(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -686,14 +675,164 @@ inline bool Dir_Change(const MChar *pathname)
 
 inline bool Path_IsDots(const MChar *name)
 {
-#ifdef _WIN32
     return name[0] == TEXT('.') && (
         name[1] == 0 || (name[1] == TEXT('.') && name[2] == 0)
     );
+}
+
+inline bool Dir_Delete(const MChar *dir)
+{
+    TCHAR dir_old[MAX_PATH];
+    MZC_DIR_INFO info;
+    MZC_DIR_P dirp;
+
+    assert(dir);
+
+    if (!Dir_Exists(dir))
+        return false;
+
+    Dir_Get(dir_old);
+    if (!Dir_Set(dir))
+        return false;
+
+    dirp = Dir_FirstItem(TEXT("."), &info);
+    if (dirp)
+    {
+        do
+        {
+            if (!Path_IsDots(info.cFileName))
+            {
+                if (Dir_Exists(info.cFileName))
+                    Dir_Delete(info.cFileName);
+                else
+                    File_Delete(info.cFileName);
+            }
+        } while(Dir_NextItem(dirp, &info));
+        Dir_Close(dirp);
+    }
+    Dir_Set(dir_old);
+
+    return Dir_Remove(dir);
+}
+
+inline bool
+Dir_CreateRecurse(const MChar *path, bool fForce)
+{
+    MChar *new_path, *pch, *last_sep;
+
+    assert(path);
+#ifdef _WIN32
+    new_path = _tcsdup(path);
 #else
-    return name[0] == '.' && (
-        name[1] == 0 || (name[1] == '.' && name[2] == 0)
-    );
+    new_path = strdup(path);
+#endif
+    if (!new_path)
+        return false;
+
+    Path_RemoveSep(new_path);
+
+    for (;;)
+    {
+        if (!Path_Exists(new_path))
+        {
+            last_sep = NULL;
+#ifdef _WIN32
+            for (pch = new_path; *pch; pch = CharNext(pch))
+            {
+                if (*pch == TEXT('\\') || *pch == TEXT('/'))
+                    last_sep = pch;
+            }
+#else
+            for (pch = new_path; *pch; ++pch)
+            {
+                if (*pch == '/')
+                    last_sep = pch;
+            }
+#endif
+            if (last_sep)
+            {
+                *last_sep = 0;
+                if (Dir_CreateRecurse(new_path))
+                {
+                    free(new_path);
+                    return Dir_Create(path);
+                }
+            }
+            else
+            {
+                if (Dir_Create(new_path))
+                {
+                    return true;
+                }
+            }
+
+            free(new_path);
+            return false;
+        }
+
+        if (!Dir_Exists(new_path))
+        {
+            if (!fForce)
+                return false;
+
+            if (!File_Delete(new_path))
+                return false;
+
+            continue;
+        }
+
+        break;
+    }
+
+    free(new_path);
+    return true;
+}
+
+inline void Path_BackslashToSlash(MChar *pathname)
+{
+    MChar *pch = pathname;
+#ifdef _WIN32
+    while (*pch)
+    {
+        if (*pch == TEXT('\\'))
+        {
+            *pch = TEXT('/');
+        }
+        pch = CharNext(pch);
+    }
+#else
+    while (*pch)
+    {
+        if (*pch == '\\')
+        {
+            *pch = '/';
+        }
+        ++pch;
+    }
+#endif
+}
+
+inline void Path_SlashToBackslash(MChar *pathname)
+{
+    MChar *pch = pathname;
+#ifdef _WIN32
+    while (*pch)
+    {
+        if (*pch == TEXT('/'))
+        {
+            *pch = TEXT('\\');
+        }
+        pch = CharNext(pch);
+    }
+#else
+    while (*pch)
+    {
+        if (*pch == '/')
+        {
+            *pch = '\\';
+        }
+        ++pch;
+    }
 #endif
 }
 
