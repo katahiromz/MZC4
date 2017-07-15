@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_FILEAPI_H_
-#define MZC4_FILEAPI_H_         6   /* Version 6 */
+#define MZC4_FILEAPI_H_         7   /* Version 7 */
 
 /*
  * Path_...
@@ -29,7 +29,7 @@
         #include "pstdint.h"
     #endif
 #else
-    #if C99 && !defined(__cplusplus)
+    #if C99
         #include <stdbool.h>
         #include <stdint.h>
     #else
