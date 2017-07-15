@@ -136,9 +136,9 @@ bool Dir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
     typedef DIR *MZC_DIR_P;
 #endif
 
-MZC_DIR_P     Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info);
-bool        Dir_NextItem(MZC_DIR_P handle, MZC_DIR_INFO *info);
-bool        Dir_Close(MZC_DIR_P handle);
+MZC_DIR_P     Dir_FindFirst(const MChar *pathname, MZC_DIR_INFO *info);
+bool        Dir_FindNext(MZC_DIR_P dirp, MZC_DIR_INFO *info);
+bool        Dir_FindClose(MZC_DIR_P dirp);
 
 /**************************************************************************/
 /* file */
@@ -574,23 +574,30 @@ inline bool Dir_Remove(const MChar *pathname)
 #endif
 }
 
-inline MZC_DIR_P
-Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info)
+inline MZC_DIR_P Dir_FindFirst(const MChar *pathname, MZC_DIR_INFO *info)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
     MChar spec[MAX_PATH];
-    MZC_DIR_P handle;
+    MZC_DIR_P dirp;
+
+    assert(pathname);
+    assert(info);
+
     lstrcpy(spec, pathname);
     Path_AddSep(spec);
     lstrcat(spec, TEXT("*"));
-    handle = FindFirstFile(spec, info);
-    if (handle == INVALID_HANDLE_VALUE)
-        handle = NULL;
-    return handle;
+
+    dirp = FindFirstFile(spec, info);
+    if (dirp == INVALID_HANDLE_VALUE)
+        dirp = NULL;
+    return dirp;
 #else
     DIR *dirp;
     struct dirent *ent;
+
+    assert(pathname);
+    assert(info);
 
     dirp = opendir(pathname);
     if (dirp == NULL)
@@ -608,21 +615,27 @@ Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info)
 #endif
 }
 
-inline bool Dir_NextItem(MZC_DIR_P handle, MZC_DIR_INFO *info)
+inline bool Dir_FindNext(MZC_DIR_P dirp, MZC_DIR_INFO *info)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
-    if (handle == NULL)
+    assert(dirp);
+    assert(info);
+
+    if (dirp == NULL)
         return false;
 
-    return FindNextFile(handle, info);
+    return FindNextFile(dirp, info);
 #else
     struct dirent *ent;
 
-    if (handle == NULL)
+    assert(dirp);
+    assert(info);
+
+    if (dirp == NULL)
         return false;
 
-    ent = readdir(handle);
+    ent = readdir(dirp);
     if (ent == NULL)
         return false;
 
@@ -631,13 +644,15 @@ inline bool Dir_NextItem(MZC_DIR_P handle, MZC_DIR_INFO *info)
 #endif
 }
 
-inline bool Dir_Close(MZC_DIR_P handle)
+inline bool Dir_FindClose(MZC_DIR_P dirp)
 {
     USING_NAMESPACE_STD;
+    assert(dirp);
+
 #ifdef _WIN32
-    return !!FindClose(handle);
+    return !!FindClose(dirp);
 #else
-    return closedir(handle) == 0;
+    return closedir(dirp) == 0;
 #endif
 }
 
@@ -695,7 +710,7 @@ inline bool Dir_Delete(const MChar *dir)
     if (!Dir_Set(dir))
         return false;
 
-    dirp = Dir_FirstItem(TEXT("."), &info);
+    dirp = Dir_FindFirst(TEXT("."), &info);
     if (dirp)
     {
         do
@@ -707,8 +722,8 @@ inline bool Dir_Delete(const MChar *dir)
                 else
                     File_Delete(info.cFileName);
             }
-        } while(Dir_NextItem(dirp, &info));
-        Dir_Close(dirp);
+        } while(Dir_FindNext(dirp, &info));
+        Dir_FindClose(dirp);
     }
     Dir_Set(dir_old);
 
