@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_FILEAPI_H_
-#define MZC4_FILEAPI_H_         5   /* Version 5 */
+#define MZC4_FILEAPI_H_         6   /* Version 6 */
 
 /**************************************************************************/
 
@@ -80,7 +80,7 @@
     #endif
 
     #ifndef TEXT
-        #define TEXT(str)   str
+        #define TEXT(x)     x
     #endif
 #endif
 
