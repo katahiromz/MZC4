@@ -119,6 +119,7 @@ MChar *MPath_SetDotExt(MChar *pathname, const MChar *dot_ext);
 bool MPath_IsDots(const MChar *name);
 void MPath_BackslashToSlash(MChar *pathname);
 void MPath_SlashToBackslash(MChar *pathname);
+MChar *MPath_GetFull(MChar *full, const MChar *relative);
 
 /**************************************************************************/
 /* directory */
@@ -232,6 +233,19 @@ inline bool MDir_Exists(const MChar *pathname)
             return true;
     }
     return false;
+#endif
+}
+
+inline MChar *MPath_GetFull(MChar *full, const MChar *relative)
+{
+    USING_NAMESPACE_STD;
+    assert(full);
+    assert(relative);
+#ifdef _WIN32
+    GetFullPathName(relative, MAX_PATH, full, NULL);
+    return full;
+#else
+    return realpath(relative, full);
 #endif
 }
 
