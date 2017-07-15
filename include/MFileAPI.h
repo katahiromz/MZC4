@@ -105,26 +105,26 @@ bool Path_IsDots(const MChar *name);
 bool Dir_Exists(const MChar *pathname);
 bool Dir_Create(const MChar *pathname);
 bool Dir_Remove(const MChar *pathname);
-bool Dir_Get(MChar *pathname, size_t maxbuf);
+bool Dir_Get(MChar *pathname, size_t maxbuf optional_(MAX_PATH));
 bool Dir_Change(const MChar *pathname);
 
 /* bool Dir_Delete(const MChar *pathname); */
 /* bool Dir_CreateRecurse(const MChar *pathname, bool fForce optional_(false)); */
 
 #ifdef _WIN32
-    typedef WIN32_FIND_DATA MZC_DIR_INFO;
-    typedef HANDLE MZC_DIR;
+    typedef WIN32_FIND_DATA     MZC_DIR_INFO;
+    typedef HANDLE              MZC_DIR;
 #else
     typedef struct MZC_DIR_INFO
     {
-        MChar       cFileName[MAX_PATH];
+        MChar   cFileName[MAX_PATH];
     } MZC_DIR_INFO;
     typedef DIR *MZC_DIR;
 #endif
 
-MZC_DIR Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info);
-bool Dir_NextItem(MZC_DIR handle, MZC_DIR_INFO *info);
-bool Dir_Close(MZC_DIR handle);
+MZC_DIR     Dir_FirstItem(const MChar *pathname, MZC_DIR_INFO *info);
+bool        Dir_NextItem(MZC_DIR handle, MZC_DIR_INFO *info);
+bool        Dir_Close(MZC_DIR handle);
 
 /**************************************************************************/
 /* file */
