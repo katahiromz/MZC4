@@ -174,7 +174,7 @@ inline MString MFileDialog::GetFolderPath() const
     else
     {
         lstrcpyn(sz, m_ofn.lpstrFile, _countof(sz));
-        LPTSTR pch = Path_FindTitle(sz);
+        LPTSTR pch = MPath_FindTitle(sz);
         if (pch)
         {
             *pch = 0;
@@ -326,8 +326,8 @@ inline /*virtual*/ void MFileDialog::OnTypeChange()
     HWND hParent = ::GetParent(m_hwnd);
     ::SendMessage(hParent, CDM_GETFILEPATH, _countof(szPath), (LPARAM)szPath);
 
-    LPTSTR pchTitle = Path_FindTitle(szPath);
-    LPTSTR pch = Path_FindDotExt(szPath);
+    LPTSTR pchTitle = MPath_FindTitle(szPath);
+    LPTSTR pch = MPath_FindDotExt(szPath);
     if (pch && pchTitle)
     {
         *pch = 0;
