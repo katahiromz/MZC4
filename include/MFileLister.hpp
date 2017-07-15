@@ -9,7 +9,7 @@ class MFileLister;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "MFile.hpp"
+#include "MFileAPI.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -236,7 +236,7 @@ inline BOOL MFileLister::GetFilePath(T_STRING& strPath)
     if (m_szRootDir[0])
     {
         lstrcpy(szPath, m_szRootDir);
-        Path_AddSep(szPath);
+        MPath_AddSep(szPath);
     }
     lstrcat(szPath, MFileLister::GetFileName());
     strPath = szPath;
@@ -273,7 +273,7 @@ inline BOOL MFileLister::GetFilePath(LPTSTR pszPath, DWORD cchPath) const
     if (m_szRootDir[0])
     {
         lstrcpy(szPath, m_szRootDir);
-        Path_AddSep(szPath);
+        MPath_AddSep(szPath);
     }
     else
         szPath[0] = 0;
@@ -294,7 +294,7 @@ inline BOOL MFileLister::FindFirstFile(
 
     TCHAR szPath[MAX_PATH];
     lstrcpyn(szPath, pszWildCard, MAX_PATH);
-    LPTSTR pch = Path_FindTitle(szPath);
+    LPTSTR pch = MPath_FindTitle(szPath);
 
     if (pch != szPath)
     {

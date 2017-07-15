@@ -2,8 +2,8 @@
 // This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef MZC4_PROCESSMAKER_HPP_
-#define MZC4_PROCESSMAKER_HPP_      2   /* Version 2 */
+#ifndef MZC4_MPROCESSMAKER_HPP_
+#define MZC4_MPROCESSMAKER_HPP_     3   /* Version 3 */
 
 #include "MFile.hpp"
 
@@ -503,4 +503,4 @@ inline BOOL MProcessMaker::PrepareForRedirect(
 
 ////////////////////////////////////////////////////////////////////////////
 
-#endif  // ndef MZC4_PROCESSMAKER_HPP_
+#endif  // ndef MZC4_MPROCESSMAKER_HPP_
