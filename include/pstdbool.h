@@ -1,4 +1,4 @@
-/* pstdbool.h --- MZC4 portable stdbool.h */
+/* pstdbool.h --- MZC4 portable standard boolean */
 /* Written by katahiromz <katayama.hirofumi.mz@gmail.com>. */
 /* You can use this as replacement of <stdbool.h> and <cstdbool>. */
 /* This file is public domain software (PDS). */
