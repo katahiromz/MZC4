@@ -3,12 +3,12 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        8   /* Version 8 */
+#define MZC4_MFILEAPI_H_        9   /* Version 9 */
 
 /*
- * MPath_...
- * MDir_...
- * MFile_...
+ * MPath_... functions
+ * MDir_... functions
+ * MFile_... functions
  */
 
 /**************************************************************************/
@@ -131,20 +131,22 @@ bool MDir_Set(const MChar *pathname);
 bool MDir_Delete(const MChar *dir);
 bool MDir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
 
-#ifdef _WIN32
-    typedef WIN32_FIND_DATA     MZC_DIR_INFO;
-    typedef HANDLE              MZC_DIR_P;
-#else
-    typedef struct MZC_DIR_INFO
-    {
-        MChar   cFileName[MAX_PATH];
-    } MZC_DIR_INFO;
-    typedef DIR *MZC_DIR_P;
-#endif
+#ifndef MSDOS
+    #ifdef _WIN32
+        typedef WIN32_FIND_DATA     MZC_DIR_INFO;
+        typedef HANDLE              MZC_DIR_P;
+    #else
+        typedef struct MZC_DIR_INFO
+        {
+            MChar   cFileName[MAX_PATH];
+        } MZC_DIR_INFO;
+        typedef DIR *MZC_DIR_P;
+    #endif
 
-MZC_DIR_P   MDir_FindFirst(const MChar *pathname, MZC_DIR_INFO *info);
-bool        MDir_FindNext(MZC_DIR_P dirp, MZC_DIR_INFO *info);
-bool        MDir_FindClose(MZC_DIR_P dirp);
+    MZC_DIR_P MDir_FindFirstItem(const MChar *pathname, MZC_DIR_INFO *info);
+    bool      MDir_FindNextItem(MZC_DIR_P dirp, MZC_DIR_INFO *info);
+    bool      MDir_FindClose(MZC_DIR_P dirp);
+#endif  /* ndef MSDOS */
 
 /**************************************************************************/
 /* file */
@@ -307,7 +309,7 @@ MFile_GetContents(const MChar *filename, size_t *psize)
         pb = (uint8_t *)calloc(1, sbuf.st_size + 1);
         if (pb)
         {
-            if (!fread(pb, sbuf.st_size, 1, fp))
+            if (fread(pb, sbuf.st_size, 1, fp))
             {
                 if (psize)
                     *psize = sbuf.st_size;
@@ -481,23 +483,21 @@ inline MChar *MPath_FindDotExt(MChar *pathname)
 {
     USING_NAMESPACE_STD;
     MChar *title;
+    MChar *pch;
     assert(pathname);
     title = MPath_FindTitle(pathname);
-    {
 #ifdef WIN32
-        MChar *pch = _tcsrchr(title, TEXT('.'));
-        if (pch)
-            return pch;
-        else
-            return pathname + lstrlen(pathname);
+    pch = _tcsrchr(title, TEXT('.'));
+    if (pch)
+        return pch;
+    else
+        return pathname + lstrlen(pathname);
 #else
-        MChar *pch = strrchr(title, '.');
-        if (pch)
-            return pch;
-        else
-            return pathname + strlen(pathname);
-#endif
-    }
+    pch = strrchr(title, '.');
+    if (pch)
+        return pch;
+    else
+        return pathname + strlen(pathname);
 }
 
 inline MChar *MPath_RemoveSep(MChar *pathname)
@@ -579,87 +579,89 @@ inline bool MDir_Remove(const MChar *pathname)
 #endif
 }
 
-inline MZC_DIR_P MDir_FindFirst(const MChar *pathname, MZC_DIR_INFO *info)
-{
-    USING_NAMESPACE_STD;
-#ifdef _WIN32
-    MChar spec[MAX_PATH];
-    MZC_DIR_P dirp;
-
-    assert(pathname);
-    assert(info);
-
-    lstrcpy(spec, pathname);
-    MPath_AddSep(spec);
-    lstrcat(spec, TEXT("*"));
-
-    dirp = FindFirstFile(spec, info);
-    if (dirp == INVALID_HANDLE_VALUE)
-        dirp = NULL;
-    return dirp;
-#else
-    DIR *dirp;
-    struct dirent *ent;
-
-    assert(pathname);
-    assert(info);
-
-    dirp = opendir(pathname);
-    if (dirp == NULL)
-        return NULL;
-
-    ent = readdir(dirp);
-    if (!ent)
+#ifndef MSDOS
+    inline MZC_DIR_P MDir_FindFirstItem(const MChar *pathname, MZC_DIR_INFO *info)
     {
-        closedir(dirp);
-        return NULL;
+        USING_NAMESPACE_STD;
+    #ifdef _WIN32
+        MChar spec[MAX_PATH];
+        MZC_DIR_P dirp;
+
+        assert(pathname);
+        assert(info);
+
+        lstrcpy(spec, pathname);
+        MPath_AddSep(spec);
+        lstrcat(spec, TEXT("*"));
+
+        dirp = FindFirstFile(spec, info);
+        if (dirp == INVALID_HANDLE_VALUE)
+            dirp = NULL;
+        return dirp;
+    #else
+        DIR *dirp;
+        struct dirent *ent;
+
+        assert(pathname);
+        assert(info);
+
+        dirp = opendir(pathname);
+        if (dirp == NULL)
+            return NULL;
+
+        ent = readdir(dirp);
+        if (!ent)
+        {
+            closedir(dirp);
+            return NULL;
+        }
+
+        strcpy(info->cFileName, ent->d_name);
+        return dirp;
+    #endif
     }
 
-    strcpy(info->cFileName, ent->d_name);
-    return dirp;
-#endif
-}
+    inline bool MDir_FindNextItem(MZC_DIR_P dirp, MZC_DIR_INFO *info)
+    {
+        USING_NAMESPACE_STD;
+    #ifdef _WIN32
+        assert(dirp);
+        assert(info);
 
-inline bool MDir_FindNext(MZC_DIR_P dirp, MZC_DIR_INFO *info)
-{
-    USING_NAMESPACE_STD;
-#ifdef _WIN32
-    assert(dirp);
-    assert(info);
+        if (dirp == NULL)
+            return false;
 
-    if (dirp == NULL)
-        return false;
+        return FindNextFile(dirp, info);
+    #else
+        struct dirent *ent;
 
-    return FindNextFile(dirp, info);
-#else
-    struct dirent *ent;
+        assert(dirp);
+        assert(info);
 
-    assert(dirp);
-    assert(info);
+        if (dirp == NULL)
+            return false;
 
-    if (dirp == NULL)
-        return false;
+        ent = readdir(dirp);
+        if (ent == NULL)
+            return false;
 
-    ent = readdir(dirp);
-    if (ent == NULL)
-        return false;
+        strcpy(info->cFileName, ent->d_name);
+        return true;
+    #endif
+    }
 
-    strcpy(info->cFileName, ent->d_name);
-    return true;
-#endif
-}
+    inline bool MDir_FindClose(MZC_DIR_P dirp)
+    {
+        USING_NAMESPACE_STD;
+        assert(dirp);
 
-inline bool MDir_FindClose(MZC_DIR_P dirp)
-{
-    USING_NAMESPACE_STD;
-    assert(dirp);
-
-#ifdef _WIN32
-    return !!FindClose(dirp);
-#else
-    return closedir(dirp) == 0;
-#endif
-}
+    #ifdef _WIN32
+        return !!FindClose(dirp);
+    #else
+        return closedir(dirp) == 0;
+    #endif
+    }
+#endif  /* ndef MSDOS */
 
 inline bool MDir_Get(MChar *pathname, size_t maxbuf)
 {
@@ -715,7 +717,7 @@ inline bool MDir_Delete(const MChar *dir)
     if (!MDir_Set(dir))
         return false;
 
-    dirp = MDir_FindFirst(TEXT("."), &info);
+    dirp = MDir_FindFirstItem(TEXT("."), &info);
     if (dirp)
     {
         do
@@ -727,7 +729,7 @@ inline bool MDir_Delete(const MChar *dir)
                 else
                     MFile_Delete(info.cFileName);
             }
-        } while(MDir_FindNext(dirp, &info));
+        } while(MDir_FindNextItem(dirp, &info));
         MDir_FindClose(dirp);
     }
     MDir_Set(dir_old);
