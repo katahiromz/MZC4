@@ -25,13 +25,16 @@
     #else
         #include <limits.h>
     #endif
-    typedef signed char             int8_t;
-    typedef short                   int16_t;
-    typedef int                     int32_t;
-    typedef unsigned char           uint8_t;
-    typedef unsigned short          uint16_t;
-    typedef unsigned int            uint32_t;
-    #ifndef MSDOS
+    typedef signed char                 int8_t;
+    typedef unsigned char               uint8_t;
+    typedef short                       int16_t;
+    typedef unsigned short              uint16_t;
+    #ifdef MSDOS
+        typedef long                    int32_t;
+        typedef unsigned long           uint32_t;
+    #else
+        typedef int                     int32_t;
+        typedef unsigned int            uint32_t;
         #if defined(_I64_MAX)
             typedef __int64             int64_t;
             typedef unsigned __int64    uint64_t;
@@ -52,6 +55,7 @@ typedef char PSTDINT_TEST_06_[(sizeof(uint32_t) == 4) ? 1 : -1];
     typedef char PSTDINT_TEST_07_[(sizeof(int64_t) == 8) ? 1 : -1];
     typedef char PSTDINT_TEST_08_[(sizeof(uint64_t) == 8) ? 1 : -1];
 #endif
+
 /****************************************************************************/
 
 #endif  /* ndef MZC4_PSTDINT_H_ */
