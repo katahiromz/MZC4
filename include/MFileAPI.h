@@ -2,8 +2,8 @@
  * This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
  */
 
-#ifndef MFILEAPI_H_
-#define MFILEAPI_H_     4   /* Version 4 */
+#ifndef MZC4_FILEAPI_H_
+#define MZC4_FILEAPI_H_         5   /* Version 5 */
 
 /**************************************************************************/
 
@@ -838,4 +838,4 @@ inline void Path_SlashToBackslash(MChar *pathname)
 
 /**************************************************************************/
 
-#endif  /* ndef MFILEAPI_H_ */
+#endif  /* ndef MZC4_FILEAPI_H_ */
