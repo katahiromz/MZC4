@@ -236,7 +236,7 @@ inline BOOL MFileLister::GetFilePath(T_STRING& strPath)
     if (m_szRootDir[0])
     {
         lstrcpy(szPath, m_szRootDir);
-        AddBackslashDx(szPath);
+        Path_AddBackslash(szPath);
     }
     lstrcat(szPath, MFileLister::GetFileName());
     strPath = szPath;
@@ -273,7 +273,7 @@ inline BOOL MFileLister::GetFilePath(LPTSTR pszPath, DWORD cchPath) const
     if (m_szRootDir[0])
     {
         lstrcpy(szPath, m_szRootDir);
-        AddBackslashDx(szPath);
+        Path_AddBackslash(szPath);
     }
     else
         szPath[0] = 0;
@@ -294,7 +294,7 @@ inline BOOL MFileLister::FindFirstFile(
 
     TCHAR szPath[MAX_PATH];
     lstrcpyn(szPath, pszWildCard, MAX_PATH);
-    LPTSTR pch = FindFileNameDx(szPath);
+    LPTSTR pch = Path_FindTitle(szPath);
 
     if (pch != szPath)
     {

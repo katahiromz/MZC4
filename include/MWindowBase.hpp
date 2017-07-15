@@ -24,13 +24,10 @@ class MDialogBase;
     #include <crtdbg.h>
 #endif
 
-#ifndef C99
-    #if __STDC_VERSION__ >= 199901L
-        #define C99         1
-    #endif
+#if __STDC_VERSION__ >= 199901L && !defined(C99)
+    #define C99             1
 #endif
-
-#if (__cplusplus >= 201103L) && !defined(CXX11)
+#if __cplusplus >= 201103L && !defined(CXX11)
     #define CXX11           1
 #endif
 

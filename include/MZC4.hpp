@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_HPP_
-#define MZC4_HPP_    101    /* Version 101 */
+#define MZC4_HPP_    102    /* Version 102 */
 
 #if _MSC_VER > 1000
     #pragma once            // For speed!
@@ -11,6 +11,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#include "pstdbool.h"
 #include "pstdint.h"
 
 #include "MWindowBase.hpp"

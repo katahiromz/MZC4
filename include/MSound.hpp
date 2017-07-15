@@ -324,8 +324,8 @@ MSound::Load(LPCTSTR pszName, BOOL bFile/* = FALSE*/, BOOL bMP3/* = FALSE*/)
 inline BOOL MSound::LoadWaveFromFile(LPCTSTR pszFile)
 {
     using namespace std;
-    DWORD cb;
-    LPBYTE pb = GetFileContentsDx(pszFile, &cb);
+    size_t cb;
+    LPBYTE pb = File_GetContents(pszFile, &cb);
     assert(pb);
     assert(cb);
     if (cb > 12 &&
@@ -380,9 +380,9 @@ MSound::LoadWaveFromResource(UINT nResourceID, HINSTANCE hInstance/* = NULL*/)
 inline BOOL MSound::LoadMp3FromFile(LPCTSTR pszFile)
 {
     using namespace std;
-    DWORD cb;
+    size_t cb;
     BOOL bOK = FALSE;
-    LPBYTE pb = GetFileContentsDx(pszFile, &cb);
+    LPBYTE pb = File_GetContents(pszFile, &cb);
     if (pb)
     {
         bOK = LoadMp3FromMemory(pb, cb);
@@ -469,7 +469,7 @@ inline BOOL MSound::PlayAndWait()
 
 inline BOOL MSound::SaveToWaveFile(LPCTSTR pszFile)
 {
-    BOOL b = PutFileContentsDx(pszFile, &m_binWave[0], m_binWave.size());
+    BOOL b = File_PutContents(pszFile, &m_binWave[0], m_binWave.size());
     assert(b);
     return b;
 }

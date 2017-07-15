@@ -136,8 +136,8 @@ struct MMyNotepad : public MWindowBase
 
     BOOL LoadDx(HWND hwnd, LPCTSTR pszFileName)
     {
-        DWORD dwSize;
-        LPBYTE bin = GetFileContentsDx(pszFileName, &dwSize);
+        size_t size;
+        LPBYTE bin = File_GetContents(pszFileName, &size);
         if (bin == NULL)
         {
             MsgBoxDx(IDS_CANNOTOPEN, IDS_APPNAME, MB_ICONERROR);
@@ -145,7 +145,7 @@ struct MMyNotepad : public MWindowBase
         }
 
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
-        MStringW wide = mstr_from_bin(bin, dwSize, &m_text_type);
+        MStringW wide = mstr_from_bin(bin, size, &m_text_type);
 
         MWideToText text(wide);
         m_edit_ctrl.SetWindowText(text);
@@ -161,7 +161,7 @@ struct MMyNotepad : public MWindowBase
         MStringW wide(MTextToWide(m_edit_ctrl.GetWindowText()));
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
         std::string bin = mbin_from_str(wide, m_text_type);
-        if (PutFileContentsDx(pszFileName, &bin[0], bin.size()))
+        if (File_PutContents(pszFileName, &bin[0], bin.size()))
         {
             m_file_name = pszFileName;
             m_edit_ctrl.SetModify(FALSE);
