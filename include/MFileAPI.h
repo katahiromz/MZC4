@@ -5,6 +5,12 @@
 #ifndef MZC4_FILEAPI_H_
 #define MZC4_FILEAPI_H_         6   /* Version 6 */
 
+/*
+ * Path_...
+ * Dir_...
+ * File_...
+ */
+
 /**************************************************************************/
 
 /* C99 and C++11 */
@@ -136,7 +142,7 @@ bool Dir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
     typedef DIR *MZC_DIR_P;
 #endif
 
-MZC_DIR_P     Dir_FindFirst(const MChar *pathname, MZC_DIR_INFO *info);
+MZC_DIR_P   Dir_FindFirst(const MChar *pathname, MZC_DIR_INFO *info);
 bool        Dir_FindNext(MZC_DIR_P dirp, MZC_DIR_INFO *info);
 bool        Dir_FindClose(MZC_DIR_P dirp);
 
@@ -155,7 +161,6 @@ bool File_PutText(const MChar *filename, const MChar *psz);
 bool File_Move(const MChar *existing_file, const MChar *new_file);
 bool File_Copy(const MChar *existing_file, const MChar *new_file,
                bool bFailIfExists optional_(false));
-
 bool File_Delete(const MChar *filename);
 
 /**************************************************************************/
