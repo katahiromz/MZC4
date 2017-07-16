@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      5       /* Version 5 */
+#define MZC4_MFILEMAPPING_HPP_      6       /* Version 6 */
 
 class MMapView;
     template <typename T>
@@ -44,7 +44,7 @@ public:
 
     MMapView();
     MMapView(LPVOID pv);
-    MMapView(MMapView& view);
+    MMapView(const MMapView& view);
     ~MMapView();
 
     MMapView& operator=(const MMapView& view);
@@ -66,8 +66,8 @@ public:
 
     MTypedMapView();
     MTypedMapView(LPVOID pv);
-    MTypedMapView(MMapView& map_view);
-    MTypedMapView(MTypedMapView<T>& map_view);
+    MTypedMapView(const MMapView& map_view);
+    MTypedMapView(const MTypedMapView<T>& map_view);
     MTypedMapView<T>& operator=(const MMapView& map_view);
     MTypedMapView<T>& operator=(const MTypedMapView<T>& map_view);
 
@@ -176,7 +176,7 @@ inline MMapView::MMapView(LPVOID pv)
 {
 }
 
-inline MMapView::MMapView(MMapView& view)
+inline MMapView::MMapView(const MMapView& view)
     : m_pView(view.m_pView)
 {
     if (m_pView)
@@ -476,13 +476,13 @@ inline MTypedMapView<T>::MTypedMapView(LPVOID pv) : m_map_view(pv)
 }
 
 template <typename T>
-inline MTypedMapView<T>::MTypedMapView(MMapView& map_view)
+inline MTypedMapView<T>::MTypedMapView(const MMapView& map_view)
     : m_map_view(map_view)
 {
 }
 
 template <typename T>
-inline MTypedMapView<T>::MTypedMapView(MTypedMapView<T>& map_view)
+inline MTypedMapView<T>::MTypedMapView(const MTypedMapView<T>& map_view)
     : m_map_view(map_view.m_map_view)
 {
 }
