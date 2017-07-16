@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      7       /* Version 7 */
+#define MZC4_MFILEMAPPING_HPP_      8       /* Version 8 */
 
 class MMapView;
     template <typename T>
@@ -41,11 +41,12 @@ class MMapView
 public:
     class MSharedView;
     MSharedView *m_pView;
-    DWORD        m_offset;
+    DWORDLONG    m_index;
+    DWORD        m_mod;
     DWORD        m_size;
 
     MMapView();
-    MMapView(LPVOID pv, DWORD offset, DWORD size);
+    MMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size);
     MMapView(const MMapView& view);
     ~MMapView();
 
@@ -67,7 +68,7 @@ public:
     MMapView m_map_view;
 
     MTypedMapView();
-    MTypedMapView(LPVOID pv, DWORD offset, DWORD size);
+    MTypedMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size);
     MTypedMapView(const MMapView& map_view);
     MTypedMapView(const MTypedMapView<T>& map_view);
     MTypedMapView<T>& operator=(const MMapView& map_view);
@@ -114,16 +115,16 @@ public:
                          LPCTSTR lpName = NULL);
     BOOL CloseHandle();
 
-    MMapView
+    LPVOID
     MapViewOfFile(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
                   DWORD dwNumberOfBytes = 0);
-    MMapView
+    LPVOID
     MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
                     DWORD dwNumberOfBytes = 0);
-    MMapView
+    LPVOID
     MapViewOfFileEx(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
                     DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
-    MMapView
+    LPVOID
     MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
                       DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
 
@@ -136,12 +137,17 @@ public:
     DWORD GetIndex(LPDWORD pdwHigh) const;
     DWORDLONG GetIndex64() const;
 
+    MMapView MapViewDx(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
+                       DWORD dwNumberOfBytes = 0);
+    MMapView MapViewDx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+                         DWORD dwNumberOfBytes = 0);
+
     MMapView GetData(DWORD dwDataSize,
                      DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
     template <typename T>
     MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS)
     {
-        MTypedMapView<T> view(MapViewOfFile64(dwFILE_MAP_, m_index, sizeof(T)));
+        MTypedMapView<T> view(MapViewDx64(dwFILE_MAP_, m_index, sizeof(T)));
         return view;
     }
 
@@ -172,17 +178,17 @@ public:
     }
 };
 
-inline MMapView::MMapView() : m_pView(NULL), m_offset(0), m_size(0)
+inline MMapView::MMapView() : m_pView(NULL), m_mod(0), m_size(0)
 {
 }
 
-inline MMapView::MMapView(LPVOID pv, DWORD offset, DWORD size)
-    : m_pView(new MSharedView(pv)), m_offset(offset), m_size(size)
+inline MMapView::MMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size)
+    : m_pView(new MSharedView(pv)), m_index(index), m_mod(mod), m_size(size)
 {
 }
 
 inline MMapView::MMapView(const MMapView& view)
-    : m_pView(view.m_pView), m_offset(view.m_offset), m_size(view.m_size)
+    : m_pView(view.m_pView), m_mod(view.m_mod), m_size(view.m_size)
 {
     if (m_pView)
         m_pView->AddRef();
@@ -198,7 +204,8 @@ MMapView::operator=(const MMapView& view)
         m_pView = view.m_pView;
         if (m_pView)
             m_pView->AddRef();
-        m_offset = view.m_offset;
+        m_index = view.m_index;
+        m_mod = view.m_mod;
         m_size = view.m_size;
     }
     return *this;
@@ -214,7 +221,7 @@ inline LPVOID MMapView::Ptr() const
 {
     if (this && m_pView)
     {
-        return ((LPBYTE)m_pView->m_pv) + m_offset;
+        return ((LPBYTE)m_pView->m_pv) + m_mod;
     }
     return NULL;
 }
@@ -333,61 +340,55 @@ inline BOOL MFileMapping::CloseHandle()
     return FALSE;
 }
 
-inline MMapView
+inline LPVOID
 MFileMapping::MapViewOfFile(
     DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
     DWORD dwNumberOfBytes/* = 0*/)
 {
-    DWORDLONG dwl = MAKELONGLONG(dwOffsetLow, dwOffsetHigh);
-    DWORD mod = DWORD(dwl % m_granularity);
-    dwl -= mod;
-    dwNumberOfBytes += mod;
-
-    LPVOID pMap = ::MapViewOfFile(Handle(), dwFILE_MAP_, HILONG(dwl),
-                                  LOLONG(dwl), dwNumberOfBytes);
-    if (pMap)
-    {
-        MMapView view(pMap, mod, dwNumberOfBytes);
-        return view;
-    }
-    else
-    {
-        MMapView view;
-        return view;
-    }
+    LPVOID pMap = ::MapViewOfFile(Handle(), dwFILE_MAP_, dwOffsetHigh,
+                                  dwOffsetLow, dwNumberOfBytes);
+    return pMap;
 }
 
-inline MMapView
+inline LPVOID 
 MFileMapping::MapViewOfFileEx(
     DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
     DWORD dwNumberOfBytes/* = 0*/, LPVOID lpBaseAddress/* = NULL*/)
 {
-    DWORDLONG dwl = MAKELONGLONG(dwOffsetLow, dwOffsetHigh);
-    DWORD mod = DWORD(dwl % m_granularity);
-    dwl -= mod;
-    dwNumberOfBytes += mod;
-
-    LPVOID pMap = ::MapViewOfFileEx(Handle(), dwFILE_MAP_, HILONG(dwl),
-                                    LOLONG(dwl), dwNumberOfBytes,
+    LPVOID pMap = ::MapViewOfFileEx(Handle(), dwFILE_MAP_, dwOffsetHigh,
+                                    dwOffsetHigh, dwNumberOfBytes,
                                     lpBaseAddress);
-    if (pMap)
-    {
-        MMapView view(pMap, mod, dwNumberOfBytes);
-        return view;
-    }
-    else
-    {
-        MMapView view;
-        return view;
-    }
+    return pMap;
 }
 
-inline MMapView
+inline LPVOID
 MFileMapping::MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
     DWORD dwNumberOfBytes/* = 0*/, LPVOID lpBaseAddress/* = NULL*/)
 {
     return MapViewOfFileEx(dwFILE_MAP_, LOLONG(dwlOffset),
         HILONG(dwlOffset), dwNumberOfBytes, lpBaseAddress);
+}
+
+inline MMapView
+MFileMapping::MapViewDx(
+    DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
+    DWORD dwNumberOfBytes/* = 0*/)
+{
+    DWORDLONG dwlOffset = MAKELONGLONG(dwOffsetLow, dwOffsetHigh);
+    return MapViewDx64(dwFILE_MAP_, dwlOffset, dwNumberOfBytes);
+}
+
+inline MMapView
+MFileMapping::MapViewDx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+                          DWORD dwNumberOfBytes/* = 0*/)
+{
+    DWORD mod = DWORD(dwlOffset % m_granularity);
+    DWORDLONG dwlFixedOffset = dwlOffset;
+    dwlFixedOffset -= mod;
+
+    LPVOID pv = MapViewOfFile64(dwFILE_MAP_, dwlFixedOffset, dwNumberOfBytes + mod);
+    MMapView view(pv, dwlOffset, mod, dwNumberOfBytes);
+    return view;
 }
 
 inline /*static*/ HANDLE MFileMapping::CloneHandleDx(HANDLE hMapping)
@@ -412,7 +413,7 @@ inline MFileMapping& MFileMapping::operator=(MFileMapping& mapping)
     m_index = mapping.m_index;
 }
 
-inline MMapView
+inline LPVOID
 MFileMapping::MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
                               DWORD dwNumberOfBytes/* = 0*/)
 {
@@ -445,8 +446,7 @@ inline MMapView
 MFileMapping::GetData(DWORD dwDataSize,
                       DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/)
 {
-    MMapView view(MapViewOfFile64(dwFILE_MAP_, m_index, dwDataSize));
-    return view;
+    return MapViewDx64(dwFILE_MAP_, m_index, dwDataSize);
 }
 
 inline BOOL MFileMapping::ReadData(LPVOID pvData, DWORD dwDataSize)
@@ -500,8 +500,8 @@ inline MTypedMapView<T>::MTypedMapView()
 }
 
 template <typename T>
-inline MTypedMapView<T>::MTypedMapView(LPVOID pv, DWORD offset, DWORD size)
-    : m_map_view(pv, offset, size)
+inline MTypedMapView<T>::MTypedMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size)
+    : m_map_view(pv, index, mod, size)
 {
 }
 
