@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      4       /* Version 4 */
+#define MZC4_MFILEMAPPING_HPP_      5       /* Version 5 */
 
 class MMapView;
     template <typename T>
@@ -47,7 +47,7 @@ public:
     MMapView(MMapView& view);
     ~MMapView();
 
-    MMapView& operator=(MMapView& view);
+    MMapView& operator=(const MMapView& view);
 
     LPVOID Ptr() const;
     operator LPVOID() const;
@@ -68,8 +68,8 @@ public:
     MTypedMapView(LPVOID pv);
     MTypedMapView(MMapView& map_view);
     MTypedMapView(MTypedMapView<T>& map_view);
-    MTypedMapView<T>& operator=(MMapView& map_view);
-    MTypedMapView<T>& operator=(MTypedMapView<T>& map_view);
+    MTypedMapView<T>& operator=(const MMapView& map_view);
+    MTypedMapView<T>& operator=(const MTypedMapView<T>& map_view);
 
     T *Ptr() const;
     operator T*() const;
@@ -131,10 +131,17 @@ public:
     BOOL ReadData(LPVOID pvData, DWORD dwDataSize);
     BOOL WriteData(LPCVOID pvData, DWORD dwDataSize);
 
+    DWORD GetIndex(LPDWORD pdwHigh) const;
+    DWORDLONG GetIndex64() const;
+
     MMapView GetData(DWORD dwDataSize,
                      DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
     template <typename T>
-    MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
+    MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS)
+    {
+        MTypedMapView<T> view(MapViewOfFile64(dwFILE_MAP_, m_index, sizeof(T)));
+        return view;
+    }
 
     static HANDLE CloneHandleDx(HANDLE hMapping);
 
@@ -177,7 +184,7 @@ inline MMapView::MMapView(MMapView& view)
 }
 
 inline MMapView&
-MMapView::operator=(MMapView& view)
+MMapView::operator=(const MMapView& view)
 {
     if (this != &view && m_pView != view.m_pView)
     {
@@ -385,7 +392,8 @@ MFileMapping::MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
 }
 
 inline DWORD
-Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow, BOOL bAbsolute/* = FALSE*/)
+MFileMapping::Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow,
+                   BOOL bAbsolute/* = FALSE*/)
 {
     return (DWORD)Seek64(MAKELONGLONG(dwOffsetLow, dwOffsetHigh), bAbsolute);
 }
@@ -412,14 +420,6 @@ MFileMapping::GetData(DWORD dwDataSize,
     return view;
 }
 
-template <typename T>
-inline MTypedMapView<T>
-MFileMapping::GetTypedData(DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/)
-{
-    MTypedMapView<T> view(MapViewOfFile64(dwFILE_MAP_, m_index, sizeof(T)));
-    return view;
-}
-
 inline BOOL MFileMapping::ReadData(LPVOID pvData, DWORD dwDataSize)
 {
     MMapView view = GetData(dwDataSize, FILE_MAP_READ);
@@ -438,6 +438,29 @@ inline BOOL MFileMapping::WriteData(LPCVOID pvData, DWORD dwDataSize)
     CopyMemory(view, pvData, dwDataSize);
     m_index += dwDataSize;
     return TRUE;
+}
+
+inline DWORD MFileMapping::GetIndex(LPDWORD pdwHigh) const
+{
+    DWORDLONG index = m_index;
+    if (pdwHigh)
+    {
+        *pdwHigh = HILONG(index);
+        return LOLONG(index);
+    }
+    else if (index > 0xFFFFFFFF)
+    {
+        return 0xFFFFFFFF;
+    }
+    else
+    {
+        return (DWORD)index;
+    }
+}
+
+inline DWORDLONG MFileMapping::GetIndex64() const
+{
+    return m_index;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -465,7 +488,7 @@ inline MTypedMapView<T>::MTypedMapView(MTypedMapView<T>& map_view)
 }
 
 template <typename T>
-inline MTypedMapView<T>& MTypedMapView<T>::operator=(MMapView& map_view)
+inline MTypedMapView<T>& MTypedMapView<T>::operator=(const MMapView& map_view)
 {
     m_map_view = map_view;
     return *this;
@@ -473,7 +496,7 @@ inline MTypedMapView<T>& MTypedMapView<T>::operator=(MMapView& map_view)
 
 template <typename T>
 inline MTypedMapView<T>&
-MTypedMapView<T>::operator=(MTypedMapView<T>& map_view)
+MTypedMapView<T>::operator=(const MTypedMapView<T>& map_view)
 {
     m_map_view = map_view.m_map_view;
     return *this;
