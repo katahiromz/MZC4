@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      8       /* Version 8 */
+#define MZC4_MFILEMAPPING_HPP_      9       /* Version 9 */
 
 class MMapView;
     template <typename T>
@@ -127,6 +127,7 @@ public:
     LPVOID
     MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
                       DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
+    BOOL UnmapViewOfFile(LPVOID lpBaseAddress);
 
     DWORD     Seek(DWORD dwOffsetHigh, DWORD dwOffsetLow, BOOL bAbsolute = FALSE);
     DWORDLONG Seek64(LONGLONG offset, BOOL bAbsolute = FALSE);
@@ -145,9 +146,10 @@ public:
     MMapView GetData(DWORD dwDataSize,
                      DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
     template <typename T>
-    MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS)
+    MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS, DWORD Count = 1)
     {
-        MTypedMapView<T> view(MapViewDx64(dwFILE_MAP_, m_index, sizeof(T)));
+        MTypedMapView<T> view(
+            MapViewDx64(dwFILE_MAP_, m_index, sizeof(T) * Count));
         return view;
     }
 
@@ -367,6 +369,11 @@ MFileMapping::MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
 {
     return MapViewOfFileEx(dwFILE_MAP_, LOLONG(dwlOffset),
         HILONG(dwlOffset), dwNumberOfBytes, lpBaseAddress);
+}
+
+inline BOOL MFileMapping::UnmapViewOfFile(LPVOID lpBaseAddress)
+{
+    return ::UnmapViewOfFile(lpBaseAddress);
 }
 
 inline MMapView
