@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      12      /* Version 12 */
+#define MZC4_MFILEMAPPING_HPP_      13      /* Version 13 */
 
 class MMapView;
     template <typename T>
@@ -143,8 +143,8 @@ public:
     BOOL ReadData(LPVOID pvData, DWORD dwDataSize);
     BOOL WriteData(LPCVOID pvData, DWORD dwDataSize);
 
-    DWORD GetIndex(LPDWORD pdwHigh) const;
-    DWORDLONG GetIndex64() const;
+    DWORD GetPos(LPDWORD pdwHigh) const;
+    DWORDLONG GetPos64() const;
 
     MMapView MapViewDx(DWORD dwOffsetHigh = 0, DWORD dwOffsetLow = 0,
                        DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS,
@@ -488,7 +488,7 @@ inline BOOL MFileMapping::WriteData(LPCVOID pvData, DWORD dwDataSize)
     return TRUE;
 }
 
-inline DWORD MFileMapping::GetIndex(LPDWORD pdwHigh) const
+inline DWORD MFileMapping::GetPos(LPDWORD pdwHigh) const
 {
     DWORDLONG index = m_index;
     if (pdwHigh)
@@ -506,7 +506,7 @@ inline DWORD MFileMapping::GetIndex(LPDWORD pdwHigh) const
     }
 }
 
-inline DWORDLONG MFileMapping::GetIndex64() const
+inline DWORDLONG MFileMapping::GetPos64() const
 {
     return m_index;
 }
