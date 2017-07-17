@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      13      /* Version 13 */
+#define MZC4_MFILEMAPPING_HPP_      15      /* Version 15 */
 
 class MMapView;
     template <typename T>
@@ -143,7 +143,7 @@ public:
     BOOL ReadData(LPVOID pvData, DWORD dwDataSize);
     BOOL WriteData(LPCVOID pvData, DWORD dwDataSize);
 
-    DWORD GetPos(LPDWORD pdwHigh) const;
+    DWORD GetPos(LPDWORD pdwHigh = NULL) const;
     DWORDLONG GetPos64() const;
 
     MMapView MapViewDx(DWORD dwOffsetHigh = 0, DWORD dwOffsetLow = 0,
