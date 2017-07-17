@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      10      /* Version 10 */
+#define MZC4_MFILEMAPPING_HPP_      12      /* Version 12 */
 
 class MMapView;
     template <typename T>
@@ -79,6 +79,14 @@ public:
     bool operator!() const;
     T& operator*() const;
     T *operator->() const;
+    T& operator[](size_t index)
+    {
+        return Ptr()[index];
+    }
+    const T& operator[](size_t index) const
+    {
+        return Ptr()[index];
+    }
 
     BOOL FlushViewOfFile(DWORD dwNumberOfBytes = 0);
 };
@@ -138,18 +146,20 @@ public:
     DWORD GetIndex(LPDWORD pdwHigh) const;
     DWORDLONG GetIndex64() const;
 
-    MMapView MapViewDx(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
+    MMapView MapViewDx(DWORD dwOffsetHigh = 0, DWORD dwOffsetLow = 0,
+                       DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS,
                        DWORD dwNumberOfBytes = 0);
-    MMapView MapViewDx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+    MMapView MapViewDx64(DWORDLONG dwlOffset = 0,
+                         DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS,
                          DWORD dwNumberOfBytes = 0);
 
     MMapView GetData(DWORD dwDataSize,
                      DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS);
     template <typename T>
-    MTypedMapView<T> GetTypedData(DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS, DWORD Count = 1)
+    MTypedMapView<T> GetTypedData(DWORD dwDataSize = sizeof(T) * 1,
+                                  DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS)
     {
-        MTypedMapView<T> view(
-            MapViewDx64(dwFILE_MAP_, m_index, sizeof(T) * Count));
+        MTypedMapView<T> view(MapViewDx64(m_index, dwFILE_MAP_, dwDataSize));
         return view;
     }
 
@@ -379,15 +389,16 @@ inline BOOL MFileMapping::UnmapViewOfFile(LPVOID lpBaseAddress)
 
 inline MMapView
 MFileMapping::MapViewDx(
-    DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
-    DWORD dwNumberOfBytes/* = 0*/)
+    DWORD dwOffsetHigh/* = 0*/, DWORD dwOffsetLow/* = 0*/,
+    DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/, DWORD dwNumberOfBytes/* = 0*/)
 {
     DWORDLONG dwlOffset = MAKELONGLONG(dwOffsetLow, dwOffsetHigh);
-    return MapViewDx64(dwFILE_MAP_, dwlOffset, dwNumberOfBytes);
+    return MapViewDx64(dwlOffset, dwFILE_MAP_, dwNumberOfBytes);
 }
 
 inline MMapView
-MFileMapping::MapViewDx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+MFileMapping::MapViewDx64(DWORDLONG dwlOffset,
+                          DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/,
                           DWORD dwNumberOfBytes/* = 0*/)
 {
     DWORD mod = DWORD(dwlOffset % m_granularity);
@@ -454,7 +465,7 @@ inline MMapView
 MFileMapping::GetData(DWORD dwDataSize,
                       DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/)
 {
-    return MapViewDx64(dwFILE_MAP_, m_index, dwDataSize);
+    return MapViewDx64(m_index, dwFILE_MAP_, dwDataSize);
 }
 
 inline BOOL MFileMapping::ReadData(LPVOID pvData, DWORD dwDataSize)
