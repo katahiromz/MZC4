@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      9       /* Version 9 */
+#define MZC4_MFILEMAPPING_HPP_      10      /* Version 10 */
 
 class MMapView;
     template <typename T>
@@ -190,7 +190,8 @@ inline MMapView::MMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size)
 }
 
 inline MMapView::MMapView(const MMapView& view)
-    : m_pView(view.m_pView), m_mod(view.m_mod), m_size(view.m_size)
+    : m_pView(view.m_pView), m_index(view.m_index),
+      m_mod(view.m_mod), m_size(view.m_size)
 {
     if (m_pView)
         m_pView->AddRef();
