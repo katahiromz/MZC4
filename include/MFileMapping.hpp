@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      17      /* Version 17 */
+#define MZC4_MFILEMAPPING_HPP_      18      /* Version 18 */
 
 class MMapView;
     template <typename T>
@@ -40,18 +40,19 @@ class MMapView
 public:
     class MSharedView;
     MSharedView *m_pView;
-    DWORDLONG    m_index;
-    DWORD        m_mod;
-    DWORD        m_size;
 
     MMapView();
     MMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size);
     MMapView(const MMapView& view);
+    MMapView& operator=(const MMapView& view);
     ~MMapView();
 
-    MMapView& operator=(const MMapView& view);
+    LPVOID      Ptr() const;
+    DWORD       GetPos(LPDWORD pdwHigh = NULL) const;
+    DWORDLONG   GetPos64() const;
+    DWORD       GetMod() const;
+    DWORD       GetSize() const;
 
-    LPVOID Ptr() const;
     operator LPVOID() const;
     bool operator!() const;
 
@@ -73,7 +74,12 @@ public:
     MTypedMapView<T>& operator=(const MMapView& map_view);
     MTypedMapView<T>& operator=(const MTypedMapView<T>& map_view);
 
-    T *Ptr() const;
+    T *         Ptr() const;
+    DWORD       GetPos(LPDWORD pdwHigh = NULL) const;
+    DWORDLONG   GetPos64() const;
+    DWORD       GetMod() const;
+    DWORD       GetSize() const;
+
     operator T*() const;
     bool operator!() const;
     T& operator*() const;
@@ -178,9 +184,13 @@ protected:
 class MMapView::MSharedView : public MUnknown
 {
 public:
-    LPVOID m_pv;
+    LPVOID      m_pv;
+    DWORDLONG   m_index;
+    DWORD       m_mod;
+    DWORD       m_size;
 
-    MSharedView(LPVOID pv) : m_pv(pv)
+    MSharedView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size)
+        : m_pv(pv), m_index(index), m_mod(mod), m_size(size)
     {
     }
 
@@ -190,18 +200,16 @@ public:
     }
 };
 
-inline MMapView::MMapView() : m_pView(NULL), m_mod(0), m_size(0)
+inline MMapView::MMapView() : m_pView(NULL)
 {
 }
 
 inline MMapView::MMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size)
-    : m_pView(new MSharedView(pv)), m_index(index), m_mod(mod), m_size(size)
+    : m_pView(new MSharedView(pv, index, mod, size))
 {
 }
 
-inline MMapView::MMapView(const MMapView& view)
-    : m_pView(view.m_pView), m_index(view.m_index),
-      m_mod(view.m_mod), m_size(view.m_size)
+inline MMapView::MMapView(const MMapView& view) : m_pView(view.m_pView)
 {
     if (m_pView)
         m_pView->AddRef();
@@ -217,9 +225,6 @@ MMapView::operator=(const MMapView& view)
         m_pView = view.m_pView;
         if (m_pView)
             m_pView->AddRef();
-        m_index = view.m_index;
-        m_mod = view.m_mod;
-        m_size = view.m_size;
     }
     return *this;
 }
@@ -234,7 +239,7 @@ inline LPVOID MMapView::Ptr() const
 {
     if (this && m_pView)
     {
-        return ((LPBYTE)m_pView->m_pv) + m_mod;
+        return ((LPBYTE)m_pView->m_pv) + m_pView->m_mod;
     }
     return NULL;
 }
@@ -254,6 +259,51 @@ MMapView::FlushViewOfFile(DWORD dwNumberOfBytes/* = 0*/)
 {
     assert(m_pView);
     return ::FlushViewOfFile(Ptr(), dwNumberOfBytes);
+}
+
+inline DWORD MMapView::GetPos(LPDWORD pdwHigh/* = NULL*/) const
+{
+    if (m_pView == NULL)
+    {
+        if (pdwHigh)
+            *pdwHigh = 0;
+        return 0;
+    }
+    if (pdwHigh)
+    {
+        *pdwHigh = HILONG(m_pView->m_index);
+        return LOLONG(m_pView->m_index);
+    }
+    if (HILONG(m_pView->m_index))
+        return 0xFFFFFFFF;
+    return LOLONG(m_pView->m_index);
+}
+
+inline DWORDLONG MMapView::GetPos64() const
+{
+    if (m_pView)
+    {
+        return m_pView->m_index;
+    }
+    return 0;
+}
+
+inline DWORD MMapView::GetMod() const
+{
+    if (m_pView)
+    {
+        return m_pView->m_mod;
+    }
+    return 0;
+}
+
+inline DWORD MMapView::GetSize() const
+{
+    if (m_pView)
+    {
+        return m_pView->m_size;
+    }
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -587,6 +637,30 @@ template <typename T>
 inline T& MTypedMapView<T>::operator*() const
 {
     return *Ptr();
+}
+
+template <typename T>
+inline DWORD MTypedMapView<T>::GetPos(LPDWORD pdwHigh/* = NULL*/) const
+{
+    return m_map_view.GetPos(pdwHigh);
+}
+
+template <typename T>
+inline DWORDLONG MTypedMapView<T>::GetPos64() const
+{
+    return m_map_view.GetPos64();
+}
+
+template <typename T>
+inline DWORD MTypedMapView<T>::GetMod() const
+{
+    return m_map_view.GetMod();
+}
+
+template <typename T>
+inline DWORD MTypedMapView<T>::GetSize() const
+{
+    return m_map_view.GetSize();
 }
 
 ////////////////////////////////////////////////////////////////////////////
