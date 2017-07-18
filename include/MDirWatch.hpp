@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MDIRWATCH_HPP_
-#define MZC4_MDIRWATCH_HPP_     2   /* Version 2 */
+#define MZC4_MDIRWATCH_HPP_     3   /* Version 3 */
 
 class MDirWatch;
 
@@ -88,8 +88,7 @@ inline MDirWatch::MDirWatch(
 
 inline /*virtual*/ MDirWatch::~MDirWatch()
 {
-    if (m_hFindChange != INVALID_HANDLE_VALUE)
-        FindCloseChangeNotification();
+    FindCloseChangeNotification();
 }
 
 inline bool MDirWatch::operator!() const
@@ -101,16 +100,15 @@ inline MDirWatch& MDirWatch::operator=(HANDLE hFindChange)
 {
     assert(hFindChange != NULL && hFindChange != INVALID_HANDLE_VALUE);
     if (m_hFindChange != hFindChange)
+    {
         Attach(hFindChange);
+    }
     return *this;
 }
 
 inline BOOL MDirWatch::Attach(HANDLE hFindChange)
 {
-    if (m_hFindChange != INVALID_HANDLE_VALUE)
-        FindCloseChangeNotification();
-    assert(hFindChange != NULL && hFindChange != INVALID_HANDLE_VALUE);
-    assert(m_hFindChange == INVALID_HANDLE_VALUE);
+    FindCloseChangeNotification();
     m_hFindChange = hFindChange;
     return m_hFindChange != NULL;
 }
@@ -146,9 +144,13 @@ inline BOOL MDirWatch::FindNextChangeNotification()
 
 inline BOOL MDirWatch::FindCloseChangeNotification()
 {
-    BOOL bOK = ::FindCloseChangeNotification(m_hFindChange);
-    m_hFindChange = INVALID_HANDLE_VALUE;
-    return bOK;
+    if (m_hFindChange != INVALID_HANDLE_VALUE)
+    {
+        BOOL bOK = ::FindCloseChangeNotification(m_hFindChange);
+        m_hFindChange = INVALID_HANDLE_VALUE;
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline DWORD

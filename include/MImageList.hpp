@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MIMAGELIST_HPP_
-#define MZC4_MIMAGELIST_HPP_    2       /* Version 2 */
+#define MZC4_MIMAGELIST_HPP_    3       /* Version 3 */
 
 class MImageList;
 
@@ -29,10 +29,10 @@ public:
     MImageList();
     MImageList(HIMAGELIST hImageList);
     MImageList(const MImageList& il);
-    virtual ~MImageList();
-
     MImageList& operator=(HIMAGELIST hImageList);
     MImageList& operator=(const MImageList& ilist);
+    virtual ~MImageList();
+
     operator HIMAGELIST() const;
 
     HIMAGELIST Handle() const;
@@ -105,19 +105,19 @@ inline MImageList::MImageList() : m_hImageList(NULL)
 {
 }
 
-inline MImageList::MImageList(HIMAGELIST hImageList) : m_hImageList(hImageList)
+inline MImageList::MImageList(HIMAGELIST hImageList)
+    : m_hImageList(hImageList)
 {
 }
 
 inline /*virtual*/ MImageList::~MImageList()
 {
-    if (m_hImageList)
-        Destroy();
+    Destroy();
 }
 
-inline MImageList::MImageList(const MImageList& il) : m_hImageList(NULL)
+inline MImageList::MImageList(const MImageList& il)
+    : m_hImageList(CloneHandleDx(il))
 {
-    Attach(MImageList::CloneHandleDx(il.m_hImageList));
 }
 
 inline MImageList::operator HIMAGELIST() const
@@ -132,30 +132,26 @@ inline HIMAGELIST MImageList::Handle() const
 
 inline MImageList& MImageList::operator=(HIMAGELIST hImageList)
 {
-    if (m_hImageList != hImageList)
+    if (Handle() != hImageList)
     {
-        if (m_hImageList != NULL)
-            Destroy();
-        m_hImageList = hImageList;
+        Attach(hImageList);
     }
     return *this;
 }
 
 inline MImageList& MImageList::operator=(const MImageList& ilist)
 {
-    if (m_hImageList != ilist.m_hImageList)
+    if (Handle() != ilist.Handle())
     {
-        if (m_hImageList != NULL)
-            Destroy();
-        m_hImageList = MImageList::CloneHandleDx(ilist);
+        HIMAGELIST himl = CloneHandleDx(ilist);
+        Attach(himl);
     }
     return *this;
 }
 
 inline BOOL MImageList::Attach(HIMAGELIST hImageList)
 {
-    assert(hImageList);
-    assert(m_hImageList == NULL);
+    Destroy();
     m_hImageList = hImageList;
     return m_hImageList != NULL;
 }
@@ -217,11 +213,13 @@ inline BOOL MImageList::GetImageInfo(
 
 inline BOOL MImageList::Destroy()
 {
-    assert(m_hImageList);
-    BOOL bOK = ImageList_Destroy(m_hImageList);
-    m_hImageList = NULL;
-    assert(bOK);
-    return bOK;
+    if (m_hImageList)
+    {
+        BOOL bOK = ImageList_Destroy(m_hImageList);
+        m_hImageList = NULL;
+        return bOK;
+    }
+    return FALSE;
 }
 
 #if (_WIN32_IE >= 0x0300)

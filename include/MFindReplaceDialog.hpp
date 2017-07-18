@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFINDREPLACEDIALOG_HPP_
-#define MZC4_MFINDREPLACEDIALOG_HPP_    2       /* Version 2 */
+#define MZC4_MFINDREPLACEDIALOG_HPP_    3       /* Version 3 */
 
 class MFindReplaceDialog;
 
@@ -106,8 +106,7 @@ MFindReplaceDialog::FindText(HWND hwndOwner, LPCTSTR pszFindWhat/* = NULL*/,
 
     m_fr.hwndOwner = hwndOwner;
 
-    Attach(::FindText(&m_fr));
-    return m_hwnd != NULL;
+    return Attach(::FindText(&m_fr));
 }
 
 inline BOOL
@@ -124,8 +123,7 @@ MFindReplaceDialog::ReplaceText(HWND hwndOwner,
 
     m_fr.hwndOwner = hwndOwner;
 
-    Attach(::ReplaceText(&m_fr));
-    return m_hwnd != NULL;
+    return Attach(::ReplaceText(&m_fr));
 }
 
 inline BOOL MFindReplaceDialog::FindNext() const

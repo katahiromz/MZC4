@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MDC_HPP_
-#define MZC4_MDC_HPP_       2       /* Version 2 */
+#define MZC4_MDC_HPP_       3       /* Version 3 */
 
 class MDC;
     class MMemoryDC;
@@ -46,9 +46,9 @@ public:
 public:
     MDC();
     MDC(HDC hDC);
+    MDC& operator=(HDC hDC);
     virtual ~MDC();
 
-    MDC& operator=(HDC hDC);
     BOOL Attach(HDC hDC);
     HDC Detach(VOID);
     HDC Handle() const;
@@ -57,7 +57,7 @@ public:
     bool operator!() const;
 
     HWND WindowFromDC() const;
-    VOID DeleteDC();
+    BOOL DeleteDC();
 
 public:
     BOOL CreateDC(LPCTSTR pszDriver = NULL, LPCTSTR pszDevice = NULL,
@@ -384,7 +384,6 @@ public:
     MMemoryDC();
     MMemoryDC(HDC hBaseDC);
     BOOL CreateCompatibleDC(HDC hBaseDC = NULL);
-    virtual ~MMemoryDC();
 
 private:
     // NOTE: MMemoryDC is not copyable.
@@ -470,6 +469,7 @@ public:
 
     BOOL CreateMetaFile(LPCTSTR pszFile = NULL);
     HMETAFILE CloseMetaFile();
+    BOOL DeleteMetaFile();
 
 private:
     // NOTE: MMetaDC is not copyable.
@@ -485,13 +485,13 @@ public:
     MEnhMetaDC();
     MEnhMetaDC(HDC hDC);
     MEnhMetaDC(HDC hdcRef, LPCRECT prc, LPCTSTR pszFileName = NULL,
-        LPCTSTR pszzDescription = NULL);
+        LPCTSTR pszDescription = NULL);
     virtual ~MEnhMetaDC();
 
     MEnhMetaDC& operator=(HDC hDC);
 
     BOOL CreateEnhMetaFile(HDC hdcRef, LPCRECT prc, LPCTSTR pszFileName = NULL,
-        LPCTSTR pszzDescription = NULL);
+        LPCTSTR pszDescription = NULL);
     HENHMETAFILE CloseEnhMetaFile();
     BOOL DeleteEnhMetaFile();
 };
@@ -522,7 +522,9 @@ inline FLOAT YDpiScaleDx(FLOAT yPixels, FLOAT base_ydpi/* = 96.0f*/)
     return yPixels * GetYDpiDx() / base_ydpi;
 }
 
-inline MDC::MDC() : m_hDC()
+////////////////////////////////////////////////////////////////////////////
+
+inline MDC::MDC() : m_hDC(NULL)
 {
 }
 
@@ -532,8 +534,7 @@ inline MDC::MDC(HDC hDC) : m_hDC(hDC)
 
 inline /*virtual*/ MDC::~MDC()
 {
-    if (m_hDC)
-        DeleteDC();
+    DeleteDC();
 }
 
 inline MDC& MDC::operator=(HDC hDC)
@@ -542,19 +543,19 @@ inline MDC& MDC::operator=(HDC hDC)
            ::GetObjectType(hDC) == OBJ_DC ||
            ::GetObjectType(hDC) == OBJ_METADC ||
            ::GetObjectType(hDC) == OBJ_ENHMETADC);
-    if (m_hDC != hDC)
+    if (Handle() != hDC)
+    {
         Attach(hDC);
+    }
     return *this;
 }
 
 inline BOOL MDC::Attach(HDC hDC)
 {
-    if (m_hDC)
-        DeleteDC();
+    DeleteDC();
     assert(::GetObjectType(hDC) == OBJ_DC ||
            ::GetObjectType(hDC) == OBJ_METADC ||
            ::GetObjectType(hDC) == OBJ_ENHMETADC);
-    assert(m_hDC == NULL);
     m_hDC = hDC;
     return m_hDC != NULL;
 }
@@ -575,13 +576,13 @@ inline BOOL MDC::CreateDC(LPCTSTR pszDriver/* = NULL*/,
     LPCTSTR pszDevice/* = NULL*/, LPCTSTR pszOutput/* = NULL*/,
     CONST DEVMODE *lpInitData/* = NULL*/)
 {
-    assert(m_hDC == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreateDC(pszDriver, pszDevice, pszOutput, lpInitData));
 }
 
 inline BOOL MDC::CreateCompatibleDC(HDC hBaseDC/* = NULL*/)
 {
-    assert(m_hDC == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreateCompatibleDC(hBaseDC));
 }
 
@@ -597,368 +598,368 @@ inline bool MDC::operator!() const
 
 inline HWND MDC::WindowFromDC() const
 {
-    assert(m_hDC);
-    return ::WindowFromDC(m_hDC);
+    assert(Handle());
+    return ::WindowFromDC(Handle());
 }
 
-inline VOID MDC::DeleteDC()
+inline BOOL MDC::DeleteDC()
 {
-    assert(m_hDC);
-    ::DeleteDC(Detach());
+    if (Handle())
+    {
+        assert(Handle());
+        return ::DeleteDC(Detach());
+    }
+    return FALSE;
 }
 
 inline HPEN MDC::GetCurrentPen() const
 {
-    assert(m_hDC);
-    return reinterpret_cast<HPEN>(::GetCurrentObject(m_hDC, OBJ_PEN));
+    assert(Handle());
+    return reinterpret_cast<HPEN>(::GetCurrentObject(Handle(), OBJ_PEN));
 }
 
 inline HBRUSH MDC::GetCurrentBrush() const
 {
-    assert(m_hDC);
-    return reinterpret_cast<HBRUSH>(::GetCurrentObject(m_hDC, OBJ_BRUSH));
+    assert(Handle());
+    return reinterpret_cast<HBRUSH>(::GetCurrentObject(Handle(), OBJ_BRUSH));
 }
 
 inline HPALETTE MDC::GetCurrentPalette() const
 {
-    assert(m_hDC);
-    return reinterpret_cast<HPALETTE>(::GetCurrentObject(m_hDC, OBJ_PAL));
+    assert(Handle());
+    return reinterpret_cast<HPALETTE>(::GetCurrentObject(Handle(), OBJ_PAL));
 }
 
 inline HFONT MDC::GetCurrentFont() const
 {
-    assert(m_hDC);
-    return reinterpret_cast<HFONT>(::GetCurrentObject(m_hDC, OBJ_FONT));
+    assert(Handle());
+    return reinterpret_cast<HFONT>(::GetCurrentObject(Handle(), OBJ_FONT));
 }
 
 inline HBITMAP MDC::GetCurrentBitmap() const
 {
-    assert(m_hDC);
-    return reinterpret_cast<HBITMAP>(::GetCurrentObject(m_hDC, OBJ_BITMAP));
+    assert(Handle());
+    return reinterpret_cast<HBITMAP>(::GetCurrentObject(Handle(), OBJ_BITMAP));
 }
 
 inline INT MDC::SaveDC(VOID)
 {
-    assert(m_hDC);
-    return ::SaveDC(m_hDC);
+    assert(Handle());
+    return ::SaveDC(Handle());
 }
 
 inline BOOL MDC::RestoreDC(INT nSavedDC)
 {
-    assert(m_hDC);
-    return ::RestoreDC(m_hDC, nSavedDC);
+    assert(Handle());
+    return ::RestoreDC(Handle(), nSavedDC);
 }
 
 inline INT MDC::GetDeviceCaps(INT nIndex) const
 {
-    assert(m_hDC);
-    return ::GetDeviceCaps(m_hDC, nIndex);
+    assert(Handle());
+    return ::GetDeviceCaps(Handle(), nIndex);
 }
 
 inline UINT MDC::GetBoundsRect(LPRECT lpRectBounds, UINT uDCB_flags) const
 {
-    assert(m_hDC);
-    return ::GetBoundsRect(m_hDC, lpRectBounds, uDCB_flags);
+    assert(Handle());
+    return ::GetBoundsRect(Handle(), lpRectBounds, uDCB_flags);
 }
 
 inline UINT MDC::SetBoundsRect(LPCRECT lpRectBounds, UINT uDCB_flags)
 {
-    assert(m_hDC);
-    return ::SetBoundsRect(m_hDC, lpRectBounds, uDCB_flags);
+    assert(Handle());
+    return ::SetBoundsRect(Handle(), lpRectBounds, uDCB_flags);
 }
 
 inline BOOL MDC::ResetDC(CONST DEVMODE *lpDevMode)
 {
-    assert(m_hDC);
-    return ::ResetDC(m_hDC, lpDevMode) != NULL;
+    assert(Handle());
+    return ::ResetDC(Handle(), lpDevMode) != NULL;
 }
 
 inline BOOL MDC::GetBrushOrg(LPPOINT ppt) const
 {
-    assert(m_hDC);
-    return ::GetBrushOrgEx(m_hDC, ppt);
+    assert(Handle());
+    return ::GetBrushOrgEx(Handle(), ppt);
 }
 
 inline BOOL MDC::SetBrushOrg(INT x, INT y, LPPOINT ppt/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetBrushOrgEx(m_hDC, x, y, ppt);
+    assert(Handle());
+    return ::SetBrushOrgEx(Handle(), x, y, ppt);
 }
 
 inline BOOL MDC::SetBrushOrg(POINT pt, LPPOINT lpPointRet/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetBrushOrgEx(m_hDC, pt.x, pt.y, lpPointRet);
+    assert(Handle());
+    return ::SetBrushOrgEx(Handle(), pt.x, pt.y, lpPointRet);
 }
 
 inline INT MDC::EnumObjects(
     INT nObjectType, INT (CALLBACK* lpfn)(LPVOID, LPARAM), LPARAM lpData)
 {
-    assert(m_hDC);
-    return ::EnumObjects(m_hDC, nObjectType, (GOBJENUMPROC) lpfn, lpData);
+    assert(Handle());
+    return ::EnumObjects(Handle(), nObjectType, (GOBJENUMPROC) lpfn, lpData);
 }
 
 inline HGDIOBJ MDC::SelectStockObject(INT nIndex)
 {
-    assert(m_hDC);
-    return ::SelectObject(m_hDC, ::GetStockObject(nIndex));
+    assert(Handle());
+    return ::SelectObject(Handle(), ::GetStockObject(nIndex));
 }
 
 inline HPEN MDC::SelectObject(HPEN hPen)
 {
-    assert(m_hDC);
-    return reinterpret_cast<HPEN>(::SelectObject(m_hDC, hPen));
+    assert(Handle());
+    return reinterpret_cast<HPEN>(::SelectObject(Handle(), hPen));
 }
 
 inline HBRUSH MDC::SelectObject(HBRUSH hBrush)
 {
-    assert(m_hDC);
-    return reinterpret_cast<HBRUSH>(::SelectObject(m_hDC, hBrush));
+    assert(Handle());
+    return reinterpret_cast<HBRUSH>(::SelectObject(Handle(), hBrush));
 }
 
 inline HFONT MDC::SelectObject(HFONT hFont) 
 {
-    assert(m_hDC);
-    return reinterpret_cast<HFONT>(::SelectObject(m_hDC, hFont));
+    assert(Handle());
+    return reinterpret_cast<HFONT>(::SelectObject(Handle(), hFont));
 }
 
 inline HBITMAP MDC::SelectObject(HBITMAP hBitmap)
 {
-    assert(m_hDC);
-    return reinterpret_cast<HBITMAP>(::SelectObject(m_hDC, hBitmap));
+    assert(Handle());
+    return reinterpret_cast<HBITMAP>(::SelectObject(Handle(), hBitmap));
 }
 
 inline INT MDC::SelectObject(HRGN hRgn)
 {
-    assert(m_hDC);
-    return static_cast<INT>(reinterpret_cast<INT_PTR>(::SelectObject(m_hDC, hRgn)));
+    assert(Handle());
+    return static_cast<INT>(reinterpret_cast<INT_PTR>(::SelectObject(Handle(), hRgn)));
 }
 
 inline HGDIOBJ MDC::SelectObject(HGDIOBJ hGdiObj)
 {
-    assert(m_hDC);
-    return ::SelectObject(m_hDC, hGdiObj);
+    assert(Handle());
+    return ::SelectObject(Handle(), hGdiObj);
 }
 
 inline HPALETTE MDC::SelectPalette(
     HPALETTE hPal, BOOL bForceBackground/* = FALSE*/)
 {
-    assert(m_hDC);
-    return ::SelectPalette(m_hDC, hPal, bForceBackground);
+    assert(Handle());
+    return ::SelectPalette(Handle(), hPal, bForceBackground);
 }
 
 inline COLORREF MDC::GetNearestColor(COLORREF crColor) const
 {
-    assert(m_hDC);
-    return ::GetNearestColor(m_hDC, crColor);
+    assert(Handle());
+    return ::GetNearestColor(Handle(), crColor);
 }
 
 inline UINT MDC::RealizePalette(VOID)
 {
-    assert(m_hDC);
-    return ::RealizePalette(m_hDC);
+    assert(Handle());
+    return ::RealizePalette(Handle());
 }
 
 inline VOID MDC::UpdateColors(VOID)
 {
-    assert(m_hDC);
-    ::UpdateColors(m_hDC);
+    assert(Handle());
+    ::UpdateColors(Handle());
 }
 
 inline COLORREF MDC::GetBkColor() const
 {
-    assert(m_hDC);
-    return ::GetBkColor(m_hDC);
+    assert(Handle());
+    return ::GetBkColor(Handle());
 }
 
 inline INT MDC::GetBkMode() const
 {
-    assert(m_hDC);
-    return ::GetBkMode(m_hDC);
+    assert(Handle());
+    return ::GetBkMode(Handle());
 }
 
 inline INT MDC::GetPolyFillMode() const
 {
-    assert(m_hDC);
-    return ::GetPolyFillMode(m_hDC);
+    assert(Handle());
+    return ::GetPolyFillMode(Handle());
 }
 
 inline INT MDC::GetROP2() const
 {
-    assert(m_hDC);
-    return ::GetROP2(m_hDC);
+    assert(Handle());
+    return ::GetROP2(Handle());
 }
 
 inline INT MDC::GetStretchBltMode() const
 {
-    assert(m_hDC);
-    return ::GetStretchBltMode(m_hDC);
+    assert(Handle());
+    return ::GetStretchBltMode(Handle());
 }
 
 inline COLORREF MDC::GetTextColor() const
 {
-    assert(m_hDC);
-    return ::GetTextColor(m_hDC);
+    assert(Handle());
+    return ::GetTextColor(Handle());
 }
 
 inline COLORREF MDC::SetBkColor(COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::SetBkColor(m_hDC, crColor);
+    assert(Handle());
+    return ::SetBkColor(Handle(), crColor);
 }
 
 inline INT MDC::SetBkMode(INT nBkMode)
 {
-    assert(m_hDC);
-    return ::SetBkMode(m_hDC, nBkMode);
+    assert(Handle());
+    return ::SetBkMode(Handle(), nBkMode);
 }
 
 inline INT MDC::SetPolyFillMode(INT nPolyFillMode)
 {
-    assert(m_hDC);
-    return ::SetPolyFillMode(m_hDC, nPolyFillMode);
+    assert(Handle());
+    return ::SetPolyFillMode(Handle(), nPolyFillMode);
 }
 
 inline INT MDC::SetROP2(INT nR2_)
 {
-    assert(m_hDC);
-    return ::SetROP2(m_hDC, nR2_);
+    assert(Handle());
+    return ::SetROP2(Handle(), nR2_);
 }
 
 inline INT MDC::SetStretchBltMode(INT nSTRETCH_)
 {
-    assert(m_hDC);
-    return ::SetStretchBltMode(m_hDC, nSTRETCH_);
+    assert(Handle());
+    return ::SetStretchBltMode(Handle(), nSTRETCH_);
 }
 
 inline COLORREF MDC::SetTextColor(COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::SetTextColor(m_hDC, crColor);
+    assert(Handle());
+    return ::SetTextColor(Handle(), crColor);
 }
 
 #if (_WIN32_WINNT >= 0x0500)
     inline COLORREF MDC::GetDCBrushColor()
     {
-        assert(m_hDC);
-        return ::GetDCBrushColor(m_hDC);
+        assert(Handle());
+        return ::GetDCBrushColor(Handle());
     }
 
     inline COLORREF MDC::GetDCPenColor()
     {
-        assert(m_hDC);
-        return ::GetDCPenColor(m_hDC);
+        assert(Handle());
+        return ::GetDCPenColor(Handle());
     }
 #endif  //  (_WIN32_WINNT >= 0x0500)
 
 inline BOOL MDC::GetColorAdjustment(LPCOLORADJUSTMENT lpColorAdjust) const
 {
-    assert(m_hDC);
-    return ::GetColorAdjustment(m_hDC, lpColorAdjust);
+    assert(Handle());
+    return ::GetColorAdjustment(Handle(), lpColorAdjust);
 }
 
 inline BOOL MDC::SetColorAdjustment(const COLORADJUSTMENT* lpColorAdjust)
 {
-    assert(m_hDC);
-    return ::SetColorAdjustment(m_hDC, lpColorAdjust);
+    assert(Handle());
+    return ::SetColorAdjustment(Handle(), lpColorAdjust);
 }
 
 inline INT MDC::GetMapMode() const
 {
-    assert(m_hDC);
-    return ::GetMapMode(m_hDC);
+    assert(Handle());
+    return ::GetMapMode(Handle());
 }
 
 inline BOOL MDC::GetViewportOrg(LPPOINT lpPoint) const
 {
-    assert(m_hDC);
-    return ::GetViewportOrgEx(m_hDC, lpPoint);
+    assert(Handle());
+    return ::GetViewportOrgEx(Handle(), lpPoint);
 }
 
 inline INT MDC::SetMapMode(INT nMapMode)
 {
-    assert(m_hDC);
-    return ::SetMapMode(m_hDC, nMapMode);
+    assert(Handle());
+    return ::SetMapMode(Handle(), nMapMode);
 }
 
 inline BOOL MDC::SetViewportOrg(POINT pt, LPPOINT lpPointRet/* = NULL*/)
 {
-    assert(m_hDC);
     return SetViewportOrg(pt.x, pt.y, lpPointRet);
 }
 
 inline BOOL MDC::GetViewportExt(LPSIZE lpSize) const
 {
-    assert(m_hDC);
-    return ::GetViewportExtEx(m_hDC, lpSize);
+    assert(Handle());
+    return ::GetViewportExtEx(Handle(), lpSize);
 }
 
 inline BOOL MDC::SetViewportExt(SIZE size, LPSIZE lpSizeRet/* = NULL*/)
 {
-    assert(m_hDC);
+    assert(Handle());
     return SetViewportExt(size.cx, size.cy, lpSizeRet);
 }
 
 inline BOOL MDC::ScaleViewportExt(
     INT xNum, INT xDenom, INT yNum, INT yDenom, LPSIZE lpSize/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::ScaleViewportExtEx(m_hDC, xNum, xDenom, yNum, yDenom, lpSize);
+    assert(Handle());
+    return ::ScaleViewportExtEx(Handle(), xNum, xDenom, yNum, yDenom, lpSize);
 }
 
 inline BOOL MDC::GetWindowOrg(LPPOINT lpPoint) const
 {
-    assert(m_hDC);
-    return ::GetWindowOrgEx(m_hDC, lpPoint);
+    assert(Handle());
+    return ::GetWindowOrgEx(Handle(), lpPoint);
 }
 
 inline BOOL MDC::SetWindowOrg(POINT pt, LPPOINT lpPointRet/* = NULL*/)
 {
-    assert(m_hDC);
     return SetWindowOrg(pt.x, pt.y, lpPointRet);
 }
 
 inline BOOL MDC::OffsetWindowOrg(
     INT nWidth, INT nHeight, LPPOINT lpPoint/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::OffsetWindowOrgEx(m_hDC, nWidth, nHeight, lpPoint);
+    assert(Handle());
+    return ::OffsetWindowOrgEx(Handle(), nWidth, nHeight, lpPoint);
 }
 
 inline BOOL MDC::GetWindowExt(LPSIZE lpSize) const
 {
-    assert(m_hDC);
-    return ::GetWindowExtEx(m_hDC, lpSize);
+    assert(Handle());
+    return ::GetWindowExtEx(Handle(), lpSize);
 }
 
 inline BOOL MDC::SetWindowExt(SIZE size, LPSIZE lpSizeRet/* = NULL*/)
 {
-    assert(m_hDC);
     return SetWindowExt(size.cx, size.cy, lpSizeRet);
 }
 
 inline BOOL MDC::ScaleWindowExt(INT xNum, INT xDenom,
     INT yNum, INT yDenom, LPSIZE lpSize/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::ScaleWindowExtEx(m_hDC, xNum, xDenom, yNum, yDenom, lpSize);
+    assert(Handle());
+    return ::ScaleWindowExtEx(Handle(), xNum, xDenom, yNum, yDenom, lpSize);
 }
 
 inline BOOL MDC::DPtoLP(LPPOINT lpPoints, INT nCount/* = 1*/) const
 {
-    assert(m_hDC);
-    return ::DPtoLP(m_hDC, lpPoints, nCount);
+    assert(Handle());
+    return ::DPtoLP(Handle(), lpPoints, nCount);
 }
 
 inline BOOL MDC::DPtoLP(LPRECT prc) const
 {
-    assert(m_hDC);
-    return ::DPtoLP(m_hDC, (LPPOINT) prc, 2);
+    assert(Handle());
+    return ::DPtoLP(Handle(), (LPPOINT) prc, 2);
 }
 
 inline BOOL MDC::DPtoLP(LPSIZE lpSize) const
 {
-    assert(m_hDC);
     SIZE sizeWinExt;
     sizeWinExt.cx = sizeWinExt.cy = 0;
     if (!GetWindowExt(&sizeWinExt))
@@ -974,19 +975,18 @@ inline BOOL MDC::DPtoLP(LPSIZE lpSize) const
 
 inline BOOL MDC::LPtoDP(LPPOINT lpPoints, INT nCount/* = 1*/) const
 {
-    assert(m_hDC);
-    return ::LPtoDP(m_hDC, lpPoints, nCount);
+    assert(Handle());
+    return ::LPtoDP(Handle(), lpPoints, nCount);
 }
 
 inline BOOL MDC::LPtoDP(LPRECT prc) const
 {
-    assert(m_hDC);
-    return ::LPtoDP(m_hDC, (LPPOINT) prc, 2);
+    assert(Handle());
+    return ::LPtoDP(Handle(), (LPPOINT) prc, 2);
 }
 
 inline BOOL MDC::LPtoDP(LPSIZE lpSize) const
 {
-    assert(m_hDC);
     SIZE sizeWinExt;
     sizeWinExt.cx = sizeWinExt.cy = 0;
     if (!GetWindowExt(&sizeWinExt))
@@ -1002,14 +1002,14 @@ inline BOOL MDC::LPtoDP(LPSIZE lpSize) const
 
 inline VOID MDC::DPtoHIMETRIC(LPSIZE lpSize) const
 {
-    assert(m_hDC);
+    assert(Handle());
     INT nMapMode;
     if ((nMapMode = GetMapMode()) < MM_ISOTROPIC && nMapMode != MM_TEXT)
     {
         // when using a constrained map mode, map against physical inch
-        ::SetMapMode(m_hDC, MM_HIMETRIC);
+        ::SetMapMode(Handle(), MM_HIMETRIC);
         DPtoLP(lpSize);
-        ::SetMapMode(m_hDC, nMapMode);
+        ::SetMapMode(Handle(), nMapMode);
     }
     else
     {
@@ -1024,14 +1024,14 @@ inline VOID MDC::DPtoHIMETRIC(LPSIZE lpSize) const
 
 inline VOID MDC::HIMETRICtoDP(LPSIZE lpSize) const
 {
-    assert(m_hDC);
+    assert(Handle());
     INT nMapMode;
     if ((nMapMode = GetMapMode()) < MM_ISOTROPIC && nMapMode != MM_TEXT)
     {
         // when using a constrained map mode, map against physical inch
-        ::SetMapMode(m_hDC, MM_HIMETRIC);
+        ::SetMapMode(Handle(), MM_HIMETRIC);
         LPtoDP(lpSize);
-        ::SetMapMode(m_hDC, nMapMode);
+        ::SetMapMode(Handle(), nMapMode);
     }
     else
     {
@@ -1058,286 +1058,282 @@ inline VOID MDC::HIMETRICtoLP(LPSIZE lpSize) const
 
 inline BOOL MDC::FillRgn(HRGN hRgn, HBRUSH hBrush)
 {
-    assert(m_hDC);
-    return ::FillRgn(m_hDC, hRgn, hBrush);
+    assert(Handle());
+    return ::FillRgn(Handle(), hRgn, hBrush);
 }
 
 inline BOOL MDC::FrameRgn(
     HRGN hRgn, HBRUSH hBrush, INT nWidth, INT nHeight)
 {
-    assert(m_hDC);
-    return ::FrameRgn(m_hDC, hRgn, hBrush, nWidth, nHeight);
+    assert(Handle());
+    return ::FrameRgn(Handle(), hRgn, hBrush, nWidth, nHeight);
 }
 
 inline BOOL MDC::InvertRgn(HRGN hRgn)
 {
-    assert(m_hDC);
-    return ::InvertRgn(m_hDC, hRgn);
+    assert(Handle());
+    return ::InvertRgn(Handle(), hRgn);
 }
 
 inline BOOL MDC::PaintRgn(HRGN hRgn)
 {
-    assert(m_hDC);
-    return ::PaintRgn(m_hDC, hRgn);
+    assert(Handle());
+    return ::PaintRgn(Handle(), hRgn);
 }
 
 inline INT MDC::GetClipBox(LPRECT prc) const
 {
-    assert(m_hDC);
-    return ::GetClipBox(m_hDC, prc);
+    assert(Handle());
+    return ::GetClipBox(Handle(), prc);
 }
 
 inline INT MDC::GetClipRgn(HRGN hRgn) const
 {
-    assert(m_hDC);
-    INT nRet = ::GetClipRgn(m_hDC, hRgn);
+    assert(Handle());
+    INT nRet = ::GetClipRgn(Handle(), hRgn);
     return nRet;
 }
 
 inline BOOL MDC::PtVisible(INT x, INT y) const
 {
-    assert(m_hDC);
-    return ::PtVisible(m_hDC, x, y);
+    assert(Handle());
+    return ::PtVisible(Handle(), x, y);
 }
 
 inline BOOL MDC::PtVisible(POINT pt) const
 {
-    assert(m_hDC);
-    return ::PtVisible(m_hDC, pt.x, pt.y);
+    assert(Handle());
+    return ::PtVisible(Handle(), pt.x, pt.y);
 }
 
 inline BOOL MDC::RectVisible(LPCRECT prc) const
 {
-    assert(m_hDC);
-    return ::RectVisible(m_hDC, prc);
+    assert(Handle());
+    return ::RectVisible(Handle(), prc);
 }
 
 inline INT MDC::SelectClipRgn(HRGN hRgn)
 {
-    assert(m_hDC);
-    return ::SelectClipRgn(m_hDC, (HRGN) hRgn);
+    assert(Handle());
+    return ::SelectClipRgn(Handle(), (HRGN) hRgn);
 }
 
 inline INT MDC::ExcludeClipRect(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hDC);
-    return ::ExcludeClipRect(m_hDC, x1, y1, x2, y2);
+    assert(Handle());
+    return ::ExcludeClipRect(Handle(), x1, y1, x2, y2);
 }
 
 inline INT MDC::ExcludeClipRect(LPCRECT prc)
 {
-    assert(m_hDC);
-    return ::ExcludeClipRect(m_hDC,
+    assert(Handle());
+    return ::ExcludeClipRect(Handle(),
         prc->left, prc->top, prc->right, prc->bottom);
 }
 
 inline INT MDC::ExcludeUpdateRgn(HWND hWnd)
 {
-    assert(m_hDC);
-    return ::ExcludeUpdateRgn(m_hDC, hWnd);
+    assert(Handle());
+    return ::ExcludeUpdateRgn(Handle(), hWnd);
 }
 
 inline INT MDC::IntersectClipRect(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hDC);
-    return ::IntersectClipRect(m_hDC, x1, y1, x2, y2);
+    assert(Handle());
+    return ::IntersectClipRect(Handle(), x1, y1, x2, y2);
 }
 
 inline INT MDC::IntersectClipRect(LPCRECT prc)
 {
-    assert(m_hDC);
-    return ::IntersectClipRect(m_hDC,
+    assert(Handle());
+    return ::IntersectClipRect(Handle(),
         prc->left, prc->top, prc->right, prc->bottom);
 }
 
 inline INT MDC::OffsetClipRgn(INT x, INT y)
 {
-    assert(m_hDC);
-    return ::OffsetClipRgn(m_hDC, x, y);
+    assert(Handle());
+    return ::OffsetClipRgn(Handle(), x, y);
 }
 
 inline INT MDC::OffsetClipRgn(SIZE size)
 {
-    assert(m_hDC);
-    return ::OffsetClipRgn(m_hDC, size.cx, size.cy);
+    assert(Handle());
+    return ::OffsetClipRgn(Handle(), size.cx, size.cy);
 }
 
 inline INT MDC::SelectClipRgn(HRGN hRgn, INT nMode)
 {
-    assert(m_hDC);
-    return ::ExtSelectClipRgn(m_hDC, hRgn, nMode);
+    assert(Handle());
+    return ::ExtSelectClipRgn(Handle(), hRgn, nMode);
 }
 
 inline BOOL MDC::GetCurrentPosition(LPPOINT lpPoint) const
 {
-    assert(m_hDC);
-    return ::GetCurrentPositionEx(m_hDC, lpPoint);
+    assert(Handle());
+    return ::GetCurrentPositionEx(Handle(), lpPoint);
 }
 
 inline BOOL MDC::MoveTo(INT x, INT y, LPPOINT lpPoint/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::MoveToEx(m_hDC, x, y, lpPoint);
+    assert(Handle());
+    return ::MoveToEx(Handle(), x, y, lpPoint);
 }
 
 inline BOOL MDC::MoveTo(POINT pt, LPPOINT lpPointRet/* = NULL*/)
 {
-    assert(m_hDC);
     return MoveTo(pt.x, pt.y, lpPointRet);
 }
 
 inline BOOL MDC::LineTo(INT x, INT y)
 {
-    assert(m_hDC);
-    return ::LineTo(m_hDC, x, y);
+    assert(Handle());
+    return ::LineTo(Handle(), x, y);
 }
 
 inline BOOL MDC::LineTo(POINT pt)
 {
-    assert(m_hDC);
+    assert(Handle());
     return LineTo(pt.x, pt.y);
 }
 
 inline BOOL MDC::Line(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hDC);
     return MoveTo(x1, y1) && LineTo(x2, y2);
 }
 
 inline BOOL MDC::Line(POINT pt1, POINT pt2)
 {
-    assert(m_hDC);
     return MoveTo(pt1) && LineTo(pt2);
 }
 
 inline BOOL MDC::Arc(
     INT x1, INT y1, INT x2, INT y2, INT x3, INT y3, INT x4, INT y4)
 {
-    assert(m_hDC);
-    return ::Arc(m_hDC, x1, y1, x2, y2, x3, y3, x4, y4);
+    assert(Handle());
+    return ::Arc(Handle(), x1, y1, x2, y2, x3, y3, x4, y4);
 }
 
 inline BOOL MDC::Arc(LPCRECT prc, POINT ptStart, POINT ptEnd)
 {
-    assert(m_hDC);
-    return ::Arc(m_hDC, prc->left, prc->top,
+    assert(Handle());
+    return ::Arc(Handle(), prc->left, prc->top,
         prc->right, prc->bottom, ptStart.x, ptStart.y,
         ptEnd.x, ptEnd.y);
 }
 
 inline BOOL MDC::Polyline(LPPOINT lpPoints, INT nCount)
 {
-    assert(m_hDC);
-    return ::Polyline(m_hDC, lpPoints, nCount);
+    assert(Handle());
+    return ::Polyline(Handle(), lpPoints, nCount);
 }
 
 inline BOOL MDC::AngleArc(
     INT x, INT y, INT nRadius, FLOAT fStartAngle, FLOAT fSweepAngle)
 {
-    assert(m_hDC);
-    return ::AngleArc(m_hDC, x, y, (DWORD) nRadius, fStartAngle, fSweepAngle);
+    assert(Handle());
+    return ::AngleArc(Handle(), x, y, (DWORD) nRadius, fStartAngle, fSweepAngle);
 }
 
 inline BOOL MDC::ArcTo(
     INT x1, INT y1, INT x2, INT y2, INT x3, INT y3, INT x4, INT y4)
 {
-    assert(m_hDC);
-    return ::ArcTo(m_hDC, x1, y1, x2, y2, x3, y3, x4, y4);
+    assert(Handle());
+    return ::ArcTo(Handle(), x1, y1, x2, y2, x3, y3, x4, y4);
 }
 
 inline BOOL MDC::ArcTo(LPCRECT prc, POINT ptStart, POINT ptEnd)
 {
-    assert(m_hDC);
     return ArcTo(prc->left, prc->top, prc->right,
-    prc->bottom, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y);
+                 prc->bottom, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y);
 }
 
 inline INT MDC::GetArcDirection() const
 {
-    assert(m_hDC);
-    return ::GetArcDirection(m_hDC);
+    assert(Handle());
+    return ::GetArcDirection(Handle());
 }
 
 inline INT MDC::SetArcDirection(INT nAD_)
 {
-    assert(m_hDC);
-    return ::SetArcDirection(m_hDC, nAD_);
+    assert(Handle());
+    return ::SetArcDirection(Handle(), nAD_);
 }
 
 inline BOOL MDC::PolyDraw(
     CONST POINT* lpPoints, CONST BYTE* lpTypes, INT nCount)
 {
-    assert(m_hDC);
-    return ::PolyDraw(m_hDC, lpPoints, lpTypes, nCount);
+    assert(Handle());
+    return ::PolyDraw(Handle(), lpPoints, lpTypes, nCount);
 }
 
 inline BOOL MDC::PolylineTo(CONST POINT* lpPoints, INT nCount)
 {
-    assert(m_hDC);
-    return ::PolylineTo(m_hDC, lpPoints, static_cast<DWORD>(nCount));
+    assert(Handle());
+    return ::PolylineTo(Handle(), lpPoints, static_cast<DWORD>(nCount));
 }
 
 inline BOOL MDC::PolyPolyline(
     CONST POINT* lpPoints, CONST DWORD* lpPolyPoints, INT nCount)
 {
-    assert(m_hDC);
-    return ::PolyPolyline(m_hDC, lpPoints, lpPolyPoints, static_cast<DWORD>(nCount));
+    assert(Handle());
+    return ::PolyPolyline(Handle(), lpPoints, lpPolyPoints, static_cast<DWORD>(nCount));
 }
 
 inline BOOL MDC::PolyBezier(CONST POINT* lpPoints, INT nCount)
 {
-    assert(m_hDC);
-    return ::PolyBezier(m_hDC, lpPoints, static_cast<DWORD>(nCount));
+    assert(Handle());
+    return ::PolyBezier(Handle(), lpPoints, static_cast<DWORD>(nCount));
 }
 
 inline BOOL MDC::PolyBezierTo(CONST POINT* lpPoints, INT nCount)
 {
-    assert(m_hDC);
-    return ::PolyBezierTo(m_hDC, lpPoints, static_cast<DWORD>(nCount));
+    assert(Handle());
+    return ::PolyBezierTo(Handle(), lpPoints, static_cast<DWORD>(nCount));
 }
 
 inline BOOL MDC::FillRect(LPCRECT prc, HBRUSH hBrush)
 {
-    assert(m_hDC);
-    return ::FillRect(m_hDC, prc, hBrush);
+    assert(Handle());
+    return ::FillRect(Handle(), prc, hBrush);
 }
 
 inline BOOL MDC::FillRect(LPCRECT prc, INT nCOLOR_)
 {
-    assert(m_hDC);
-    return ::FillRect(m_hDC, prc, reinterpret_cast<HBRUSH>(static_cast<INT_PTR>(nCOLOR_ + 1)));
+    assert(Handle());
+    return ::FillRect(Handle(), prc, reinterpret_cast<HBRUSH>(static_cast<INT_PTR>(nCOLOR_ + 1)));
 }
 
 inline BOOL MDC::FrameRect(LPCRECT prc, HBRUSH hBrush)
 {
-    assert(m_hDC);
-    return ::FrameRect(m_hDC, prc, hBrush);
+    assert(Handle());
+    return ::FrameRect(Handle(), prc, hBrush);
 }
 
 inline BOOL MDC::InvertRect(LPCRECT prc)
 {
-    assert(m_hDC);
-    return ::InvertRect(m_hDC, prc);
+    assert(Handle());
+    return ::InvertRect(Handle(), prc);
 }
 
 inline BOOL MDC::DrawIcon(INT x, INT y, HICON hIcon)
 {
-    assert(m_hDC);
-    return ::DrawIcon(m_hDC, x, y, hIcon);
+    assert(Handle());
+    return ::DrawIcon(Handle(), x, y, hIcon);
 }
 
 inline BOOL MDC::DrawIcon(POINT pt, HICON hIcon)
 {
-    assert(m_hDC);
-    return ::DrawIcon(m_hDC, pt.x, pt.y, hIcon);
+    assert(Handle());
+    return ::DrawIcon(Handle(), pt.x, pt.y, hIcon);
 }
 
 inline BOOL MDC::DrawIconEx(INT x, INT y, HICON hIcon, INT cx, INT cy,
     UINT uStepIfAniCur/* = 0*/, HBRUSH hbrFlickerFreeDraw/* = NULL*/,
     UINT uDI_flags/* = DI_NORMAL*/)
 {
-    assert(m_hDC);
-    return ::DrawIconEx(m_hDC, x, y, hIcon, cx, cy,
+    assert(Handle());
+    return ::DrawIconEx(Handle(), x, y, hIcon, cx, cy,
                         uStepIfAniCur, hbrFlickerFreeDraw, uDI_flags);
 }
 
@@ -1345,24 +1341,24 @@ inline BOOL MDC::DrawIconEx(POINT pt, HICON hIcon, SIZE size,
     UINT uStepIfAniCur/* = 0*/, HBRUSH hbrFlickerFreeDraw/* = NULL*/,
     UINT uDI_flags/* = DI_NORMAL*/)
 {
-    assert(m_hDC);
-    return ::DrawIconEx(m_hDC, pt.x, pt.y, hIcon, size.cx, size.cy,
+    assert(Handle());
+    return ::DrawIconEx(Handle(), pt.x, pt.y, hIcon, size.cx, size.cy,
                         uStepIfAniCur, hbrFlickerFreeDraw, uDI_flags);
 }
 
 inline BOOL MDC::DrawState(POINT pt, SIZE size, HBITMAP hBitmap,
     UINT nDST_flags, HBRUSH hBrush/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::DrawState(m_hDC, hBrush, NULL, (LPARAM)hBitmap, 0,
+    assert(Handle());
+    return ::DrawState(Handle(), hBrush, NULL, (LPARAM)hBitmap, 0,
         pt.x, pt.y, size.cx, size.cy, nDST_flags | DST_BITMAP);
 }
 
 inline BOOL MDC::DrawState(POINT pt, SIZE size, HICON hIcon,
     UINT nDST_flags, HBRUSH hBrush/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::DrawState(m_hDC, hBrush, NULL, (LPARAM)hIcon, 0,
+    assert(Handle());
+    return ::DrawState(Handle(), hBrush, NULL, (LPARAM)hIcon, 0,
                        pt.x, pt.y, size.cx, size.cy, nDST_flags | DST_ICON);
 }
 
@@ -1370,8 +1366,8 @@ inline BOOL MDC::DrawState(POINT pt, SIZE size, LPCTSTR lpszText,
     UINT nDST_flags, BOOL bPrefixText/* = TRUE*/, INT nTextLen/* = 0*/,
     HBRUSH hBrush/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::DrawState(m_hDC, hBrush, NULL, (LPARAM)lpszText,
+    assert(Handle());
+    return ::DrawState(Handle(), hBrush, NULL, (LPARAM)lpszText,
                        (WPARAM)nTextLen, pt.x, pt.y, size.cx, size.cy,
                        nDST_flags | (bPrefixText ? DST_PREFIXTEXT : DST_TEXT));
 }
@@ -1379,35 +1375,35 @@ inline BOOL MDC::DrawState(POINT pt, SIZE size, LPCTSTR lpszText,
 inline BOOL MDC::DrawState(POINT pt, SIZE size, DRAWSTATEPROC lpDrawProc,
     LPARAM lData, UINT nDST_flags, HBRUSH hBrush/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::DrawState(m_hDC, hBrush, lpDrawProc, lData, 0,
+    assert(Handle());
+    return ::DrawState(Handle(), hBrush, lpDrawProc, lData, 0,
                        pt.x, pt.y, size.cx, size.cy, nDST_flags | DST_COMPLEX);
 }
 
 inline BOOL MDC::Chord(
     INT x1, INT y1, INT x2, INT y2, INT x3, INT y3, INT x4, INT y4)
 {
-    assert(m_hDC);
-    return ::Chord(m_hDC, x1, y1, x2, y2, x3, y3, x4, y4);
+    assert(Handle());
+    return ::Chord(Handle(), x1, y1, x2, y2, x3, y3, x4, y4);
 }
 
 inline BOOL MDC::Chord(LPCRECT prc, POINT ptStart, POINT ptEnd)
 {
-    assert(m_hDC);
-    return ::Chord(m_hDC, prc->left, prc->top,
+    assert(Handle());
+    return ::Chord(Handle(), prc->left, prc->top,
         prc->right, prc->bottom, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y);
 }
 
 inline VOID MDC::DrawFocusRect(LPCRECT prc)
 {
-    assert(m_hDC);
-    ::DrawFocusRect(m_hDC, prc);
+    assert(Handle());
+    ::DrawFocusRect(Handle(), prc);
 }
 
 inline BOOL MDC::Ellipse(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hDC);
-    return ::Ellipse(m_hDC, x1, y1, x2, y2);
+    assert(Handle());
+    return ::Ellipse(Handle(), x1, y1, x2, y2);
 }
 
 inline BOOL MDC::Ellipse(POINT pt1, POINT pt2)
@@ -1417,8 +1413,8 @@ inline BOOL MDC::Ellipse(POINT pt1, POINT pt2)
 
 inline BOOL MDC::Ellipse(LPCRECT prc)
 {
-    assert(m_hDC);
-    return ::Ellipse(m_hDC,
+    assert(Handle());
+    return ::Ellipse(Handle(),
         prc->left, prc->top, prc->right, prc->bottom);
 }
 
@@ -1435,81 +1431,80 @@ inline BOOL MDC::Circle(POINT pt, INT nRadius)
 inline BOOL MDC::Pie(
     INT x1, INT y1, INT x2, INT y2, INT x3, INT y3, INT x4, INT y4)
 {
-    assert(m_hDC);
-    return ::Pie(m_hDC, x1, y1, x2, y2, x3, y3, x4, y4);
+    assert(Handle());
+    return ::Pie(Handle(), x1, y1, x2, y2, x3, y3, x4, y4);
 }
 
 inline BOOL MDC::Pie(LPCRECT prc, POINT ptStart, POINT ptEnd)
 {
-    assert(m_hDC);
-    return ::Pie(m_hDC, prc->left, prc->top, prc->right,
+    assert(Handle());
+    return ::Pie(Handle(), prc->left, prc->top, prc->right,
         prc->bottom, ptStart.x, ptStart.y, ptEnd.x, ptEnd.y);
 }
 
 inline BOOL MDC::Polygon(LPPOINT lpPoints, INT nCount)
 {
-    assert(m_hDC);
-    return ::Polygon(m_hDC, lpPoints, nCount);
+    assert(Handle());
+    return ::Polygon(Handle(), lpPoints, nCount);
 }
 
 inline BOOL MDC::PolyPolygon(
     LPPOINT lpPoints, LPINT lpPolyCounts, INT nCount)
 {
-    assert(m_hDC);
-    return ::PolyPolygon(m_hDC, lpPoints, lpPolyCounts, nCount);
+    assert(Handle());
+    return ::PolyPolygon(Handle(), lpPoints, lpPolyCounts, nCount);
 }
 
 inline BOOL MDC::Rectangle(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hDC);
-    return ::Rectangle(m_hDC, x1, y1, x2, y2);
+    assert(Handle());
+    return ::Rectangle(Handle(), x1, y1, x2, y2);
 }
 
 inline BOOL MDC::Rectangle(LPCRECT prc)
 {
-    assert(m_hDC);
-    return ::Rectangle(m_hDC,
+    assert(Handle());
+    return ::Rectangle(Handle(),
         prc->left, prc->top, prc->right, prc->bottom);
 }
 
 inline BOOL MDC::RoundRect(INT x1, INT y1, INT x2, INT y2, INT x3, INT y3)
 {
-    assert(m_hDC);
-    return ::RoundRect(m_hDC, x1, y1, x2, y2, x3, y3);
+    assert(Handle());
+    return ::RoundRect(Handle(), x1, y1, x2, y2, x3, y3);
 }
 
 inline BOOL MDC::RoundRect(LPCRECT prc, POINT pt)
 {
-    assert(m_hDC);
-    return ::RoundRect(m_hDC, prc->left, prc->top,
+    assert(Handle());
+    return ::RoundRect(Handle(), prc->left, prc->top,
         prc->right, prc->bottom, pt.x, pt.y);
 }
 
 inline BOOL MDC::PatBlt(INT x, INT y, INT cx, INT cy, DWORD dwRop/* = PATCOPY*/)
 {
-    assert(m_hDC);
-    return ::PatBlt(m_hDC, x, y, cx, cy, dwRop);
+    assert(Handle());
+    return ::PatBlt(Handle(), x, y, cx, cy, dwRop);
 }
 
 inline BOOL MDC::BitBlt(INT x, INT y, INT cx, INT cy,
     HDC hSrcDC, INT xSrc/* = 0*/, INT ySrc/* = 0*/, DWORD dwRop/* = SRCCOPY*/)
 {
-    assert(m_hDC);
-    return ::BitBlt(m_hDC, x, y, cx, cy, hSrcDC, xSrc, ySrc, dwRop);
+    assert(Handle());
+    return ::BitBlt(Handle(), x, y, cx, cy, hSrcDC, xSrc, ySrc, dwRop);
 }
 
 inline BOOL MDC::StretchBlt(INT x, INT y, INT cx, INT cy,
     HDC hSrcDC, INT xSrc, INT ySrc, INT cxSrc, INT cySrc, DWORD dwRop)
 {
-    assert(m_hDC);
-    return ::StretchBlt(m_hDC, x, y, cx, cy,
+    assert(Handle());
+    return ::StretchBlt(Handle(), x, y, cx, cy,
         hSrcDC, xSrc, ySrc, cxSrc, cySrc, dwRop);
 }
 
 inline BOOL MDC::StretchBlt(
     LPCRECT prc, HDC hSrcDC, LPCRECT prcSrc, DWORD dwRop)
 {
-    assert(m_hDC);
     MRect rc(prc), rcSrc(prcSrc);
     return StretchBlt(rc.left, rc.top, rc.Width(), rc.Height(),
         hSrcDC, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), dwRop);
@@ -1517,84 +1512,85 @@ inline BOOL MDC::StretchBlt(
 
 inline COLORREF MDC::GetPixel(INT x, INT y) const
 {
-    assert(m_hDC);
-    return ::GetPixel(m_hDC, x, y);
+    assert(Handle());
+    return ::GetPixel(Handle(), x, y);
 }
 
 inline COLORREF MDC::GetPixel(POINT pt) const
 {
-    assert(m_hDC);
-    return ::GetPixel(m_hDC, pt.x, pt.y);
+    assert(Handle());
+    return ::GetPixel(Handle(), pt.x, pt.y);
 }
 
 inline COLORREF MDC::SetPixel(INT x, INT y, COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::SetPixel(m_hDC, x, y, crColor);
+    assert(Handle());
+    return ::SetPixel(Handle(), x, y, crColor);
 }
 
 inline COLORREF MDC::SetPixel(POINT pt, COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::SetPixel(m_hDC, pt.x, pt.y, crColor);
+    assert(Handle());
+    return ::SetPixel(Handle(), pt.x, pt.y, crColor);
 }
 
 inline BOOL MDC::FloodFill(INT x, INT y, COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::FloodFill(m_hDC, x, y, crColor);
+    assert(Handle());
+    return ::FloodFill(Handle(), x, y, crColor);
 }
 
 inline BOOL MDC::ExtFloodFill(INT x, INT y, COLORREF crColor, UINT nFillType)
 {
-    assert(m_hDC);
-    return ::ExtFloodFill(m_hDC, x, y, crColor, nFillType);
+    assert(Handle());
+    return ::ExtFloodFill(Handle(), x, y, crColor, nFillType);
 }
 
 inline BOOL MDC::MaskBlt(INT x, INT y, INT cx, INT cy,
     HDC hSrcDC, INT xSrc, INT ySrc, HBITMAP hMaskBitmap,
     INT xMask, INT yMask, DWORD dwRop)
 {
-    assert(m_hDC);
-    return ::MaskBlt(m_hDC, x, y, cx, cy,
+    assert(Handle());
+    return ::MaskBlt(Handle(), x, y, cx, cy,
                      hSrcDC, xSrc, ySrc, hMaskBitmap, xMask, yMask, dwRop);
 }
 
 inline BOOL MDC::PlgBlt(LPPOINT lpPoint, HDC hSrcDC, INT xSrc, INT ySrc,
     INT cxSrc, INT cySrc, HBITMAP hMaskBitmap, INT xMask, INT yMask)
 {
-    assert(m_hDC);
-    return ::PlgBlt(m_hDC, lpPoint, hSrcDC, xSrc, ySrc, cxSrc, cySrc,
+    assert(Handle());
+    return ::PlgBlt(Handle(), lpPoint, hSrcDC, xSrc, ySrc, cxSrc, cySrc,
                     hMaskBitmap, xMask, yMask);
 }
 
 inline BOOL MDC::SetPixelV(INT x, INT y, COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::SetPixelV(m_hDC, x, y, crColor);
+    assert(Handle());
+    return ::SetPixelV(Handle(), x, y, crColor);
 }
 
 inline BOOL MDC::SetPixelV(POINT pt, COLORREF crColor)
 {
-    assert(m_hDC);
-    return ::SetPixelV(m_hDC, pt.x, pt.y, crColor);
+    assert(Handle());
+    return ::SetPixelV(Handle(), pt.x, pt.y, crColor);
 }
 
 inline BOOL MDC::TextOut(INT x, INT y, LPCTSTR lpsz, INT cch/* = -1*/)
 {
-    assert(m_hDC);
-    if(cch == -1) cch = lstrlen(lpsz);
-    return ::TextOut(m_hDC, x, y, lpsz, cch);
+    assert(Handle());
+    if(cch == -1)
+        cch = lstrlen(lpsz);
+    return ::TextOut(Handle(), x, y, lpsz, cch);
 }
 
 inline SIZE MDC::TabbedTextOut(INT x, INT y, LPCTSTR lpsz,
     INT cch/* = -1*/, INT nTabPositions/* = 0*/,
     LPINT lpnTabStopPositions/* = NULL*/, INT nTabOrigin/* = 0*/)
 {
-    assert(m_hDC);
+    assert(Handle());
     if (cch == -1) cch = lstrlen(lpsz);
     LONG lRes = ::TabbedTextOut(
-        m_hDC, x, y, lpsz, cch, nTabPositions, lpnTabStopPositions, nTabOrigin);
+        Handle(), x, y, lpsz, cch, nTabPositions, lpnTabStopPositions, nTabOrigin);
     SIZE size;
     size.cx = (SHORT) LOWORD(lRes);
     size.cy = (SHORT) HIWORD(lRes);
@@ -1604,23 +1600,23 @@ inline SIZE MDC::TabbedTextOut(INT x, INT y, LPCTSTR lpsz,
 inline INT MDC::DrawText(
     LPCTSTR lpstrText, INT cchText, LPRECT prc, UINT uFormat)
 {
-    assert(m_hDC);
+    assert(Handle());
     assert((uFormat & DT_MODIFYSTRING) == 0);
-    return ::DrawText(m_hDC, lpstrText, cchText, prc, uFormat);
+    return ::DrawText(Handle(), lpstrText, cchText, prc, uFormat);
 }
 
 inline INT MDC::DrawText(
     LPTSTR lpstrText, INT cchText, LPRECT prc, UINT uFormat)
 {
-    assert(m_hDC);
-    return ::DrawText(m_hDC, lpstrText, cchText, prc, uFormat);
+    assert(Handle());
+    return ::DrawText(Handle(), lpstrText, cchText, prc, uFormat);
 }
 
 inline INT MDC::DrawTextEx(LPTSTR lpstrText, INT cchText,
     LPRECT prc, UINT uFormat, LPDRAWTEXTPARAMS lpDTParams/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::DrawTextEx(m_hDC, lpstrText, cchText, prc, uFormat, lpDTParams);
+    assert(Handle());
+    return ::DrawTextEx(Handle(), lpstrText, cchText, prc, uFormat, lpDTParams);
 }
 
 inline MSize MDC::GetTextExtent(LPCTSTR lpszString, INT nCount) const
@@ -1633,17 +1629,17 @@ inline MSize MDC::GetTextExtent(LPCTSTR lpszString, INT nCount) const
 inline BOOL MDC::GetTextExtent(
     LPCTSTR lpszString, INT nCount, LPSIZE lpSize) const
 {
-    assert(m_hDC);
+    assert(Handle());
     if (nCount == -1) nCount = lstrlen(lpszString);
-    return ::GetTextExtentPoint32(m_hDC, lpszString, nCount, lpSize);
+    return ::GetTextExtentPoint32(Handle(), lpszString, nCount, lpSize);
 }
 
 inline BOOL MDC::GetTextExtentExPoint(LPCTSTR lpszString, INT cchString,
     LPSIZE lpSize, INT nMaxExtent, LPINT lpnFit/* = NULL*/,
     LPINT alpDx/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::GetTextExtentExPoint(m_hDC, lpszString, cchString,
+    assert(Handle());
+    return ::GetTextExtentExPoint(Handle(), lpszString, cchString,
         nMaxExtent, lpnFit, alpDx, lpSize);
 }
 
@@ -1651,9 +1647,10 @@ inline DWORD MDC::GetTabbedTextExtent(LPCTSTR lpszString,
     INT nCount/* = -1*/, INT nTabPositions/* = 0*/,
     LPINT lpnTabStopPositions/* = NULL*/) const
 {
-    assert(m_hDC);
-    if (nCount == -1) nCount = lstrlen(lpszString);
-    return ::GetTabbedTextExtent(m_hDC, lpszString, nCount,
+    assert(Handle());
+    if (nCount == -1)
+        nCount = lstrlen(lpszString);
+    return ::GetTabbedTextExtent(Handle(), lpszString, nCount,
                                  nTabPositions, lpnTabStopPositions);
 }
 
@@ -1661,176 +1658,176 @@ inline BOOL MDC::GrayString(
     HBRUSH hBrush, BOOL (CALLBACK* lpfnOutput)(HDC, LPARAM, INT),
     LPARAM lpData, INT nCount, INT x, INT y, INT nWidth, INT nHeight)
 {
-    assert(m_hDC);
-    return ::GrayString(m_hDC,
+    assert(Handle());
+    return ::GrayString(Handle(),
         hBrush, reinterpret_cast<GRAYSTRINGPROC>(lpfnOutput), lpData, nCount,
         x, y, nWidth, nHeight);
 }
 
 inline UINT MDC::GetTextAlign(VOID) const
 {
-    assert(m_hDC);
-    return ::GetTextAlign(m_hDC);
+    assert(Handle());
+    return ::GetTextAlign(Handle());
 }
 
 inline UINT MDC::SetTextAlign(UINT uTA_flags)
 {
-    assert(m_hDC);
-    return ::SetTextAlign(m_hDC, uTA_flags);
+    assert(Handle());
+    return ::SetTextAlign(Handle(), uTA_flags);
 }
 
 inline INT MDC::GetTextFace(LPTSTR lpszFacename, INT nCount) const
 {
-    assert(m_hDC);
-    return ::GetTextFace(m_hDC, nCount, lpszFacename);
+    assert(Handle());
+    return ::GetTextFace(Handle(), nCount, lpszFacename);
 }
 
 inline INT MDC::GetTextFaceLen() const
 {
-    assert(m_hDC);
-    return ::GetTextFace(m_hDC, 0, NULL);
+    assert(Handle());
+    return ::GetTextFace(Handle(), 0, NULL);
 }
 
 inline BOOL MDC::GetTextMetrics(LPTEXTMETRIC lpMetrics) const
 {
-    assert(m_hDC);
-    return ::GetTextMetrics(m_hDC, lpMetrics);
+    assert(Handle());
+    return ::GetTextMetrics(Handle(), lpMetrics);
 }
 
 inline INT MDC::SetTextJustification(INT nBreakExtra, INT nBreakCount)
 {
-    assert(m_hDC);
-    return ::SetTextJustification(m_hDC, nBreakExtra, nBreakCount);
+    assert(Handle());
+    return ::SetTextJustification(Handle(), nBreakExtra, nBreakCount);
 }
 
 inline INT MDC::GetTextCharacterExtra() const
 {
-    assert(m_hDC);
-    return ::GetTextCharacterExtra(m_hDC);
+    assert(Handle());
+    return ::GetTextCharacterExtra(Handle());
 }
 
 inline INT MDC::SetTextCharacterExtra(INT nCharExtra)
 {
-    assert(m_hDC);
-    return ::SetTextCharacterExtra(m_hDC, nCharExtra);
+    assert(Handle());
+    return ::SetTextCharacterExtra(Handle(), nCharExtra);
 }
 
 inline BOOL MDC::DrawEdge(LPRECT prc, UINT nEdge, UINT nFlags)
 {
-    assert(m_hDC);
-    return ::DrawEdge(m_hDC, prc, nEdge, nFlags);
+    assert(Handle());
+    return ::DrawEdge(Handle(), prc, nEdge, nFlags);
 }
 
 inline BOOL MDC::DrawFrameControl(LPRECT prc, UINT nType, UINT nState)
 {
-    assert(m_hDC);
-    return ::DrawFrameControl(m_hDC, prc, nType, nState);
+    assert(Handle());
+    return ::DrawFrameControl(Handle(), prc, nType, nState);
 }
 
 inline BOOL MDC::ScrollDC(INT dx, INT dy, LPCRECT lpRectScroll,
     LPCRECT lpRectClip, HRGN hRgnUpdate, LPRECT lpRectUpdate)
 {
-    assert(m_hDC);
-    return ::ScrollDC(m_hDC,
+    assert(Handle());
+    return ::ScrollDC(Handle(),
         dx, dy, lpRectScroll, lpRectClip, hRgnUpdate, lpRectUpdate);
 }
 
 inline BOOL MDC::GetCharWidth(
     UINT nFirstChar, UINT nLastChar, LPINT lpBuffer) const
 {
-    assert(m_hDC);
-    return ::GetCharWidth(m_hDC, nFirstChar, nLastChar, lpBuffer);
+    assert(Handle());
+    return ::GetCharWidth(Handle(), nFirstChar, nLastChar, lpBuffer);
 }
 
 inline BOOL MDC::GetCharWidth32(
     UINT nFirstChar, UINT nLastChar, LPINT lpBuffer) const
 {
-    assert(m_hDC);
-    return ::GetCharWidth32(m_hDC, nFirstChar, nLastChar, lpBuffer);
+    assert(Handle());
+    return ::GetCharWidth32(Handle(), nFirstChar, nLastChar, lpBuffer);
 }
 
 inline DWORD MDC::SetMapperFlags(DWORD dwFlag)
 {
-    assert(m_hDC);
-    return ::SetMapperFlags(m_hDC, dwFlag);
+    assert(Handle());
+    return ::SetMapperFlags(Handle(), dwFlag);
 }
 
 inline BOOL MDC::GetAspectRatioFilter(LPSIZE lpSize) const
 {
-    assert(m_hDC);
-    return ::GetAspectRatioFilterEx(m_hDC, lpSize);
+    assert(Handle());
+    return ::GetAspectRatioFilterEx(Handle(), lpSize);
 }
 
 inline BOOL MDC::GetCharABCWidths(
     UINT nFirstChar, UINT nLastChar, LPABC lpabc) const
 {
-    assert(m_hDC);
-    return ::GetCharABCWidths(m_hDC, nFirstChar, nLastChar, lpabc);
+    assert(Handle());
+    return ::GetCharABCWidths(Handle(), nFirstChar, nLastChar, lpabc);
 }
 
 inline DWORD MDC::GetFontData(
     DWORD dwTable, DWORD dwOffset, LPVOID lpData, DWORD cbData) const
 {
-    assert(m_hDC);
-    return ::GetFontData(m_hDC, dwTable, dwOffset, lpData, cbData);
+    assert(Handle());
+    return ::GetFontData(Handle(), dwTable, dwOffset, lpData, cbData);
 }
 
 inline INT MDC::GetKerningPairs(INT nPairs, LPKERNINGPAIR lpkrnpair) const
 {
-    assert(m_hDC);
-    return static_cast<INT>(::GetKerningPairs(m_hDC, static_cast<DWORD>(nPairs), lpkrnpair));
+    assert(Handle());
+    return static_cast<INT>(::GetKerningPairs(Handle(), static_cast<DWORD>(nPairs), lpkrnpair));
 }
 
 inline UINT MDC::GetOutlineTextMetrics(
     UINT cbData, LPOUTLINETEXTMETRIC lpotm) const
 {
-    assert(m_hDC);
-    return ::GetOutlineTextMetrics(m_hDC, cbData, lpotm);
+    assert(Handle());
+    return ::GetOutlineTextMetrics(Handle(), cbData, lpotm);
 }
 
 inline DWORD MDC::GetGlyphOutline(UINT nChar, UINT nFormat,
     LPGLYPHMETRICS lpgm, DWORD cbBuffer, LPVOID lpBuffer,
     const MAT2* lpmat2) const
 {
-    assert(m_hDC);
-    return ::GetGlyphOutline(m_hDC, nChar, nFormat, lpgm,
+    assert(Handle());
+    return ::GetGlyphOutline(Handle(), nChar, nFormat, lpgm,
         cbBuffer, lpBuffer, lpmat2);
 }
 
 inline BOOL MDC::GetCharABCWidths(
     UINT nFirstChar, UINT nLastChar, LPABCFLOAT lpABCF) const
 {
-    assert(m_hDC);
-    return ::GetCharABCWidthsFloat(m_hDC, nFirstChar, nLastChar, lpABCF);
+    assert(Handle());
+    return ::GetCharABCWidthsFloat(Handle(), nFirstChar, nLastChar, lpABCF);
 }
 
 inline BOOL MDC::GetCharWidth(
     UINT nFirstChar, UINT nLastChar, PFLOAT lpFloatBuffer) const
 {
-    assert(m_hDC);
-    return ::GetCharWidthFloat(m_hDC, nFirstChar, nLastChar, lpFloatBuffer);
+    assert(Handle());
+    return ::GetCharWidthFloat(Handle(), nFirstChar, nLastChar, lpFloatBuffer);
 }
 
 inline INT MDC::Escape(
     INT nEscape, INT nCount, LPCSTR lpszInData, LPVOID lpOutData)
 {
-    assert(m_hDC);
-    return ::Escape(m_hDC, nEscape, nCount, lpszInData, lpOutData);
+    assert(Handle());
+    return ::Escape(Handle(), nEscape, nCount, lpszInData, lpOutData);
 }
 
 inline INT MDC::Escape(INT nEscape, INT nInputSize, LPCSTR lpszInputData,
     INT nOutputSize, LPSTR lpszOutputData)
 {
-    assert(m_hDC);
-    return ::ExtEscape(m_hDC,
+    assert(Handle());
+    return ::ExtEscape(Handle(),
         nEscape, nInputSize, lpszInputData, nOutputSize, lpszOutputData);
 }
 
 inline INT MDC::DrawEscape(
     INT nEscape, INT nInputSize, LPCSTR lpszInputData)
 {
-    assert(m_hDC);
-    return ::DrawEscape(m_hDC, nEscape, nInputSize, lpszInputData);
+    assert(Handle());
+    return ::DrawEscape(Handle(), nEscape, nInputSize, lpszInputData);
 }
 
 inline INT MDC::StartDoc(LPCTSTR lpszDocName)
@@ -1845,129 +1842,129 @@ inline INT MDC::StartDoc(LPCTSTR lpszDocName)
 
 inline INT MDC::StartDoc(LPDOCINFO lpDocInfo)
 {
-    assert(m_hDC);
-    return ::StartDoc(m_hDC, lpDocInfo);
+    assert(Handle());
+    return ::StartDoc(Handle(), lpDocInfo);
 }
 
 inline INT MDC::StartPage(VOID)
 {
-    assert(m_hDC);
-    return ::StartPage(m_hDC);
+    assert(Handle());
+    return ::StartPage(Handle());
 }
 
 inline INT MDC::EndPage(VOID)
 {
-    assert(m_hDC);
-    return ::EndPage(m_hDC);
+    assert(Handle());
+    return ::EndPage(Handle());
 }
 
 inline INT MDC::SetAbortProc(BOOL (CALLBACK* lpfn)(HDC, INT))
 {
-    assert(m_hDC);
-    return ::SetAbortProc(m_hDC, (ABORTPROC) lpfn);
+    assert(Handle());
+    return ::SetAbortProc(Handle(), (ABORTPROC) lpfn);
 }
 
 inline INT MDC::AbortDoc(VOID)
 {
-    assert(m_hDC);
-    return ::AbortDoc(m_hDC);
+    assert(Handle());
+    return ::AbortDoc(Handle());
 }
 
 inline INT MDC::EndDoc(VOID)
 {
-    assert(m_hDC);
-    return ::EndDoc(m_hDC);
+    assert(Handle());
+    return ::EndDoc(Handle());
 }
 
 inline BOOL MDC::PlayEnhMetaFile(
     HENHMETAFILE hEnhMetaFile, LPCRECT lpBounds)
 {
-    assert(m_hDC);
-    return ::PlayEnhMetaFile(m_hDC, hEnhMetaFile, lpBounds);
+    assert(Handle());
+    return ::PlayEnhMetaFile(Handle(), hEnhMetaFile, lpBounds);
 }
 
 inline BOOL MDC::GdiComment(UINT nDataSize, CONST BYTE* pCommentData)
 {
-    assert(m_hDC);
-    return ::GdiComment(m_hDC, nDataSize, pCommentData);
+    assert(Handle());
+    return ::GdiComment(Handle(), nDataSize, pCommentData);
 }
 
 inline BOOL MDC::AbortPath()
 {
-    assert(m_hDC);
-    return ::AbortPath(m_hDC);
+    assert(Handle());
+    return ::AbortPath(Handle());
 }
 
 inline BOOL MDC::BeginPath()
 {
-    assert(m_hDC);
-    return ::BeginPath(m_hDC);
+    assert(Handle());
+    return ::BeginPath(Handle());
 }
 
 inline BOOL MDC::CloseFigure()
 {
-    assert(m_hDC);
-    return ::CloseFigure(m_hDC);
+    assert(Handle());
+    return ::CloseFigure(Handle());
 }
 
 inline BOOL MDC::EndPath()
 {
-    assert(m_hDC);
-    return ::EndPath(m_hDC);
+    assert(Handle());
+    return ::EndPath(Handle());
 }
 
 inline BOOL MDC::FillPath()
 {
-    assert(m_hDC);
-    return ::FillPath(m_hDC);
+    assert(Handle());
+    return ::FillPath(Handle());
 }
 
 inline BOOL MDC::FlattenPath()
 {
-    assert(m_hDC);
-    return ::FlattenPath(m_hDC);
+    assert(Handle());
+    return ::FlattenPath(Handle());
 }
 
 inline BOOL MDC::StrokeAndFillPath()
 {
-    assert(m_hDC);
-    return ::StrokeAndFillPath(m_hDC);
+    assert(Handle());
+    return ::StrokeAndFillPath(Handle());
 }
 
 inline BOOL MDC::StrokePath()
 {
-    assert(m_hDC);
-    return ::StrokePath(m_hDC);
+    assert(Handle());
+    return ::StrokePath(Handle());
 }
 
 inline BOOL MDC::WidenPath()
 {
-    assert(m_hDC);
-    return ::WidenPath(m_hDC);
+    assert(Handle());
+    return ::WidenPath(Handle());
 }
 
 inline BOOL MDC::GetMiterLimit(PFLOAT pfMiterLimit) const
 {
-    assert(m_hDC);
-    return ::GetMiterLimit(m_hDC, pfMiterLimit);
+    assert(Handle());
+    return ::GetMiterLimit(Handle(), pfMiterLimit);
 }
 
 inline BOOL MDC::SetMiterLimit(FLOAT fMiterLimit, PFLOAT peOldLimit/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetMiterLimit(m_hDC, fMiterLimit, peOldLimit);
+    assert(Handle());
+    return ::SetMiterLimit(Handle(), fMiterLimit, peOldLimit);
 }
 
 inline INT MDC::GetPath(LPPOINT lpPoints, LPBYTE lpTypes, INT nCount) const
 {
-    assert(m_hDC);
-    return ::GetPath(m_hDC, lpPoints, lpTypes, nCount);
+    assert(Handle());
+    return ::GetPath(Handle(), lpPoints, lpTypes, nCount);
 }
 
 inline BOOL MDC::SelectClipPath(INT nRGN_)
 {
-    assert(m_hDC);
-    return ::SelectClipPath(m_hDC, nRGN_);
+    assert(Handle());
+    return ::SelectClipPath(Handle(), nRGN_);
 }
 
 inline INT MDC::SetDIBitsToDevice(INT x, INT y,
@@ -1975,8 +1972,8 @@ inline INT MDC::SetDIBitsToDevice(INT x, INT y,
     UINT uStartScan, UINT cScanLines, LPCVOID lpvBits,
     CONST BITMAPINFO* lpbmi, UINT uColorUse)
 {
-    assert(m_hDC);
-    return ::SetDIBitsToDevice(m_hDC, x, y, dwWidth, dwHeight,
+    assert(Handle());
+    return ::SetDIBitsToDevice(Handle(), x, y, dwWidth, dwHeight,
         xSrc, ySrc, uStartScan, cScanLines, lpvBits, lpbmi, uColorUse);
 }
 
@@ -1984,103 +1981,103 @@ inline INT MDC::StretchDIBits(INT x, INT y, INT nWidth, INT nHeight,
     INT xSrc, INT ySrc, INT nSrcWidth, INT nSrcHeight, LPCVOID lpvBits,
     CONST BITMAPINFO* lpbmi, UINT uColorUse, DWORD dwRop)
 {
-    assert(m_hDC);
-    return ::StretchDIBits(m_hDC, x, y, nWidth, nHeight, xSrc, ySrc,
+    assert(Handle());
+    return ::StretchDIBits(Handle(), x, y, nWidth, nHeight, xSrc, ySrc,
         nSrcWidth, nSrcHeight, lpvBits, lpbmi, uColorUse, dwRop);
 }
 
 inline UINT MDC::GetDIBColorTable(
     UINT uStartIndex, UINT cEntries, RGBQUAD* pColors) const
 {
-    assert(m_hDC);
-    return ::GetDIBColorTable(m_hDC, uStartIndex, cEntries, pColors);
+    assert(Handle());
+    return ::GetDIBColorTable(Handle(), uStartIndex, cEntries, pColors);
 }
 
 inline UINT MDC::SetDIBColorTable(
     UINT uStartIndex, UINT cEntries, CONST RGBQUAD* pColors)
 {
-    assert(m_hDC);
-    return ::SetDIBColorTable(m_hDC, uStartIndex, cEntries, pColors);
+    assert(Handle());
+    return ::SetDIBColorTable(Handle(), uStartIndex, cEntries, pColors);
 }
 
 #if (_WIN32_WINNT >= 0x0500)
     inline DWORD MDC::GetFontUnicodeRanges(LPGLYPHSET lpgs) const
     {
-        assert(m_hDC);
-        return ::GetFontUnicodeRanges(m_hDC, lpgs);
+        assert(Handle());
+        return ::GetFontUnicodeRanges(Handle(), lpgs);
     }
 
     inline DWORD MDC::GetGlyphIndices(
         LPCTSTR lpstr, INT cch, LPWORD pgi, DWORD dwFlags) const
     {
-        assert(m_hDC);
-        return ::GetGlyphIndices(m_hDC, lpstr, cch, pgi, dwFlags);
+        assert(Handle());
+        return ::GetGlyphIndices(Handle(), lpstr, cch, pgi, dwFlags);
     }
 
     inline BOOL MDC::GetTextExtentPointI(
         LPWORD pgiIn, INT cgi, LPSIZE lpSize) const
     {
-        assert(m_hDC);
-        return ::GetTextExtentPointI(m_hDC, pgiIn, cgi, lpSize);
+        assert(Handle());
+        return ::GetTextExtentPointI(Handle(), pgiIn, cgi, lpSize);
     }
 
     inline BOOL MDC::GetTextExtentExPointI(LPWORD pgiIn, INT cgi,
         INT nMaxExtent, LPINT lpnFit, LPINT alpDx, LPSIZE lpSize) const
     {
-        assert(m_hDC);
-        return ::GetTextExtentExPointI(m_hDC,
+        assert(Handle());
+        return ::GetTextExtentExPointI(Handle(),
             pgiIn, cgi, nMaxExtent, lpnFit, alpDx, lpSize);
     }
 
     inline BOOL MDC::GetCharWidthI(UINT giFirst, UINT cgi,
         LPWORD pgi, LPINT lpBuffer) const
     {
-        assert(m_hDC);
-        return ::GetCharWidthI(m_hDC, giFirst, cgi, pgi, lpBuffer);
+        assert(Handle());
+        return ::GetCharWidthI(Handle(), giFirst, cgi, pgi, lpBuffer);
     }
 
     inline BOOL MDC::GetCharABCWidthsI(
         UINT giFirst, UINT cgi, LPWORD pgi, LPABC lpabc) const
     {
-        assert(m_hDC);
-        return ::GetCharABCWidthsI(m_hDC, giFirst, cgi, pgi, lpabc);
+        assert(Handle());
+        return ::GetCharABCWidthsI(Handle(), giFirst, cgi, pgi, lpabc);
     }
 #endif  // (_WIN32_WINNT >= 0x0500)
 
 inline BOOL MDC::SetWindowExt(INT x, INT y, LPSIZE lpSize/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetWindowExtEx(m_hDC, x, y, lpSize);
+    assert(Handle());
+    return ::SetWindowExtEx(Handle(), x, y, lpSize);
 }
 
 inline BOOL MDC::SetWindowOrg(INT x, INT y, LPPOINT lpPoint/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetWindowOrgEx(m_hDC, x, y, lpPoint);
+    assert(Handle());
+    return ::SetWindowOrgEx(Handle(), x, y, lpPoint);
 }
 
 inline BOOL MDC::SetViewportExt(INT cx, INT cy, LPSIZE lpSize/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetViewportExtEx(m_hDC, cx, cy, lpSize);
+    assert(Handle());
+    return ::SetViewportExtEx(Handle(), cx, cy, lpSize);
 }
 
 inline BOOL MDC::SetViewportOrg(INT x, INT y, LPPOINT lpPoint/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::SetViewportOrgEx(m_hDC, x, y, lpPoint);
+    assert(Handle());
+    return ::SetViewportOrgEx(Handle(), x, y, lpPoint);
 }
 
 inline BOOL MDC::OffsetViewportOrg(
     INT nWidth, INT nHeight, LPPOINT lpPoint/* = NULL*/)
 {
-    assert(m_hDC);
-    return ::OffsetViewportOrgEx(m_hDC, nWidth, nHeight, lpPoint);
+    assert(Handle());
+    return ::OffsetViewportOrgEx(Handle(), nWidth, nHeight, lpPoint);
 }
 
 inline BOOL MDC::PatBlt(LPCRECT prc, DWORD dwRop/* = PATCOPY*/)
 {
-    assert(m_hDC);
+    assert(Handle());
     MRect rc(prc);
     return PatBlt(rc.left, rc.top, rc.Width(), rc.Height(), dwRop);
 }
@@ -2122,17 +2119,17 @@ inline BOOL MDC::DitherBlt(INT x, INT y, INT nWidth, INT nHeight,
     HBRUSH hBrush3DEffect/* = ::GetSysColorBrush(COLOR_3DHILIGHT)*/,
     HBRUSH hBrushDisabledImage/* = ::GetSysColorBrush(COLOR_3DSHADOW)*/)
 {
-    assert(m_hDC || hBitmap);
+    assert(Handle() || hBitmap);
     assert(nWidth > 0 && nHeight > 0);
 
     // Create a generic DC for all BitBlts
-    MDC dc((hSrcDC) ? hSrcDC : ::CreateCompatibleDC(m_hDC));
+    MDC dc((hSrcDC) ? hSrcDC : ::CreateCompatibleDC(Handle()));
     assert(!!dc);
     if (!dc)
         return FALSE;
 
     // Create a DC for the monochrome DIB section
-    MMemoryDC dcBW(m_hDC);
+    MMemoryDC dcBW(Handle());
     assert(!!dcBW);
     if (!dcBW)
     {
@@ -2174,8 +2171,8 @@ inline BOOL MDC::DitherBlt(INT x, INT y, INT nWidth, INT nHeight,
         hbmOldDC = dc.SelectObject(hBitmap);
 
     {
-        MMemoryDC dcTemp1(m_hDC);
-        MMemoryDC dcTemp2(m_hDC);
+        MMemoryDC dcTemp1(Handle());
+        MMemoryDC dcTemp2(Handle());
         MBitmap bmpTemp1;
         bmpTemp1.CreateCompatibleBitmap(dc, nWidth, nHeight);
         MBitmap bmpTemp2;
@@ -2269,12 +2266,12 @@ inline VOID MDC::FillSolidRect(INT x, INT y, INT cx, INT cy, COLORREF crColor)
 
 inline VOID MDC::FillSolidRect(LPCRECT prc, COLORREF crColor)
 {
-    assert(m_hDC);
-    COLORREF OldColor = ::SetBkColor(m_hDC, crColor);
+    assert(Handle());
+    COLORREF OldColor = ::SetBkColor(Handle(), crColor);
     if (OldColor != CLR_INVALID)
     {
-        ::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, prc, NULL, 0, NULL);
-        ::SetBkColor(m_hDC, OldColor);
+        ::ExtTextOut(Handle(), 0, 0, ETO_OPAQUE, prc, NULL, 0, NULL);
+        ::SetBkColor(Handle(), OldColor);
     }
 }
 
@@ -2395,21 +2392,21 @@ inline INT CALLBACK EnumMetaFileProcDx(HDC hDC, HANDLETABLE* pHandleTable,
 
 inline BOOL MDC::PlayMetaFile(HMETAFILE hMF)
 {
-    assert(m_hDC);
-    if (::GetDeviceCaps(m_hDC, TECHNOLOGY) == DT_METAFILE)
-        return ::PlayMetaFile(m_hDC, hMF);
+    assert(Handle());
+    if (::GetDeviceCaps(Handle(), TECHNOLOGY) == DT_METAFILE)
+        return ::PlayMetaFile(Handle(), hMF);
     // for special playback, lParam == pDC
     LPARAM lParam = reinterpret_cast<LPARAM>(this);
-    return ::EnumMetaFile(m_hDC, hMF, EnumMetaFileProcDx, lParam);
+    return ::EnumMetaFile(Handle(), hMF, EnumMetaFileProcDx, lParam);
 }
 
 inline BOOL MDC::ExtTextOut(INT x, INT y, UINT nOptions, LPCRECT prc,
     LPCTSTR lpsz, UINT cch/* = (UINT)-1*/, LPINT lpDxWidths/* = NULL*/)
 {
-    assert(m_hDC);
+    assert(Handle());
     if (cch == static_cast<UINT>(-1))
         cch = ::lstrlen(lpsz);
-    return ::ExtTextOut(m_hDC, x, y, nOptions, prc, lpsz, cch, lpDxWidths);
+    return ::ExtTextOut(Handle(), x, y, nOptions, prc, lpsz, cch, lpDxWidths);
 }
 
 inline VOID MDC::Draw3dRect(
@@ -2421,7 +2418,7 @@ inline VOID MDC::Draw3dRect(
 
 inline BOOL MDC::BitBlt(LPCRECT prc, HDC hSrcDC, POINT ptSrc, DWORD dwRop/* = SRCCOPY*/)
 {
-    assert(m_hDC);
+    assert(Handle());
     MRect rc(prc);
     return BitBlt(rc.left, rc.top, rc.Width(), rc.Height(),
         hSrcDC, ptSrc.x, ptSrc.y, dwRop);
@@ -2433,58 +2430,47 @@ inline MMemoryDC::MMemoryDC()
 {
 }
 
-inline MMemoryDC::MMemoryDC(HDC hBaseDC)
+inline MMemoryDC::MMemoryDC(HDC hBaseDC) : MDC(::CreateCompatibleDC(hBaseDC))
 {
-    Attach(::CreateCompatibleDC(hBaseDC));
-    assert(m_hDC);
+    assert(Handle());
 }
 
 inline BOOL MMemoryDC::CreateCompatibleDC(HDC hBaseDC/* = NULL*/)
 {
-    assert(m_hDC == NULL);
     return Attach(::CreateCompatibleDC(hBaseDC));
-}
-
-inline /*virtual*/ MMemoryDC::~MMemoryDC()
-{
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline MClientDC::MClientDC()
+inline MClientDC::MClientDC() : MDC(), m_hWnd(NULL)
 {
-    m_hDC = NULL;
-    m_hWnd = NULL;
 }
 
-inline MClientDC::MClientDC(HWND hWnd)
+inline MClientDC::MClientDC(HWND hWnd) : MDC(::GetDC(hWnd)), m_hWnd(hWnd)
 {
     assert(hWnd == NULL || ::IsWindow(hWnd));
-    Attach(::GetDC(hWnd));
-    m_hWnd = hWnd;
-    assert(m_hDC);
+    assert(Handle());
 }
 
 inline /*virtual*/ MClientDC::~MClientDC()
 {
-    if (m_hDC != NULL)
-        ReleaseDC();
+    ReleaseDC();
 }
 
 inline BOOL MClientDC::GetDC(HWND hWnd)
 {
-    assert(m_hDC == NULL);
-    Attach(::GetDC(hWnd));
-    m_hWnd = hWnd;
-    assert(m_hDC);
-    return m_hDC != NULL;
+    return Attach(::GetDC(hWnd));
 }
 
 inline INT MClientDC::ReleaseDC()
 {
-    INT nResult = ::ReleaseDC(m_hWnd, Detach());
-    m_hWnd = NULL;
-    return nResult;
+    if (Handle())
+    {
+        INT nResult = ::ReleaseDC(m_hWnd, Detach());
+        m_hWnd = NULL;
+        return nResult;
+    }
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2500,17 +2486,14 @@ inline MPaintDC::MPaintDC(HWND hWnd) : MDC()
 
 inline /*virtual*/ MPaintDC::~MPaintDC()
 {
-    if (m_hDC)
-        EndPaint();
+    EndPaint();
 }
 
 inline BOOL MPaintDC::BeginPaint(HWND hWnd)
 {
     assert(::IsWindow(hWnd));
-    assert(m_hDC == NULL);
-    Attach(::BeginPaint(hWnd, &m_ps));
-    assert(m_hDC);
-    if (m_hDC)
+    assert(Handle() == NULL);
+    if (Attach(::BeginPaint(hWnd, &m_ps)))
     {
         m_hWnd = hWnd;
         return TRUE;
@@ -2520,33 +2503,37 @@ inline BOOL MPaintDC::BeginPaint(HWND hWnd)
 
 inline BOOL MPaintDC::EndPaint()
 {
-    assert(m_hDC);
-    BOOL bOK = ::EndPaint(m_hWnd, &m_ps);
-    m_hWnd = NULL;
-    Detach();
-    return bOK;
+    assert(Handle());
+    if (Handle())
+    {
+        BOOL bOK = ::EndPaint(m_hWnd, &m_ps);
+        if (bOK)
+        {
+            m_hWnd = NULL;
+            Detach();
+        }
+        return bOK;
+    }
+    return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline MWindowDC::MWindowDC(HWND hWnd) : m_hWnd(hWnd)
+inline MWindowDC::MWindowDC(HWND hWnd)
+    : MDC(::GetWindowDC(hWnd)), m_hWnd(hWnd)
 {
+    assert(Handle());
     assert(hWnd == NULL || ::IsWindow(hWnd));
-    Attach(::GetWindowDC(hWnd));
 }
 
 inline /*virtual*/ MWindowDC::~MWindowDC()
 {
-    if (m_hDC)
-        ReleaseDC();
+    ReleaseDC();
 }
 
 inline BOOL MWindowDC::GetWindowDC(HWND hWnd)
 {
-    assert(m_hDC == NULL);
-    Attach(::GetWindowDC(hWnd));
-    assert(m_hDC);
-    if (m_hDC)
+    if (Attach(::GetWindowDC(hWnd)))
     {
         m_hWnd = hWnd;
         return TRUE;
@@ -2556,14 +2543,18 @@ inline BOOL MWindowDC::GetWindowDC(HWND hWnd)
 
 inline INT MWindowDC::ReleaseDC()
 {
-    INT nOK = ::ReleaseDC(m_hWnd, Detach());
-    m_hWnd = NULL;
-    return nOK;
+    if (Handle())
+    {
+        INT nOK = ::ReleaseDC(m_hWnd, Detach());
+        m_hWnd = NULL;
+        return nOK;
+    }
+    return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline MMetaDC::MMetaDC() : MDC()
+inline MMetaDC::MMetaDC()
 {
 }
 
@@ -2571,25 +2562,32 @@ inline MMetaDC::MMetaDC(HDC hDC) : MDC(hDC)
 {
 }
 
-inline MMetaDC::MMetaDC(LPCTSTR pszFile) : MDC()
+inline MMetaDC::MMetaDC(LPCTSTR pszFile) : MDC(::CreateMetaFile(pszFile))
 {
-    CreateMetaFile(pszFile);
+    assert(Handle());
+}
+
+inline BOOL MMetaDC::DeleteMetaFile()
+{
+    if (Handle())
+    {
+        BOOL bOK = ::DeleteMetaFile(::CloseMetaFile(Detach()));
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline /*virtual*/ MMetaDC::~MMetaDC()
 {
-    if (m_hDC)
-        ::DeleteMetaFile(::CloseMetaFile(m_hDC));
+    DeleteMetaFile();
 }
 
 inline MMetaDC& MMetaDC::operator=(HDC hDC)
 {
     assert(hDC);
     assert(::GetObjectType(hDC) == OBJ_METADC);
-    if (m_hDC != hDC)
+    if (Handle() != hDC)
     {
-        if (m_hDC)
-            CloseMetaFile();
         Attach(hDC);
     }
     return *this;
@@ -2597,8 +2595,7 @@ inline MMetaDC& MMetaDC::operator=(HDC hDC)
 
 inline BOOL MMetaDC::CreateMetaFile(LPCTSTR pszFile/* = NULL*/)
 {
-    Attach(::CreateMetaFile(pszFile));
-    return m_hDC != NULL;
+    return Attach(::CreateMetaFile(pszFile));
 }
 
 inline HMETAFILE MMetaDC::CloseMetaFile()
@@ -2613,34 +2610,32 @@ inline MEnhMetaDC::MEnhMetaDC() : MDC()
 {
 }
 
-inline MEnhMetaDC::MEnhMetaDC(HDC hDC) : MDC()
+inline MEnhMetaDC::MEnhMetaDC(HDC hDC) : MDC(hDC)
 {
-    Attach(hDC);
 }
 
 inline MEnhMetaDC::MEnhMetaDC(HDC hdcRef, LPCRECT prc,
-    LPCTSTR pszFileName/* = NULL*/, LPCTSTR pszzDescription/* = NULL*/) : MDC()
+    LPCTSTR pszFileName/* = NULL*/, LPCTSTR pszDescription/* = NULL*/)
+    : MDC(::CreateEnhMetaFile(hdcRef, pszFileName, prc, pszDescription))
 {
-    CreateEnhMetaFile(hdcRef, prc, pszFileName, pszzDescription);
+    assert(Handle());
 }
 
 inline /*virtual*/ MEnhMetaDC::~MEnhMetaDC()
 {
-    if (m_hDC)
-        DeleteEnhMetaFile();
+    DeleteEnhMetaFile();
 }
 
 inline BOOL MEnhMetaDC::CreateEnhMetaFile(HDC hdcRef, LPCRECT prc,
-    LPCTSTR pszFileName/* = NULL*/, LPCTSTR pszzDescription/* = NULL*/)
+    LPCTSTR pszFileName/* = NULL*/, LPCTSTR pszDescription/* = NULL*/)
 {
-    Attach(::CreateEnhMetaFile(hdcRef, pszFileName, prc, pszzDescription));
-    return m_hDC != NULL;
+    return Attach(::CreateEnhMetaFile(hdcRef, pszFileName, prc, pszDescription));
 }
 
 inline HENHMETAFILE MEnhMetaDC::CloseEnhMetaFile()
 {
-    assert(m_hDC);
-    assert(::GetObjectType(m_hDC) == OBJ_ENHMETAFILE);
+    assert(Handle());
+    assert(::GetObjectType(Handle()) == OBJ_ENHMETAFILE);
     HENHMETAFILE hEMF = ::CloseEnhMetaFile(Detach());
     return hEMF;
 }
@@ -2648,10 +2643,8 @@ inline HENHMETAFILE MEnhMetaDC::CloseEnhMetaFile()
 inline MEnhMetaDC& MEnhMetaDC::operator=(HDC hDC)
 {
     assert(::GetObjectType(hDC) == OBJ_ENHMETADC);
-    if (m_hDC != hDC)
+    if (Handle() != hDC)
     {
-        if (m_hDC)
-            DeleteEnhMetaFile();
         Attach(hDC);
     }
     return *this;
@@ -2659,7 +2652,6 @@ inline MEnhMetaDC& MEnhMetaDC::operator=(HDC hDC)
 
 inline BOOL MEnhMetaDC::DeleteEnhMetaFile()
 {
-    assert(m_hDC);
     return ::DeleteEnhMetaFile(CloseEnhMetaFile());
 }
 

@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MLIBRARY_HPP_
-#define MZC4_MLIBRARY_HPP_      2   /* Version 2 */
+#define MZC4_MLIBRARY_HPP_      3   /* Version 3 */
 
 class MLibrary;
 
@@ -116,20 +116,21 @@ inline MLibrary::MLibrary(HINSTANCE hInstance) : m_hInstance(hInstance)
 {
 }
 
-inline MLibrary::MLibrary(LPCTSTR pszFileName) : m_hInstance(NULL)
+inline MLibrary::MLibrary(LPCTSTR pszFileName)
+    : m_hInstance(::LoadLibrary(pszFileName))
 {
-    MLibrary::LoadLibrary(pszFileName);
+    assert(Handle());
 }
 
-inline MLibrary::MLibrary(LPCTSTR pszFileName, DWORD dwFlags) : m_hInstance(NULL)
+inline MLibrary::MLibrary(LPCTSTR pszFileName, DWORD dwFlags)
+    : m_hInstance(::LoadLibraryEx(pszFileName, NULL, dwFlags))
 {
-    MLibrary::LoadLibraryEx(pszFileName, dwFlags);
+    assert(Handle());
 }
 
 inline /*virtual*/ MLibrary::~MLibrary()
 {
-    if (m_hInstance)
-        FreeLibrary();
+    FreeLibrary();
 }
 
 inline MLibrary& MLibrary::operator=(HINSTANCE hInstance)
@@ -138,16 +139,16 @@ inline MLibrary& MLibrary::operator=(HINSTANCE hInstance)
     TCHAR szFileName[MAX_PATH];
     assert(hInstance == NULL || ::GetModuleFileName(hInstance, szFileName, MAX_PATH));
 #endif
-    if (m_hInstance != hInstance)
+    if (Handle() != hInstance)
+    {
         Attach(hInstance);
+    }
     return *this;
 }
 
 inline BOOL MLibrary::Attach(HINSTANCE hInstance)
 {
-    if (m_hInstance)
-        FreeLibrary();
-    assert(m_hInstance == NULL);
+    FreeLibrary();
     m_hInstance = hInstance;
 #ifndef NDEBUG
     TCHAR szFileName[MAX_PATH];
@@ -170,69 +171,59 @@ inline HINSTANCE MLibrary::Handle() const
 
 inline BOOL MLibrary::LoadLibrary(LPCTSTR pszFileName)
 {
-    assert(m_hInstance == NULL);
-    m_hInstance = ::LoadLibrary(pszFileName);
-    return m_hInstance != NULL;
+    return Attach(::LoadLibrary(pszFileName));
 }
 
 inline BOOL MLibrary::LoadLibraryEx(LPCTSTR pszFileName, DWORD dwFlags)
 {
-    assert(m_hInstance == NULL);
-    m_hInstance = ::LoadLibraryEx(pszFileName, NULL, dwFlags);
-    return m_hInstance != NULL;
+    return Attach(::LoadLibraryEx(pszFileName, NULL, dwFlags));
 }
 
 inline BOOL MLibrary::LoadLocalLibrary(LPCTSTR pszFileName)
 {
-    assert(m_hInstance == NULL);
-    m_hInstance = LoadLocalLibraryDx(pszFileName);
-    return m_hInstance != NULL;
+    return Attach(LoadLocalLibraryDx(pszFileName));
 }
 
 inline BOOL MLibrary::LoadLocalLibraryEx(LPCTSTR pszFileName, DWORD dwFlags)
 {
-    assert(m_hInstance == NULL);
-    m_hInstance = LoadLocalLibraryDx(pszFileName, dwFlags);
-    return m_hInstance != NULL;
+    return Attach(LoadLocalLibraryDx(pszFileName, dwFlags));
 }
 
 inline BOOL MLibrary::LoadSystemLibrary(LPCTSTR pszFileName)
 {
-    assert(m_hInstance == NULL);
-    m_hInstance = LoadSystemLibraryDx(pszFileName);
-    return m_hInstance != NULL;
+    return Attach(LoadSystemLibraryDx(pszFileName));
 }
 
 inline BOOL MLibrary::LoadSystemLibraryEx(LPCTSTR pszFileName, DWORD dwFlags)
 {
-    assert(m_hInstance == NULL);
-    m_hInstance = LoadSystemLibraryDx(pszFileName, dwFlags);
-    return m_hInstance != NULL;
+    return Attach(LoadSystemLibraryDx(pszFileName, dwFlags));
 }
 
 inline BOOL MLibrary::FreeLibrary()
 {
-    assert(m_hInstance);
-    BOOL bOK = ::FreeLibrary(m_hInstance);
-    m_hInstance = NULL;
-    return bOK;
+    if (m_hInstance)
+    {
+        BOOL bOK = ::FreeLibrary(m_hInstance);
+        m_hInstance = NULL;
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline FARPROC MLibrary::GetProcAddress(LPCSTR pszProcName)
 {
-    assert(m_hInstance);
-    return ::GetProcAddress(m_hInstance, pszProcName);
+    assert(Handle());
+    return ::GetProcAddress(Handle(), pszProcName);
 }
 
 inline BOOL MLibrary::GetModuleHandle(LPCTSTR pszFileName)
 {
-    m_hInstance = ::GetModuleHandle(pszFileName);
-    return m_hInstance != NULL;
+    return Attach(::GetModuleHandle(pszFileName));
 }
 
 inline BOOL MLibrary::GetModuleFileName(LPTSTR pszFileName, DWORD cch/* = MAX_PATH*/)
 {
-    return ::GetModuleFileName(m_hInstance, pszFileName, cch);
+    return ::GetModuleFileName(Handle(), pszFileName, cch);
 }
 
 inline bool MLibrary::operator!() const
@@ -270,7 +261,7 @@ inline HRESULT GetDllVersionDx(LPCTSTR pszDLL, DLLVERSIONINFO* info)
 
 inline HICON MLibrary::LoadIcon(LPCTSTR pszName)
 {
-    return ::LoadIcon(m_hInstance, pszName);
+    return ::LoadIcon(Handle(), pszName);
 }
 
 inline HICON MLibrary::LoadIcon(UINT nID)
@@ -280,7 +271,7 @@ inline HICON MLibrary::LoadIcon(UINT nID)
 
 inline HCURSOR MLibrary::LoadCursor(LPCTSTR pszName)
 {
-    return ::LoadCursor(m_hInstance, pszName);
+    return ::LoadCursor(Handle(), pszName);
 }
 
 inline HCURSOR MLibrary::LoadCursor(UINT nID)
@@ -290,7 +281,7 @@ inline HCURSOR MLibrary::LoadCursor(UINT nID)
 
 inline HBITMAP MLibrary::LoadBitmap(LPCTSTR pszName)
 {
-    return ::LoadBitmap(m_hInstance, pszName);
+    return ::LoadBitmap(Handle(), pszName);
 }
 
 inline HBITMAP MLibrary::LoadBitmap(UINT nID)
@@ -301,7 +292,7 @@ inline HBITMAP MLibrary::LoadBitmap(UINT nID)
 inline HANDLE MLibrary::LoadImage(LPCTSTR pszName, UINT uType,
     INT cxDesired/* = 0*/, INT cyDesired/* = 0*/, UINT fuLoad/* = 0*/)
 {
-    return ::LoadImage(m_hInstance, pszName, uType, cxDesired, cyDesired, fuLoad);
+    return ::LoadImage(Handle(), pszName, uType, cxDesired, cyDesired, fuLoad);
 }
 
 inline HANDLE MLibrary::LoadImage(UINT nID, UINT uType,
@@ -312,8 +303,8 @@ inline HANDLE MLibrary::LoadImage(UINT nID, UINT uType,
 
 inline HMENU MLibrary::LoadMenu(LPCTSTR pszName)
 {
-    assert(m_hInstance);
-    return ::LoadMenu(m_hInstance, pszName);
+    assert(Handle());
+    return ::LoadMenu(Handle(), pszName);
 }
 
 inline HMENU MLibrary::LoadMenu(UINT nID)
@@ -323,24 +314,25 @@ inline HMENU MLibrary::LoadMenu(UINT nID)
 
 inline INT MLibrary::LoadString(UINT nID, LPTSTR pszBuffer, INT cchBuffer)
 {
-    assert(m_hInstance);
-    return ::LoadString(m_hInstance, nID, pszBuffer, cchBuffer);
+    assert(Handle());
+    return ::LoadString(Handle(), nID, pszBuffer, cchBuffer);
 }
 
 inline HACCEL MLibrary::LoadAccelerators(LPCTSTR pszName)
 {
-    assert(m_hInstance);
-    return ::LoadAccelerators(m_hInstance, pszName);
+    assert(Handle());
+    return ::LoadAccelerators(Handle(), pszName);
 }
 
 inline HACCEL MLibrary::LoadAccelerators(UINT nID)
 {
+    assert(Handle());
     return LoadAccelerators(MAKEINTRESOURCE(nID));
 }
 
 inline HRSRC MLibrary::FindResource(LPCTSTR pszName, LPCTSTR pszType)
 {
-    return ::FindResource(m_hInstance, pszName, pszType);
+    return ::FindResource(Handle(), pszName, pszType);
 }
 
 inline HRSRC MLibrary::FindResource(LPCTSTR pszName, UINT nType)
@@ -360,7 +352,7 @@ inline HRSRC MLibrary::FindResource(UINT nID, UINT nType)
 
 inline HRSRC MLibrary::FindResourceEx(LPCTSTR pszName, LPCTSTR pszType, WORD wLanguage)
 {
-    return ::FindResourceEx(m_hInstance, pszName, pszType, wLanguage);
+    return ::FindResourceEx(Handle(), pszName, pszType, wLanguage);
 }
 
 inline HRSRC MLibrary::FindResourceEx(LPCTSTR pszName, UINT nType, WORD wLanguage)
@@ -380,13 +372,13 @@ inline HRSRC MLibrary::FindResourceEx(UINT nID, UINT nType, WORD wLanguage)
 
 inline HGLOBAL MLibrary::LoadResource(HRSRC hRsrc)
 {
-    return ::LoadResource(m_hInstance, hRsrc);
+    return ::LoadResource(Handle(), hRsrc);
 }
 
 inline DWORD MLibrary::SizeofResource(HRSRC hRsrc)
 {
-    assert(m_hInstance);
-    return ::SizeofResource(m_hInstance, hRsrc);
+    assert(Handle());
+    return ::SizeofResource(Handle(), hRsrc);
 }
 
 inline HICON MLibrary::LoadSmallIcon(LPCTSTR pszName)

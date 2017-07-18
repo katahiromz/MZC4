@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MACCEL_HPP_
-#define MZC4_MACCEL_HPP_    2       /* Version 2 */
+#define MZC4_MACCEL_HPP_    4       /* Version 4 */
 
 class MAccel;
 
@@ -89,14 +89,19 @@ inline bool MAccel::operator!() const
 inline MAccel& MAccel::operator=(HACCEL hAccel)
 {
     if (m_hAccel != hAccel)
+    {
         Attach(hAccel);
+    }
     return *this;
 }
 
 inline MAccel& MAccel::operator=(const MAccel& accel)
 {
-    if (this != &accel)
-        Attach(MAccel::CloneHandleDx(accel));
+    if (m_hAccel != accel.m_hAccel)
+    {
+        HACCEL hAccel = CloneHandleDx(accel);
+        Attach(hAccel);
+    }
     return *this;
 }
 

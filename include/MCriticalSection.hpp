@@ -3,19 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MCRITICALSECTION_HPP_
-#define MZC4_MCRITICALSECTION_HPP_  2   /* Version 2 */
+#define MZC4_MCRITICALSECTION_HPP_  3   /* Version 3 */
 
 class MCriticalSection;
-
-////////////////////////////////////////////////////////////////////////////
-
-// FootmarkDx and FootmarkThisDx
-#ifndef FootmarkDx
-    #define FootmarkDx()
-#endif
-#ifndef FootmarkThisDx
-    #define FootmarkThisDx()
-#endif
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +42,6 @@ inline MCriticalSection::MCriticalSection(DWORD)
 #if (_WIN32_WINNT >= 0x0403)
     ::InitializeCriticalSectionAndSpinCount(&m_cs, dwSpinCount);
 #else
-    FootmarkThisDx();
     ::InitializeCriticalSection(&m_cs);
 #endif
 }
@@ -71,11 +60,8 @@ inline /*virtual*/ BOOL MCriticalSection::Lock()
 inline /*virtual*/ BOOL MCriticalSection::Lock(DWORD dwTimeout)
 {
 #if (_WIN32_WINNT >= 0x0400)
-    if (dwTimeout != 0)
-        FootmarkThisDx();
     return ::TryEnterCriticalSection(&m_cs);
 #else
-    FootmarkThisDx();
     return FALSE;
 #endif
 }

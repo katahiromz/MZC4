@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MRGN_HPP_
-#define MZC4_MRGN_HPP_      2       /* Version 2 */
+#define MZC4_MRGN_HPP_      3       /* Version 3 */
 
 class MRgn;
 
@@ -26,10 +26,10 @@ public:
     MRgn(INT x1, INT y1, INT x2, INT y2, BOOL bElliptic = FALSE);
     MRgn(LPCRECT prc, BOOL bElliptic = FALSE);
     MRgn(const MRgn& rgn);
-
-    operator HRGN() const;
     MRgn& operator=(HRGN hRgn);
     MRgn& operator=(const MRgn& rgn);
+
+    operator HRGN() const;
 
     BOOL Attach(HRGN hRgn);
     HRGN Detach(VOID);
@@ -116,9 +116,8 @@ inline MRgn::MRgn()
 {
 }
 
-inline MRgn::MRgn(HRGN hRgn)
+inline MRgn::MRgn(HRGN hRgn) : MGdiObject(hRgn)
 {
-    Attach(hRgn);
 }
 
 inline MRgn::MRgn(
@@ -132,7 +131,6 @@ inline MRgn::MRgn(
 
 inline MRgn::MRgn(LPCRECT prc, BOOL bElliptic/* = FALSE*/)
 {
-    m_hGdiObj = NULL;
     if (bElliptic)
         MRgn::CreateEllipticRgnIndirect(prc);
     else
@@ -141,7 +139,11 @@ inline MRgn::MRgn(LPCRECT prc, BOOL bElliptic/* = FALSE*/)
 
 inline MRgn::MRgn(const MRgn& rgn)
 {
-    Attach(MRgn::CloneHandleDx(rgn));
+    if (Handle() != rgn.Handle())
+    {
+        HRGN hRgn = CloneHandleDx(rgn);
+        Attach(hRgn);
+    }
 }
 
 inline MRgn::operator HRGN() const
@@ -152,22 +154,19 @@ inline MRgn::operator HRGN() const
 inline MRgn& MRgn::operator=(HRGN hRgn)
 {
     assert(hRgn == NULL || ::GetObjectType(hRgn) == OBJ_REGION);
-    if (m_hGdiObj != (HGDIOBJ)hRgn)
+    if (Handle() != hRgn)
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = (HGDIOBJ)hRgn;
+        Attach(hRgn);
     }
     return *this;
 }
 
 inline MRgn& MRgn::operator=(const MRgn& rgn)
 {
-    if (m_hGdiObj != rgn.m_hGdiObj)
+    if (Handle() != rgn.Handle())
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = MRgn::CloneHandleDx(rgn);
+        HRGN hRgn = CloneHandleDx(rgn);
+        Attach(hRgn);
     }
     return *this;
 }
@@ -175,7 +174,7 @@ inline MRgn& MRgn::operator=(const MRgn& rgn)
 inline BOOL MRgn::Attach(HRGN hRgn)
 {
     assert(::GetObjectType(hRgn) == OBJ_REGION);
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return MGdiObject::Attach(hRgn);
 }
 
@@ -191,19 +190,19 @@ inline HRGN MRgn::Handle() const
 
 inline BOOL MRgn::CreateEmptyRgn()
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return CreateRectRgn(0, 0, 0, 0);
 }
 
 inline BOOL MRgn::CreateRectRgn(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreateRectRgn(x1, y1, x2, y2));
 }
 
 inline BOOL MRgn::CreateRectRgnIndirect(LPCRECT prc)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreateRectRgnIndirect(prc));
 }
 
@@ -255,85 +254,85 @@ inline BOOL MRgn::ExtCreateRegion(
 
 inline VOID MRgn::SetRectRgn(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     ::SetRectRgn(Handle(), x1, y1, x2, y2);
 }
 
 inline VOID MRgn::SetRectRgn(LPCRECT prc)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     ::SetRectRgn(Handle(), prc->left, prc->top, prc->right, prc->bottom);
 }
 
 inline INT MRgn::CombineRgn(HRGN hRgnSrc1, HRGN hRgnSrc2, INT nCombineMode)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::CombineRgn(Handle(), hRgnSrc1, hRgnSrc2, nCombineMode);
 }
 
 inline INT MRgn::CombineRgn(HRGN hRgnSrc, INT nCombineMode)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::CombineRgn(Handle(), Handle(), hRgnSrc, nCombineMode);
 }
 
 inline INT MRgn::CopyRgnDx(HRGN hRgnSrc)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::CombineRgn(Handle(), hRgnSrc, NULL, RGN_COPY);
 }
 
 inline BOOL MRgn::EqualRgn(HRGN hRgn) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::EqualRgn(Handle(), hRgn);
 }
 
 inline INT MRgn::OffsetRgn(INT x, INT y)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::OffsetRgn(Handle(), x, y);
 }
 
 inline INT MRgn::OffsetRgn(POINT pt)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::OffsetRgn(Handle(), pt.x, pt.y);
 }
 
 inline INT MRgn::GetRgnBox(LPRECT prc) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::GetRgnBox(Handle(), prc);
 }
 
 inline BOOL MRgn::PtInRegion(INT x, INT y) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::PtInRegion(Handle(), x, y);
 }
 
 inline BOOL MRgn::PtInRegion(POINT pt) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::PtInRegion(Handle(), pt.x, pt.y);
 }
 
 inline BOOL MRgn::RectInRegion(LPCRECT prc) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::RectInRegion(Handle(), prc);
 }
 
 inline DWORD MRgn::GetRegionData(DWORD nDataSize, LPRGNDATA pRgnData) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::GetRegionData(Handle(), nDataSize, pRgnData);
 }
 
 inline BOOL MRgn::IsRgnEmptyDx() const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::IsRgnEmptyDx(Handle());
 }
 

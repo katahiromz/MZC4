@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MBITMAP_HPP_
-#define MZC4_MBITMAP_HPP_       3       /* Version 3 */
+#define MZC4_MBITMAP_HPP_       4       /* Version 4 */
 
 class MBitmap;
 union BITMAPINFODX;
@@ -32,6 +32,8 @@ public:
     MBitmap(UINT nResourceID, HINSTANCE hInstance = NULL);
     MBitmap(LPCTSTR pszFileName, FLOAT *dpi = NULL);
     MBitmap(const MBitmap& bmp);
+    MBitmap& operator=(HBITMAP hBitmap);
+    MBitmap& operator=(const MBitmap& bmp);
 
     operator HBITMAP() const;
     HBITMAP Handle() const;
@@ -39,8 +41,6 @@ public:
     BOOL GetBitmap(BITMAP *pbm) const;
     BOOL GetDIBSection(DIBSECTION *pds) const;
     BOOL GetSize(SIZE *psiz) const;
-    MBitmap& operator=(HBITMAP hBitmap);
-    MBitmap& operator=(const MBitmap& bmp);
     BOOL Attach(HBITMAP hBitmap);
     HBITMAP Detach(VOID);
 
@@ -112,14 +112,16 @@ typedef BITMAPINFODX *LPBITMAPINFODX;
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline MBitmap::MBitmap(const MBitmap& bmp)
+inline MBitmap::MBitmap()
 {
-    Attach(MBitmap::CloneHandleDx(bmp));
 }
 
-inline MBitmap::MBitmap(HBITMAP hbm/* = NULL*/)
+inline MBitmap::MBitmap(const MBitmap& bmp) : MGdiObject(CloneHandleDx(bmp))
 {
-    Attach(hbm);
+}
+
+inline MBitmap::MBitmap(HBITMAP hbm) : MGdiObject(hbm)
+{
 }
 
 inline MBitmap::MBitmap(UINT nResourceID, HINSTANCE hInstance/* = NULL*/)
@@ -145,36 +147,33 @@ inline MBitmap::operator HBITMAP() const
 
 inline BOOL MBitmap::GetBitmap(BITMAP *pbm) const
 {
-    assert(m_hGdiObj);
-    return ::GetObject(m_hGdiObj, sizeof(BITMAP), pbm) == sizeof(BITMAP);
+    assert(Handle());
+    return ::GetObject(Handle(), sizeof(BITMAP), pbm) == sizeof(BITMAP);
 }
 
 inline BOOL MBitmap::GetDIBSection(DIBSECTION *pds) const
 {
-    assert(m_hGdiObj);
-    return ::GetObject(m_hGdiObj, sizeof(DIBSECTION), pds) ==
+    assert(Handle());
+    return ::GetObject(Handle(), sizeof(DIBSECTION), pds) ==
            sizeof(DIBSECTION);
 }
 
 inline MBitmap& MBitmap::operator=(HBITMAP hBitmap)
 {
     assert(hBitmap == NULL || ::GetObjectType(hBitmap) == OBJ_BITMAP);
-    if (m_hGdiObj != (HGDIOBJ)hBitmap)
+    if (Handle() != hBitmap)
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = (HGDIOBJ)hBitmap;
+        Attach(hBitmap);
     }
     return *this;
 }
 
 inline MBitmap& MBitmap::operator=(const MBitmap& bmp)
 {
-    if (m_hGdiObj != bmp.m_hGdiObj)
+    if (Handle() != bmp.Handle())
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = MBitmap::CloneHandleDx((HBITMAP)bmp.m_hGdiObj);
+        HBITMAP hbm = CloneHandleDx(bmp);
+        Attach(hbm);
     }
     return *this;
 }
@@ -182,7 +181,7 @@ inline MBitmap& MBitmap::operator=(const MBitmap& bmp)
 inline BOOL MBitmap::Attach(HBITMAP hBitmap)
 {
     assert(::GetObjectType(hBitmap) == OBJ_BITMAP);
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return MGdiObject::Attach(hBitmap);
 }
 
@@ -205,11 +204,10 @@ inline BOOL MBitmap::GetSize(SIZE *psiz) const
 
 inline BOOL MBitmap::LoadBitmap(LPCTSTR pszResourceName, HINSTANCE hInstance/* = NULL*/)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     if (hInstance == NULL)
         hInstance = ::GetModuleHandle(NULL);
-    Attach(::LoadBitmap(hInstance, pszResourceName));
-    return m_hGdiObj != NULL;
+    return Attach(::LoadBitmap(hInstance, pszResourceName));
 }
 
 inline BOOL MBitmap::LoadBitmap(UINT nResourceID, HINSTANCE hInstance/* = NULL*/)
@@ -220,16 +218,16 @@ inline BOOL MBitmap::LoadBitmap(UINT nResourceID, HINSTANCE hInstance/* = NULL*/
 
 inline BOOL MBitmap::LoadDIBSection(LPCTSTR pszResourceName, HINSTANCE hInstance/* = NULL*/)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     if (hInstance == NULL)
         hInstance = ::GetModuleHandle(NULL);
-    Attach((HBITMAP)::LoadImage(hInstance, pszResourceName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
-    return m_hGdiObj != NULL;
+    return Attach((HBITMAP)::LoadImage(hInstance, pszResourceName,
+                                       IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION));
 }
 
 inline BOOL MBitmap::LoadDIBSection(UINT nResourceID, HINSTANCE hInstance/* = NULL*/)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     assert(nResourceID != 0);
     return LoadDIBSection(MAKEINTRESOURCE(nResourceID), hInstance);
 }
@@ -238,12 +236,11 @@ inline BOOL MBitmap::LoadImage(LPCTSTR pszResourceName,
     UINT fuLoad/* = LR_CREATEDIBSECTION*/,
     INT cxDesired/* = 0*/, INT cyDesired/* = 0*/, HINSTANCE hInstance/* = NULL*/)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     if (hInstance == NULL)
         hInstance = ::GetModuleHandle(NULL);
-    Attach((HBITMAP)::LoadImage(hInstance, pszResourceName, IMAGE_BITMAP,
-        cxDesired, cyDesired, fuLoad));
-    return m_hGdiObj != NULL;
+    return Attach((HBITMAP)::LoadImage(hInstance, pszResourceName, IMAGE_BITMAP,
+                                       cxDesired, cyDesired, fuLoad));
 }
 
 inline BOOL MBitmap::LoadImage(UINT nResourceID,
@@ -267,53 +264,44 @@ inline BOOL MBitmap::LoadMappedBitmap(
     assert(::DeleteObject(hbm));
 #endif
 
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     if (hInstance == NULL)
         hInstance = ::GetModuleHandle(NULL);
-    Attach(::CreateMappedBitmap(hInstance, nResourceID, 0, lpColorMap, iNumMap));
-    return m_hGdiObj != NULL;
+    return Attach(::CreateMappedBitmap(hInstance, nResourceID, 0, lpColorMap, iNumMap));
 }
 
 inline BOOL MBitmap::CreateBitmap(INT cx, INT cy,
     INT cBitsPerPixel/* = 1*/, LPCVOID pvBits/* = NULL*/)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateBitmap(cx, cy, (UINT) 1, (UINT) cBitsPerPixel, pvBits));
-    assert(m_hGdiObj);
-    return m_hGdiObj != NULL;
+    assert(Handle() == NULL);
+    return Attach(::CreateBitmap(cx, cy, (UINT) 1, (UINT) cBitsPerPixel, pvBits));
 }
 
 inline BOOL MBitmap::CreateDIBSection(
     CONST BITMAPINFO *pbi, VOID **ppvBits)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateDIBSection(NULL, pbi, DIB_RGB_COLORS, ppvBits, NULL, 0));
-    assert(m_hGdiObj);
-    return m_hGdiObj != NULL;
+    assert(Handle() == NULL);
+    return Attach(::CreateDIBSection(NULL, pbi, DIB_RGB_COLORS, ppvBits, NULL, 0));
 }
 
 inline BOOL MBitmap::CreateDIBSection(
     HDC hDC, CONST BITMAPINFO *pbi, VOID **ppvBits)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateDIBSection(hDC, pbi, DIB_PAL_COLORS, ppvBits, NULL, 0));
-    assert(m_hGdiObj);
-    return m_hGdiObj != NULL;
+    assert(Handle() == NULL);
+    return Attach(::CreateDIBSection(hDC, pbi, DIB_PAL_COLORS, ppvBits, NULL, 0));
 }
 
 inline BOOL MBitmap::CreateCompatibleBitmap(HDC hDC, INT cx, INT cy)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateCompatibleBitmap(hDC, cx, cy));
-    assert(m_hGdiObj);
-    return m_hGdiObj != NULL;
+    assert(Handle() == NULL);
+    return Attach(::CreateCompatibleBitmap(hDC, cx, cy));
 }
 
 inline INT MBitmap::GetDIBits(
     HDC hDC, UINT uStartScan, UINT cScanLines,  LPVOID lpvBits,
     LPBITMAPINFO lpbi, UINT uUsage) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::GetDIBits(hDC, Handle(), uStartScan, cScanLines,
         lpvBits, lpbi, uUsage);
 }
@@ -321,7 +309,7 @@ inline INT MBitmap::GetDIBits(
 inline INT MBitmap::SetDIBits(HDC hDC, UINT uStartScan, UINT cScanLines,
     LPCVOID lpvBits, CONST BITMAPINFO* lpbi, UINT uUsage)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::SetDIBits(hDC, Handle(), uStartScan, cScanLines,
         lpvBits, lpbi, uUsage);
 }

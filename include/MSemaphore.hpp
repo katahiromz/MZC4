@@ -15,6 +15,10 @@ class MSemaphore : public MSyncBase
 {
 public:
     MSemaphore();
+    MSemaphore(HANDLE hSem);
+    MSemaphore(const MSemaphore& s);
+    MSemaphore& operator=(HANDLE hSem);
+    MSemaphore& operator=(const MSemaphore& s);
     MSemaphore(LONG lInitialCount, LONG lMaxCount = 1,
                LPCTSTR pstrName = NULL,
                LPSECURITY_ATTRIBUTES lpsaAttributes = NULL);
@@ -31,14 +35,41 @@ inline MSemaphore::MSemaphore()
 {
 }
 
+inline MSemaphore::MSemaphore(HANDLE hSem) : MSyncBase(hSem)
+{
+}
+
+inline MSemaphore::MSemaphore(const MSemaphore& s)
+    : MSyncBase(CloneHandleDx(s))
+{
+}
+
+inline MSemaphore& MSemaphore::operator=(HANDLE hSem)
+{
+    if (Handle() != hSem)
+    {
+        Attach(hSem);
+    }
+    return *this;
+}
+
+inline MSemaphore& MSemaphore::operator=(const MSemaphore& s)
+{
+    if (Handle() != s.Handle())
+    {
+        HANDLE hSem = CloneHandleDx(s);
+        Attach(hSem);
+    }
+    return *this;
+}
+
 inline MSemaphore::MSemaphore(LONG lInitialCount,
     LONG lMaxCount/* = 1*/, LPCTSTR pstrName/* = NULL*/,
     LPSECURITY_ATTRIBUTES lpsaAttributes/* = NULL*/)
+    : MSyncBase(::CreateSemaphore(lpsaAttributes, lInitialCount, lMaxCount, pstrName))
 {
     assert(lMaxCount > 0);
     assert(lInitialCount <= lMaxCount);
-
-    CreateSemaphore(lInitialCount, lMaxCount, pstrName, lpsaAttributes);
 }
 
 inline /*virtual*/ BOOL MSemaphore::Unlock()
@@ -53,10 +84,8 @@ inline BOOL MSemaphore::CreateSemaphore(
 {
     assert(lMaxCount > 0);
     assert(lInitialCount <= lMaxCount);
-
-    Attach(::CreateSemaphore(
+    return Attach(::CreateSemaphore(
         lpsaAttributes, lInitialCount, lMaxCount, pstrName));
-    return m_hObject != NULL;
 }
 
 inline /*virtual*/ BOOL MSemaphore::Unlock(LONG lCount, LPLONG lprevCount/* = NULL*/)

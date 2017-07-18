@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILE_HPP_
-#define MZC4_MFILE_HPP_     4   /* Version 4 */
+#define MZC4_MFILE_HPP_     7   /* Version 7 */
 
 class MFile;
 
@@ -25,14 +25,6 @@ class MFile;
             (static_cast<DWORDLONG>(static_cast<DWORD>(hi)) << 32))
 #endif
 
-// FootmarkDx and FootmarkThisDx
-#ifndef FootmarkDx
-    #define FootmarkDx()
-#endif
-#ifndef FootmarkThisDx
-    #define FootmarkThisDx()
-#endif
-
 ////////////////////////////////////////////////////////////////////////////
 
 class MFile
@@ -43,6 +35,9 @@ public:
 public:
     MFile();
     MFile(HANDLE hFile);
+    MFile(const MFile& file);
+    MFile& operator=(HANDLE hFile);
+    MFile& operator=(const MFile& file);
     MFile(LPCTSTR pszFileName, BOOL bOutput = FALSE,
           DWORD dwFILE_SHARE_ = FILE_SHARE_READ);
     virtual ~MFile();
@@ -56,7 +51,6 @@ public:
     bool operator==(const MFile& file) const;
     bool operator!=(const MFile& file) const;
 
-    MFile& operator=(HANDLE hFile);
     BOOL Attach(HANDLE hFile);
     HANDLE Detach();
     HANDLE Handle() const;
@@ -157,11 +151,6 @@ public:
                      LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
 
     static HANDLE CloneHandleDx(HANDLE hFile);
-
-private:
-    // NOTE: MFile is not copyable
-    MFile(const MFile& file);
-    MFile& operator=(const MFile& file);
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -172,6 +161,21 @@ inline MFile::MFile() : m_hFile(INVALID_HANDLE_VALUE)
 
 inline MFile::MFile(HANDLE hFile) : m_hFile(hFile)
 {
+}
+
+inline MFile::MFile(const MFile& file)
+    : m_hFile(CloneHandleDx(file.m_hFile))
+{
+}
+
+inline MFile& MFile::operator=(const MFile& file)
+{
+    if (m_hFile != file.m_hFile)
+    {
+        HANDLE hFile = CloneHandleDx(file.m_hFile);
+        Attach(hFile);
+    }
+    return *this;
 }
 
 inline MFile::MFile(LPCTSTR pszFileName, BOOL bOutput/* = FALSE*/,
@@ -186,8 +190,7 @@ inline MFile::MFile(LPCTSTR pszFileName, BOOL bOutput/* = FALSE*/,
 
 inline /*virtual*/ MFile::~MFile()
 {
-    if (m_hFile != INVALID_HANDLE_VALUE && m_hFile != NULL)
-        CloseHandle();
+    CloseHandle();
 }
 
 inline HANDLE MFile::Handle() const
@@ -272,14 +275,15 @@ inline MFile& MFile::operator=(HANDLE hFile)
         ::GetFileInformationByHandle(hFile, &info));
 #endif
     if (m_hFile != hFile)
+    {
         Attach(hFile);
+    }
     return *this;
 }
 
 inline BOOL MFile::Attach(HANDLE hFile)
 {
-    if (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE)
-        CloseHandle();
+    CloseHandle();
     assert(hFile != NULL && hFile != INVALID_HANDLE_VALUE);
     assert(m_hFile == NULL || m_hFile == INVALID_HANDLE_VALUE);
 #ifndef NDEBUG
@@ -299,10 +303,13 @@ inline HANDLE MFile::Detach()
 
 inline BOOL MFile::CloseHandle()
 {
-    assert(m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE);
-    BOOL b = ::CloseHandle(m_hFile);
-    m_hFile = INVALID_HANDLE_VALUE;
-    return b;
+    if (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE)
+    {
+        BOOL b = ::CloseHandle(m_hFile);
+        m_hFile = INVALID_HANDLE_VALUE;
+        return b;
+    }
+    return FALSE;
 }
 
 inline BOOL MFile::PeekNamedPipe(
@@ -337,10 +344,6 @@ inline BOOL MFile::WriteSzA(LPCSTR psz,
 {
     using namespace std;
     SIZE_T size = strlen(psz) * sizeof(CHAR);
-#ifdef _WIN64
-    if (size > 0x7FFFFFFF)
-        FootmarkThisDx();
-#endif
     return WriteFile(psz, (DWORD)size, pcbWritten, pOverlapped);
 }
 
@@ -349,10 +352,6 @@ inline BOOL MFile::WriteSzW(LPCWSTR psz,
 {
     using namespace std;
     SIZE_T size = wcslen(psz) * sizeof(WCHAR);
-#ifdef _WIN64
-    if (size > 0x7FFFFFFF)
-        FootmarkThisDx();
-#endif
     return WriteFile(psz, (DWORD)size, pcbWritten, pOverlapped);
 }
 

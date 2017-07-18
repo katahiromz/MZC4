@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSYNCBASE_HPP_
-#define MZC4_MSYNCBASE_HPP_       2   /* Version 2 */
+#define MZC4_MSYNCBASE_HPP_       3   /* Version 3 */
 
 class MSyncBase;
 
@@ -21,6 +21,9 @@ class MSyncBase
 protected:
     HANDLE m_hObject;
     MSyncBase();
+    MSyncBase(HANDLE hObject);
+    MSyncBase(const MSyncBase& base);
+    MSyncBase& operator=(const MSyncBase& base);
 
 public:
     virtual ~MSyncBase();
@@ -38,18 +41,50 @@ public:
     virtual BOOL Unlock() = 0;
 
     BOOL CloseHandle();
+
+    static HANDLE CloneHandleDx(HANDLE hObject);
 };
 
 ////////////////////////////////////////////////////////////////////////////
+
+inline /*static*/ HANDLE MSyncBase::CloneHandleDx(HANDLE hObject)
+{
+    if (hObject == NULL)
+        return NULL;
+
+    HANDLE hDup = NULL;
+    HANDLE hProcess = ::GetCurrentProcess();
+    ::DuplicateHandle(hProcess, hObject, hProcess, &hDup, 0,
+                      FALSE, DUPLICATE_SAME_ACCESS);
+    return hDup;
+}
 
 inline MSyncBase::MSyncBase() : m_hObject(NULL)
 {
 }
 
+inline MSyncBase::MSyncBase(HANDLE hObject) : m_hObject(hObject)
+{
+}
+
+inline MSyncBase::MSyncBase(const MSyncBase& base)
+    : m_hObject(CloneHandleDx(base))
+{
+}
+
+inline MSyncBase& MSyncBase::operator=(const MSyncBase& base)
+{
+    if (Handle() != base.Handle())
+    {
+        HANDLE hObject = CloneHandleDx(base);
+        Attach(hObject);
+    }
+    return *this;
+}
+
 inline /*virtual*/ MSyncBase::~MSyncBase()
 {
-    if (m_hObject)
-        CloseHandle();
+    CloseHandle();
 }
 
 inline HANDLE MSyncBase::Handle() const
@@ -69,27 +104,26 @@ inline bool MSyncBase::operator!() const
 
 inline bool MSyncBase::operator==(HANDLE hObject) const
 {
-    return m_hObject == hObject;
+    return Handle() == hObject;
 }
 
 inline bool MSyncBase::operator!=(HANDLE hObject) const
 {
-    return m_hObject != hObject;
+    return Handle() != hObject;
 }
 
 inline MSyncBase& MSyncBase::operator=(HANDLE hObject)
 {
     if (m_hObject != hObject)
+    {
         Attach(hObject);
+    }
     return *this;
 }
 
 inline BOOL MSyncBase::Attach(HANDLE hObject)
 {
-    if (m_hObject)
-        CloseHandle();
-    assert(hObject);
-    assert(m_hObject == NULL);
+    CloseHandle();
     m_hObject = hObject;
     return m_hObject != NULL;
 }
@@ -103,15 +137,19 @@ inline HANDLE MSyncBase::Detach()
 
 inline /*virtual*/ BOOL MSyncBase::Lock(DWORD dwTimeout/* = INFINITE*/)
 {
-    return ::WaitForSingleObject(m_hObject, dwTimeout) == WAIT_OBJECT_0;
+    assert(Handle());
+    return ::WaitForSingleObject(Handle(), dwTimeout) == WAIT_OBJECT_0;
 }
 
 inline BOOL MSyncBase::CloseHandle()
 {
-    BOOL bOK = ::CloseHandle(m_hObject);
-    assert(bOK);
-    m_hObject = NULL;
-    return bOK;
+    if (m_hObject)
+    {
+        BOOL bOK = ::CloseHandle(m_hObject);
+        m_hObject = NULL;
+        return bOK;
+    }
+    return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////

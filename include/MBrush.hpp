@@ -67,9 +67,8 @@ inline MBrush::MBrush()
 {
 }
 
-inline MBrush::MBrush(HBRUSH hBrush)
+inline MBrush::MBrush(HBRUSH hBrush) : MGdiObject(hBrush)
 {
-    Attach(hBrush);
 }
 
 inline MBrush::MBrush(COLORREF crColor)
@@ -77,9 +76,8 @@ inline MBrush::MBrush(COLORREF crColor)
     CreateSolidBrush(crColor);
 }
 
-inline MBrush::MBrush(const MBrush& br)
+inline MBrush::MBrush(const MBrush& br) : MGdiObject(CloneHandleDx(br))
 {
-    Attach(MBrush::CloneHandleDx(br));
 }
 
 inline MBrush::operator HBRUSH() const
@@ -94,30 +92,27 @@ inline HBRUSH MBrush::Handle() const
 
 inline INT MBrush::GetLogBrush(LOGBRUSH *lplb) const
 {
-    assert(m_hGdiObj);
-    return ::GetObject(m_hGdiObj, sizeof(LOGBRUSH), lplb);
+    assert(Handle());
+    return ::GetObject(Handle(), sizeof(LOGBRUSH), lplb);
 }
 
 inline MBrush& MBrush::operator=(HBRUSH hBrush)
 {
     assert(::GetObjectType(hBrush) == OBJ_BRUSH);
-    if (m_hGdiObj != (HGDIOBJ)hBrush)
+    if (Handle() != hBrush)
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = (HGDIOBJ)hBrush;
+        Attach(hBrush);
     }
     return *this;
 }
 
 inline MBrush& MBrush::operator=(const MBrush& brush)
 {
-    assert(::GetObjectType(brush.m_hGdiObj) == OBJ_BRUSH);
-    if (m_hGdiObj != brush.m_hGdiObj)
+    assert(::GetObjectType(brush.Handle()) == OBJ_BRUSH);
+    if (Handle() != brush.Handle())
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = (HGDIOBJ)MBrush::CloneHandleDx(brush);
+        HBRUSH hbr = CloneHandleDx(brush);
+        Attach(hbr);
     }
     return *this;
 }
@@ -125,7 +120,7 @@ inline MBrush& MBrush::operator=(const MBrush& brush)
 inline BOOL MBrush::Attach(HBRUSH hBrush)
 {
     assert(::GetObjectType(hBrush) == OBJ_BRUSH);
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return MGdiObject::Attach(hBrush);
 }
 
@@ -136,95 +131,82 @@ inline HBRUSH MBrush::Detach(VOID)
 
 inline BOOL MBrush::CreateBrushIndirect(CONST LOGBRUSH *lplb)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateBrushIndirect(lplb));
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(::CreateBrushIndirect(lplb));
 }
 
 inline BOOL MBrush::CreateSolidBrush(COLORREF crColor)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateSolidBrush(crColor));
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(::CreateSolidBrush(crColor));
 }
 
 inline BOOL MBrush::CreatePatternBrush(HBITMAP hbm8x8)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreatePatternBrush(hbm8x8));
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(::CreatePatternBrush(hbm8x8));
 }
 
 inline BOOL MBrush::CreateHatchBrush(
     INT fnHS_Style, COLORREF crColor/* = RGB(0, 0, 0)*/)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateHatchBrush(fnHS_Style, crColor));
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(::CreateHatchBrush(fnHS_Style, crColor));
 }
 
 inline BOOL MBrush::CreateDIBPatternBrushPt(
     CONST VOID *lpPackedDIB, UINT iUsage/* = DIB_RGB_COLORS*/)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::CreateDIBPatternBrushPt(lpPackedDIB, iUsage));
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(::CreateDIBPatternBrushPt(lpPackedDIB, iUsage));
 }
 
 inline BOOL MBrush::CreateSysColorBrush(INT nCOLOR_index)
 {
-    assert(m_hGdiObj == NULL);
-    Attach(::GetSysColorBrush(nCOLOR_index));
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(::GetSysColorBrush(nCOLOR_index));
 }
 
 inline BOOL MBrush::CreateHalftoneBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateHalftoneBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateHalftoneBrushDx());
 }
 
 inline BOOL MBrush::CreateBlackBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateBlackBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateBlackBrushDx());
 }
 
 inline BOOL MBrush::CreateDkGrayBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateDkGrayBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateDkGrayBrushDx());
 }
 
 inline BOOL MBrush::CreateGrayBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateGrayBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateGrayBrushDx());
 }
 
 inline BOOL MBrush::CreateLtGrayBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateLtGrayBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateLtGrayBrushDx());
 }
 
 inline BOOL MBrush::CreateWhiteBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateWhiteBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateWhiteBrushDx());
 }
 
 inline BOOL MBrush::CreateNullBrush()
 {
-    assert(m_hGdiObj == NULL);
-    Attach(CreateNullBrushDx());
-    return (m_hGdiObj != NULL);
+    assert(Handle() == NULL);
+    return Attach(CreateNullBrushDx());
 }
 
 inline HBRUSH CreateHalftoneBrushDx(VOID)

@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MREGKEY_HPP_
-#define MZC4_MREGKEY_HPP_       2   /* Version 2 */
+#define MZC4_MREGKEY_HPP_       3   /* Version 3 */
 
 #ifndef HKCR
     #define HKCR    HKEY_CLASSES_ROOT
@@ -357,24 +357,26 @@ inline bool MRegKey::operator!() const
 
 inline bool MRegKey::operator==(HKEY hKey) const
 {
-    return m_hKey == hKey;
+    return Handle() == hKey;
 }
 
 inline bool MRegKey::operator!=(HKEY hKey) const
 {
-    return m_hKey != hKey;
+    return Handle() != hKey;
 }
 
 inline MRegKey& MRegKey::operator=(HKEY hKey)
 {
-    if (m_hKey != hKey)
+    if (Handle() != hKey)
+    {
         Attach(hKey);
+    }
     return *this;
 }
 
 inline MRegKey& MRegKey::operator=(MRegKey& key)
 {
-    if (this != &key && m_hKey != key.m_hKey)
+    if (Handle() != key.m_hKey)
     {
         HKEY hKey = CloneHandleDx(key);
         Attach(hKey);
@@ -384,10 +386,7 @@ inline MRegKey& MRegKey::operator=(MRegKey& key)
 
 inline BOOL MRegKey::Attach(HKEY hKey)
 {
-    if (m_hKey)
-        RegCloseKey();
-    assert(hKey);
-    assert(m_hKey == NULL);
+    RegCloseKey();
     m_hKey = hKey;
     return m_hKey != NULL;
 }
@@ -427,10 +426,13 @@ MRegKey::RegConnectRegistry(LPCTSTR lpMachineName, HKEY hBaseKey)
 
 inline LONG MRegKey::RegCloseKey()
 {
-    assert(m_hKey);
-    LONG result = ::RegCloseKey(m_hKey);
-    m_hKey = NULL;
-    return result;
+    if (Handle())
+    {
+        LONG result = ::RegCloseKey(Handle());
+        m_hKey = NULL;
+        return result;
+    }
+    return ERROR_INVALID_HANDLE;
 }
 
 inline LONG MRegKey::RegQueryValueEx(LPCTSTR pszValueName/* = NULL*/,

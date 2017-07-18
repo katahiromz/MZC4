@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MEVENT_HPP_
-#define MZC4_MEVENT_HPP_        2   /* Version 2 */
+#define MZC4_MEVENT_HPP_        3   /* Version 3 */
 
 class MEvent;
 
@@ -15,9 +15,14 @@ class MEvent : public MSyncBase
 {
 public:
     MEvent();
+    MEvent(HANDLE hEvent);
+    MEvent(const MEvent& e);
+    MEvent& operator=(HANDLE hEvent);
+    MEvent& operator=(const MEvent& e);
     MEvent(BOOL bInitiallyOwn, BOOL bManualReset = FALSE,
            LPCTSTR lpszName = NULL,
            LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
+
     BOOL CreateEvent(BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE,
            LPCTSTR lpszName = NULL,
            LPSECURITY_ATTRIBUTES lpsaAttribute = NULL);
@@ -33,12 +38,40 @@ inline MEvent::MEvent()
 {
 }
 
-inline MEvent::MEvent(BOOL bInitiallyOwn,
-    BOOL bManualReset, LPCTSTR lpszName/* = NULL*/,
-    LPSECURITY_ATTRIBUTES lpsaAttribute/* = NULL*/)
+inline MEvent::MEvent(HANDLE hEvent) : MSyncBase(hEvent)
 {
-    CreateEvent(bInitiallyOwn, bManualReset, lpszName, lpsaAttribute);
-    assert(m_hObject != NULL);
+}
+
+inline MEvent::MEvent(const MEvent& e)
+    : MSyncBase(CloneHandleDx(e))
+{
+}
+
+inline MEvent& MEvent::operator=(HANDLE hEvent)
+{
+    if (Handle() != hEvent)
+    {
+        Attach(hEvent);
+    }
+    return *this;
+}
+
+inline MEvent& MEvent::operator=(const MEvent& e)
+{
+    if (Handle() != e.Handle())
+    {
+        HANDLE hEvent = CloneHandleDx(e);
+        Attach(hEvent);
+    }
+    return *this;
+}
+
+inline MEvent::MEvent(BOOL bInitiallyOwn, BOOL bManualReset,
+                      LPCTSTR lpszName/* = NULL*/,
+                      LPSECURITY_ATTRIBUTES lpsaAttribute/* = NULL*/)
+    : MSyncBase(::CreateEvent(lpsaAttribute, bManualReset, bInitiallyOwn, lpszName))
+{
+    assert(Handle());
 }
     
 inline BOOL MEvent::CreateEvent(
@@ -46,10 +79,8 @@ inline BOOL MEvent::CreateEvent(
     LPCTSTR lpszName/* = NULL*/,
     LPSECURITY_ATTRIBUTES lpsaAttribute/* = NULL*/)
 {
-    assert(m_hObject == NULL);
-    Attach(::CreateEvent(
+    return Attach(::CreateEvent(
         lpsaAttribute, bManualReset, bInitiallyOwn, lpszName));
-    return m_hObject != NULL;
 }
 
 inline /*virtual*/ BOOL MEvent::Unlock()
@@ -59,20 +90,20 @@ inline /*virtual*/ BOOL MEvent::Unlock()
 
 inline BOOL MEvent::SetEvent()
 {
-    assert(m_hObject != NULL);
-    return ::SetEvent(m_hObject);
+    assert(Handle());
+    return ::SetEvent(Handle());
 }
 
 inline BOOL MEvent::PulseEvent()
 {
-    assert(m_hObject != NULL);
-    return ::PulseEvent(m_hObject);
+    assert(Handle());
+    return ::PulseEvent(Handle());
 }
 
 inline BOOL MEvent::ResetEvent()
 {
-    assert(m_hObject != NULL);
-    return ::ResetEvent(m_hObject);
+    assert(Handle());
+    return ::ResetEvent(Handle());
 }
 
 ////////////////////////////////////////////////////////////////////////////

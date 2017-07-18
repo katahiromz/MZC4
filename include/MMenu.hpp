@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MMENU_HPP_
-#define MZC4_MMENU_HPP_     2       /* Version 2 */
+#define MZC4_MMENU_HPP_     3       /* Version 3 */
 
 class MMenu;
 
@@ -107,7 +107,7 @@ inline MMenu::~MMenu()
 
 inline BOOL MMenu::Attach(HMENU hMenu)
 {
-    assert(m_hMenu == NULL);
+    DestroyMenu();
     m_hMenu = hMenu;
     return m_hMenu != NULL;
 }
@@ -196,9 +196,13 @@ inline BOOL MMenu::DeleteMenu(UINT nItem, UINT nMF_/* = MF_BYCOMMAND*/)
 
 inline BOOL MMenu::DestroyMenu()
 {
-    BOOL bOK = ::DestroyMenu(Handle());
-    Detach();
-    return bOK;
+    if (Handle())
+    {
+        BOOL bOK = ::DestroyMenu(Handle());
+        Detach();
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline UINT

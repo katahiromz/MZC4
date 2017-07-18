@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILELISTER_HPP_
-#define MZC4_MFILELISTER_HPP_   2       /* Version 2 */
+#define MZC4_MFILELISTER_HPP_   3       /* Version 3 */
 
 class MFileLister;
 
@@ -89,16 +89,15 @@ inline bool MFileLister::operator!() const
 inline MFileLister& MFileLister::operator=(HANDLE hFind)
 {
     if (m_hFind != hFind)
+    {
         Attach(hFind);
+    }
     return *this;
 }
 
 inline BOOL MFileLister::Attach(HANDLE hFind)
 {
-    if (m_hFind != INVALID_HANDLE_VALUE)
-        FindClose();
-    assert(hFind != INVALID_HANDLE_VALUE);
-    assert(m_hFind == INVALID_HANDLE_VALUE);
+    FindClose();
     m_hFind = hFind;
     return m_hFind != INVALID_HANDLE_VALUE;
 }
@@ -225,8 +224,13 @@ inline BOOL MFileLister::FindNextFile()
 
 inline BOOL MFileLister::FindClose()
 {
-    assert(m_hFind != INVALID_HANDLE_VALUE);
-    return ::FindClose(m_hFind);
+    if (m_hFind != INVALID_HANDLE_VALUE)
+    {
+        BOOL bOK = ::FindClose(m_hFind);
+        m_hFind = INVALID_HANDLE_VALUE;
+        return bOK;
+    }
+    return FALSE;
 }
 
 template <typename T_STRING>

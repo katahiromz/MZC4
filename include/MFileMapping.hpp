@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      21      /* Version 21 */
+#define MZC4_MFILEMAPPING_HPP_      22      /* Version 22 */
 
 class MMapView;
     template <typename T>
@@ -227,7 +227,7 @@ inline MMapView::MMapView(const MMapView& view) : m_pView(view.m_pView)
 inline MMapView&
 MMapView::operator=(const MMapView& view)
 {
-    if (this != &view && m_pView != view.m_pView)
+    if (m_pView != view.m_pView)
     {
         if (m_pView)
             m_pView->Release();
@@ -484,7 +484,7 @@ inline /*static*/ HANDLE MFileMapping::CloneHandleDx(HANDLE hMapping)
 
 inline MFileMapping& MFileMapping::operator=(const MFileMapping& mapping)
 {
-    if (this != &mapping && m_hMapping != mapping.m_hMapping)
+    if (m_hMapping != mapping.m_hMapping)
     {
         HANDLE hMapping = CloneHandleDx(mapping);
         Attach(hMapping);

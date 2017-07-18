@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MICON_HPP_
-#define MZC4_MICON_HPP_         2   /* Version 2 */
+#define MZC4_MICON_HPP_         3   /* Version 3 */
 
 class MIcon;
 
@@ -22,6 +22,8 @@ public:
     MIcon();
     MIcon(HICON hIcon);
     MIcon(const MIcon& icon);
+    MIcon& operator=(HICON hIcon);
+    MIcon& operator=(const MIcon& icon);
     virtual ~MIcon();
 
     bool operator!() const;
@@ -29,8 +31,6 @@ public:
     bool operator!=(HICON hIcon) const;
     HICON Handle() const;
     operator HICON() const;
-    MIcon& operator=(HICON hIcon);
-    MIcon& operator=(const MIcon& icon);
 
     BOOL Attach(HICON hIcon);
     HICON Detach();
@@ -89,15 +89,14 @@ inline MIcon::MIcon(HICON hIcon) : m_hIcon(hIcon)
 }
 
 inline MIcon::MIcon(const MIcon& icon)
-    : m_hIcon(MIcon::CloneHandleDx(icon.m_hIcon))
+    : m_hIcon(CloneHandleDx(icon.m_hIcon))
 {
     
 }
 
 inline /*virtual*/ MIcon::~MIcon()
 {
-    if (m_hIcon)
-        DestroyIcon();
+    DestroyIcon();
 }
 
 inline bool MIcon::operator!() const
@@ -127,23 +126,26 @@ inline MIcon::operator HICON() const
 
 inline MIcon& MIcon::operator=(HICON hIcon)
 {
-    if (m_hIcon != hIcon)
+    if (Handle() != hIcon)
+    {
         Attach(hIcon);
+    }
     return *this;
 }
 
 inline MIcon& MIcon::operator=(const MIcon& icon)
 {
-    if (this != &icon)
-        Attach(MIcon::CloneHandleDx(icon));
+    if (Handle() != icon.Handle())
+    {
+        HICON hIcon = CloneHandleDx(icon);
+        Attach(hIcon);
+    }
     return *this;
 }
 
 inline BOOL MIcon::Attach(HICON hIcon)
 {
-    if (m_hIcon)
-        DestroyIcon();
-    assert(m_hIcon == NULL);
+    DestroyIcon();
     m_hIcon = hIcon;
     return m_hIcon != NULL;
 }
@@ -243,33 +245,37 @@ inline BOOL MIcon::CreateIconIndirect(PICONINFO pIconInfo)
 
 inline BOOL MIcon::DestroyIcon()
 {
-    BOOL bOK = ::DestroyIcon(m_hIcon);
-    m_hIcon = NULL;
-    return bOK;
+    if (m_hIcon)
+    {
+        BOOL bOK = ::DestroyIcon(m_hIcon);
+        m_hIcon = NULL;
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline BOOL MIcon::DrawIcon(HDC hDC, INT x, INT y)
 {
-    assert(m_hIcon);
+    assert(Handle());
     assert(hDC);
-    return ::DrawIcon(hDC, x, y, m_hIcon);
+    return ::DrawIcon(hDC, x, y, Handle());
 }
 
 inline BOOL MIcon::DrawIconEx(HDC hDC, INT x, INT y,
     INT cx, INT cy, UINT index/* = 0*/, HBRUSH hbr/* = NULL*/,
     UINT uDI_flags/* = DI_NORMAL*/)
 {
-    assert(m_hIcon);
+    assert(Handle());
     assert(hDC);
-    return ::DrawIconEx(hDC, x, y, m_hIcon,
+    return ::DrawIconEx(hDC, x, y, Handle(),
         cx, cy, index, hbr, uDI_flags);
 }
 
 inline BOOL MIcon::GetIconInfo(PICONINFO pIconInfo) const
 {
-    assert(m_hIcon);
+    assert(Handle());
     assert(pIconInfo);
-    return ::GetIconInfo(m_hIcon, pIconInfo);
+    return ::GetIconInfo(Handle(), pIconInfo);
 }
 
 inline /*static*/ HICON MIcon::CloneHandleDx(HICON hIcon)

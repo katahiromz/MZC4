@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MCURSOR_HPP_
-#define MZC4_MCURSOR_HPP_
+#define MZC4_MCURSOR_HPP_       3   /* Version 3 */
 
 class MCursor;
 
@@ -27,16 +27,15 @@ public:
     MCursor();
     MCursor(HCURSOR hCursor);
     MCursor(const MCursor& cur);
+    MCursor& operator=(HCURSOR hCursor);
+    MCursor& operator=(const MCursor& cur);
     virtual ~MCursor();
 
     bool operator!() const;
     bool operator==(HCURSOR hCursor) const;
     bool operator!=(HCURSOR hCursor) const;
     HCURSOR Handle() const;
-
     operator HCURSOR() const;
-    VOID operator=(HCURSOR hCursor);
-    VOID operator=(const MCursor& cur);
 
     BOOL Attach(HCURSOR hCursor);
     HCURSOR Detach();
@@ -87,14 +86,13 @@ inline MCursor::MCursor(HCURSOR hCursor) : m_hCursor(hCursor)
 }
 
 inline MCursor::MCursor(const MCursor& cur)
-    : m_hCursor(MCursor::CloneHandleDx(cur.m_hCursor))
+    : m_hCursor(CloneHandleDx(cur))
 {
 }
 
 inline /*virtual*/ MCursor::~MCursor()
 {
-    if (m_hCursor)
-        DestroyCursor();
+    DestroyCursor();
 }
 
 inline bool MCursor::operator!() const
@@ -122,22 +120,28 @@ inline MCursor::operator HCURSOR() const
     return Handle();
 }
 
-inline VOID MCursor::operator=(HCURSOR hCursor)
+inline MCursor& MCursor::operator=(HCURSOR hCursor)
 {
-    if (m_hCursor != hCursor)
+    if (Handle() != hCursor)
+    {
         Attach(hCursor);
+    }
+    return *this;
 }
 
-inline VOID MCursor::operator=(const MCursor& cur)
+inline MCursor& MCursor::operator=(const MCursor& cur)
 {
-    if (this != &cur)
-        Attach(MCursor::CloneHandleDx(cur));
+    if (Handle() != cur.Handle())
+    {
+        HCURSOR hCursor = CloneHandleDx(cur);
+        Attach(hCursor);
+    }
+    return *this;
 }
 
 inline BOOL MCursor::Attach(HCURSOR hCursor)
 {
-    if (m_hCursor)
-        DestroyCursor();
+    DestroyCursor();
     assert(m_hCursor == NULL);
     m_hCursor = hCursor;
     return m_hCursor != NULL;
@@ -238,9 +242,13 @@ inline BOOL MCursor::CreateIconIndirect(PICONINFO pIconInfo)
 
 inline BOOL MCursor::DestroyCursor()
 {
-    BOOL bOK = ::DestroyCursor(m_hCursor);
-    m_hCursor = NULL;
-    return bOK;
+    if (m_hCursor)
+    {
+        BOOL bOK = ::DestroyCursor(m_hCursor);
+        m_hCursor = NULL;
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline BOOL MCursor::DrawIcon(HDC hDC, INT x, INT y)

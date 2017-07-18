@@ -49,6 +49,7 @@ public:
         if (m_cRef == 0)
         {
             delete this;
+            return 0;
         }
         return cRef;
     }

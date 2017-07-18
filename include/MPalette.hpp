@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPALETTE_HPP_
-#define MZC4_MPALETTE_HPP_     2   /* Version 2 */
+#define MZC4_MPALETTE_HPP_     3   /* Version 3 */
 
 class MPalette;
 
@@ -17,12 +17,11 @@ public:
     MPalette();
     MPalette(HPALETTE hPal);
     MPalette(const MPalette& pal);
+    MPalette& operator=(HPALETTE hPalette);
+    MPalette& operator=(const MPalette& pal);
 
     HPALETTE Handle() const;
     operator HPALETTE() const;
-
-    MPalette& operator=(HPALETTE hPalette);
-    MPalette& operator=(const MPalette& pal);
 
     BOOL Attach(HPALETTE hPalette);
     HPALETTE Detach(VOID);
@@ -62,14 +61,13 @@ inline MPalette::MPalette()
 {
 }
 
-inline MPalette::MPalette(HPALETTE hPal)
+inline MPalette::MPalette(HPALETTE hPal) : MGdiObject(hPal)
 {
-    Attach(hPal);
 }
 
 inline MPalette::MPalette(const MPalette& pal)
+    : MGdiObject(CloneHandleDx(pal))
 {
-    Attach(MPalette::CloneHandleDx(pal));
 }
 
 inline HPALETTE MPalette::Handle() const
@@ -85,22 +83,19 @@ inline MPalette::operator HPALETTE() const
 inline MPalette& MPalette::operator=(HPALETTE hPalette)
 {
     assert(hPalette == NULL || ::GetObjectType(hPalette) == OBJ_PAL);
-    if (m_hGdiObj != hPalette)
+    if (Handle() != hPalette)
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = (HGDIOBJ)hPalette;
+        Attach(hPalette);
     }
     return *this;
 }
 
 inline MPalette& MPalette::operator=(const MPalette& pal)
 {
-    if (m_hGdiObj != pal.m_hGdiObj)
+    if (Handle() != pal.Handle())
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = MPalette::CloneHandleDx(pal);
+        HPALETTE hPal = CloneHandleDx(pal);
+        Attach(hPal);
     }
     return *this;
 }
@@ -108,7 +103,7 @@ inline MPalette& MPalette::operator=(const MPalette& pal)
 inline BOOL MPalette::Attach(HPALETTE hPalette)
 {
     assert(::GetObjectType(hPalette) == OBJ_PAL);
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return MGdiObject::Attach(hPalette);
 }
 
@@ -120,13 +115,13 @@ inline HPALETTE MPalette::Detach(VOID)
 inline WORD MPalette::GetEntryCount(VOID) const
 {
     WORD w;
-    ::GetObject(m_hGdiObj, sizeof(WORD), &w);
+    ::GetObject(Handle(), sizeof(WORD), &w);
     return w;
 }
 
 inline LOGPALETTE *MPalette::GetLogPalette(VOID) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     WORD wCount = GetEntryCount();
     DWORD cb = 2 * sizeof(WORD) + wCount * sizeof(PALETTEENTRY);
     LOGPALETTE *pal = (LOGPALETTE *)::LocalAlloc(LPTR, cb);
@@ -139,26 +134,26 @@ inline LOGPALETTE *MPalette::GetLogPalette(VOID) const
 
 inline BOOL MPalette::CreatePalette(CONST LOGPALETTE *lplp)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreatePalette(lplp));
 }
 
 inline BOOL MPalette::CreateHalftonePalette(HDC hDC)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreateHalftonePalette(hDC));
 }
 
 inline BOOL MPalette::CreateDefaultPalette()
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach((HPALETTE)::GetStockObject(DEFAULT_PALETTE));
 }
 
 inline UINT MPalette::GetPaletteEntries(
     UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::GetPaletteEntries(Handle(),
         nStartIndex, nNumEntries, lpPaletteColors);
 }
@@ -166,27 +161,27 @@ inline UINT MPalette::GetPaletteEntries(
 inline UINT MPalette::SetPaletteEntries(
     UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::SetPaletteEntries(Handle(),
         nStartIndex, nNumEntries, lpPaletteColors);
 }
 
 inline UINT MPalette::GetNearestPaletteIndex(COLORREF crColor) const
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::GetNearestPaletteIndex(Handle(), crColor);
 }
 
 inline VOID MPalette::AnimatePalette(
     UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     ::AnimatePalette(Handle(), nStartIndex, nNumEntries, lpPaletteColors);
 }
 
 inline BOOL MPalette::ResizePalette(UINT nNumEntries)
 {
-    assert(m_hGdiObj);
+    assert(Handle());
     return ::ResizePalette(Handle(), nNumEntries);
 }
 

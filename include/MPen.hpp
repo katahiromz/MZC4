@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPEN_HPP_
-#define MZC4_MPEN_HPP_      2   /* Version 2 */
+#define MZC4_MPEN_HPP_      3   /* Version 3 */
 
 class MPen;
 
@@ -17,14 +17,14 @@ public:
     MPen();
     MPen(HPEN hPen);
     MPen(const MPen& pen);
+    MPen& operator=(HPEN hPen);
+    MPen& operator=(const MPen& pen);
 
     HPEN Handle() const;
     operator HPEN() const;
 
     INT GetLogPen(LOGPEN *lplp) const;
 
-    MPen& operator=(HPEN hPen);
-    MPen& operator=(const MPen& pen);
 
     BOOL Attach(HPEN hPen);
     HPEN Detach(VOID);
@@ -46,18 +46,18 @@ HPEN CreateWhitePenDx();
 HPEN CreateNullPenDx();
 
 ////////////////////////////////////////////////////////////////////////////
+
 inline MPen::MPen()
 {
 }
 
-inline MPen::MPen(HPEN hPen)
+inline MPen::MPen(HPEN hPen) : MGdiObject(hPen)
 {
-    Attach(hPen);
 }
 
 inline MPen::MPen(const MPen& pen)
+    : MGdiObject(CloneHandleDx(pen))
 {
-    Attach(MPen::CloneHandleDx(pen));
 }
 
 inline HPEN MPen::Handle() const
@@ -72,29 +72,26 @@ inline MPen::operator HPEN() const
 
 inline INT MPen::GetLogPen(LOGPEN *lplp) const
 {
-    assert(m_hGdiObj);
-    return ::GetObject(m_hGdiObj, sizeof(LOGPEN), lplp);
+    assert(Handle());
+    return ::GetObject(Handle(), sizeof(LOGPEN), lplp);
 }
 
 inline MPen& MPen::operator=(HPEN hPen)
 {
     assert(hPen == NULL || ::GetObjectType(hPen) == OBJ_PEN);
-    if (m_hGdiObj != (HGDIOBJ)hPen)
+    if (Handle() != hPen)
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = (HGDIOBJ)hPen;
+        Attach(hPen);
     }
     return *this;
 }
 
 inline MPen& MPen::operator=(const MPen& pen)
 {
-    if (m_hGdiObj != pen.m_hGdiObj)
+    if (Handle() != pen.Handle())
     {
-        if (m_hGdiObj)
-            DeleteObject();
-        m_hGdiObj = MPen::CloneHandleDx(pen);
+        HPEN hPen = CloneHandleDx(pen);
+        Attach(hPen);
     }
     return *this;
 }
@@ -102,7 +99,7 @@ inline MPen& MPen::operator=(const MPen& pen)
 inline BOOL MPen::Attach(HPEN hPen)
 {
     assert(::GetObjectType(hPen) == OBJ_PEN);
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return MGdiObject::Attach(hPen);
 }
 
@@ -114,13 +111,13 @@ inline HPEN MPen::Detach(VOID)
 inline BOOL MPen::CreatePen(COLORREF crColor/* = RGB(0, 0, 0)*/,
     INT nWidth/* = 0*/, INT fnPenStyle/* = PS_SOLID*/)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreatePen(fnPenStyle, nWidth, crColor));
 }
 
 inline BOOL MPen::CreatePenIndirect(CONST LOGPEN *lplp)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::CreatePenIndirect(lplp));
 }
 
@@ -128,7 +125,7 @@ inline BOOL MPen::ExtCreatePen(DWORD dwPenStyle, DWORD dwWidth,
     CONST LOGBRUSH *lplb, DWORD dwStyleCount/* = 0*/,
     CONST DWORD *lpStyle/* = NULL*/)
 {
-    assert(m_hGdiObj == NULL);
+    assert(Handle() == NULL);
     return Attach(::ExtCreatePen(dwPenStyle, dwWidth, lplb, dwStyleCount, lpStyle));
 }
 
