@@ -3,13 +3,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MUNKNOWN_HPP_
-#define MZC4_MUNKNOWN_HPP_      2   /* Version 2 */
+#define MZC4_MUNKNOWN_HPP_      4   /* Version 4 */
 
 class MUnknown;
 
 //////////////////////////////////////////////////////////////////////////////
 
 #include <unknwn.h>
+#include <cassert>
 
 class MUnknown : public IUnknown
 {
@@ -39,19 +40,27 @@ public:
 
     virtual ULONG STDMETHODCALLTYPE AddRef()
     {
-        InterlockedIncrement(&m_cRef);
-        return m_cRef;
+        assert(m_cRef != -1);
+#ifdef SINGLE_THREAD
+        return ++m_cRef;
+#else
+        return ::InterlockedIncrement(&m_cRef);
+#endif
     }
 
     virtual ULONG STDMETHODCALLTYPE Release()
     {
-        LONG cRef = InterlockedDecrement(&m_cRef);
-        if (m_cRef == 0)
+        assert(m_cRef);
+#ifdef SINGLE_THREAD
+        if (--m_cRef == 0)
+#else
+        if (::InterlockedDecrement(&m_cRef) == 0)
+#endif
         {
             delete this;
             return 0;
         }
-        return cRef;
+        return m_cRef;
     }
 
 protected:
