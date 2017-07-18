@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      18      /* Version 18 */
+#define MZC4_MFILEMAPPING_HPP_      21      /* Version 21 */
 
 class MMapView;
     template <typename T>
@@ -152,6 +152,15 @@ public:
     DWORD GetPos(LPDWORD pdwHigh = NULL) const;
     DWORDLONG GetPos64() const;
 
+    DWORD SetPos(DWORD dwOffsetHigh, DWORD dwOffsetLow)
+    {
+        return Seek(dwOffsetHigh, dwOffsetLow, TRUE);
+    }
+    DWORD SetPos64(DWORDLONG offset)
+    {
+        return Seek64(offset, TRUE);
+    }
+
     MMapView MapViewDx(DWORD dwOffsetHigh = 0, DWORD dwOffsetLow = 0,
                        DWORD dwFILE_MAP_ = FILE_MAP_ALL_ACCESS,
                        DWORD dwNumberOfBytes = 0);
@@ -176,7 +185,7 @@ protected:
     DWORDLONG m_index;
     DWORD m_granularity;
 
-    VOID GetGranularity(DWORD& granularity);
+    static VOID GetGranularity(DWORD& granularity);
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -308,7 +317,8 @@ inline DWORD MMapView::GetSize() const
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline VOID MFileMapping::GetGranularity(DWORD& granularity)
+inline /*static*/ VOID
+MFileMapping::GetGranularity(DWORD& granularity)
 {
     SYSTEM_INFO info;
     ::GetSystemInfo(&info);
