@@ -88,7 +88,7 @@ inline bool MFileLister::operator!() const
 
 inline MFileLister& MFileLister::operator=(HANDLE hFind)
 {
-    if (m_hFind != hFind)
+    if (Handle() != hFind)
     {
         Attach(hFind);
     }

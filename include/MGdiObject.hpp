@@ -66,7 +66,7 @@ inline /*virtual*/ MGdiObject::~MGdiObject()
 
 inline MGdiObject& MGdiObject::operator=(HGDIOBJ hGdiObj)
 {
-    if (m_hGdiObj != hGdiObj)
+    if (Handle() != hGdiObj)
     {
         DeleteObject();
         m_hGdiObj = hGdiObj;
@@ -97,13 +97,12 @@ inline BOOL MGdiObject::GetStockObject(INT nObject)
 
 inline BOOL MGdiObject::DeleteObject(VOID)
 {
-    BOOL bOK = FALSE;
-    if (m_hGdiObj)
+    if (Handle())
     {
-        bOK = ::DeleteObject(m_hGdiObj);
-        m_hGdiObj = NULL;
+        BOOL bOK = ::DeleteObject(Detach());
+        return bOK;
     }
-    return bOK;
+    return FALSE;
 }
 
 inline HANDLE MGdiObject::Handle() const

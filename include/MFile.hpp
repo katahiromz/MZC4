@@ -170,7 +170,7 @@ inline MFile::MFile(const MFile& file)
 
 inline MFile& MFile::operator=(const MFile& file)
 {
-    if (m_hFile != file.m_hFile)
+    if (Handle() != file.m_hFile)
     {
         HANDLE hFile = CloneHandleDx(file.m_hFile);
         Attach(hFile);
@@ -274,7 +274,7 @@ inline MFile& MFile::operator=(HANDLE hFile)
     assert(hFile == INVALID_HANDLE_VALUE ||
         ::GetFileInformationByHandle(hFile, &info));
 #endif
-    if (m_hFile != hFile)
+    if (Handle() != hFile)
     {
         Attach(hFile);
     }
@@ -303,11 +303,10 @@ inline HANDLE MFile::Detach()
 
 inline BOOL MFile::CloseHandle()
 {
-    if (m_hFile != NULL && m_hFile != INVALID_HANDLE_VALUE)
+    if (Handle() != NULL && Handle() != INVALID_HANDLE_VALUE)
     {
-        BOOL b = ::CloseHandle(m_hFile);
-        m_hFile = INVALID_HANDLE_VALUE;
-        return b;
+        BOOL bOK = ::CloseHandle(Detach());
+        return bOK;
     }
     return FALSE;
 }

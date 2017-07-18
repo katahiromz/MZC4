@@ -63,8 +63,7 @@ inline MAccel::MAccel(UINT nResourceID) : m_hAccel(NULL)
 
 inline /*virtual*/ MAccel::~MAccel()
 {
-    if (m_hAccel != NULL)
-        DestroyAcceleratorTable();
+    DestroyAcceleratorTable();
 }
 
 inline MAccel::MAccel(HACCEL hAccel) : m_hAccel(hAccel)
@@ -88,7 +87,7 @@ inline bool MAccel::operator!() const
 
 inline MAccel& MAccel::operator=(HACCEL hAccel)
 {
-    if (m_hAccel != hAccel)
+    if (Handle() != hAccel)
     {
         Attach(hAccel);
     }
@@ -97,7 +96,7 @@ inline MAccel& MAccel::operator=(HACCEL hAccel)
 
 inline MAccel& MAccel::operator=(const MAccel& accel)
 {
-    if (m_hAccel != accel.m_hAccel)
+    if (Handle() != accel.m_hAccel)
     {
         HACCEL hAccel = CloneHandleDx(accel);
         Attach(hAccel);
@@ -107,9 +106,7 @@ inline MAccel& MAccel::operator=(const MAccel& accel)
 
 inline BOOL MAccel::Attach(HACCEL hAccel)
 {
-    assert(m_hAccel == NULL);
-    if (m_hAccel)
-        DestroyAcceleratorTable();
+    DestroyAcceleratorTable();
     m_hAccel = hAccel;
     return m_hAccel != NULL;
 }
@@ -157,10 +154,13 @@ inline BOOL MAccel::LoadAccelerators(INT nResourceID)
 
 inline BOOL MAccel::DestroyAcceleratorTable()
 {
-    assert(m_hAccel);
-    BOOL b = ::DestroyAcceleratorTable(m_hAccel);
-    m_hAccel = NULL;
-    return b;
+    if (m_hAccel)
+    {
+        BOOL bOK = ::DestroyAcceleratorTable(m_hAccel);
+        m_hAccel = NULL;
+        return bOK;
+    }
+    return FALSE;
 }
 
 inline BOOL MAccel::TranslateAccelerator(HWND hWnd, MSG *pMsg)

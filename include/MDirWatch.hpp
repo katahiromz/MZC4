@@ -98,8 +98,7 @@ inline bool MDirWatch::operator!() const
 
 inline MDirWatch& MDirWatch::operator=(HANDLE hFindChange)
 {
-    assert(hFindChange != NULL && hFindChange != INVALID_HANDLE_VALUE);
-    if (m_hFindChange != hFindChange)
+    if (Handle() != hFindChange)
     {
         Attach(hFindChange);
     }
@@ -137,14 +136,14 @@ inline PHANDLE MDirWatch::operator&()
 
 inline BOOL MDirWatch::FindNextChangeNotification() 
 {
-    assert(m_hFindChange != INVALID_HANDLE_VALUE);
-    BOOL bFound = ::FindNextChangeNotification(m_hFindChange);
+    assert(Handle() != INVALID_HANDLE_VALUE);
+    BOOL bFound = ::FindNextChangeNotification(Handle());
     return bFound;
 }
 
 inline BOOL MDirWatch::FindCloseChangeNotification()
 {
-    if (m_hFindChange != INVALID_HANDLE_VALUE)
+    if (Handle() != INVALID_HANDLE_VALUE)
     {
         BOOL bOK = ::FindCloseChangeNotification(m_hFindChange);
         m_hFindChange = INVALID_HANDLE_VALUE;
@@ -156,14 +155,14 @@ inline BOOL MDirWatch::FindCloseChangeNotification()
 inline DWORD
 MDirWatch::WaitForSingleObject(DWORD dwMilliseconds/* = INFINITE*/)
 {
-    return ::WaitForSingleObject(m_hFindChange, dwMilliseconds);
+    assert(Handle());
+    return ::WaitForSingleObject(Handle(), dwMilliseconds);
 }
 
 inline DWORD MDirWatch::WaitForSingleObjectEx(
     DWORD dwMilliseconds/* = INFINITE*/, BOOL bAlertable/* = TRUE*/)
 {
-    return ::WaitForSingleObjectEx(m_hFindChange,
-                                   dwMilliseconds, bAlertable);
+    return ::WaitForSingleObjectEx(Handle(), dwMilliseconds, bAlertable);
 }
 
 inline BOOL MDirWatch::FindFirstChangeNotification(
@@ -171,10 +170,9 @@ inline BOOL MDirWatch::FindFirstChangeNotification(
     DWORD dwNotifyChangeFlags/* = MDirWatch::check_all*/)
 {
     assert(pszPath);
-    assert(m_hFindChange == INVALID_HANDLE_VALUE);
-    m_hFindChange = ::FindFirstChangeNotification(
-        pszPath, bWatchSubTree, dwNotifyChangeFlags);
-    return m_hFindChange != INVALID_HANDLE_VALUE;
+    FindCloseChangeNotification();
+    return Attach(::FindFirstChangeNotification(pszPath, bWatchSubTree,
+                                                dwNotifyChangeFlags));
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -336,8 +336,7 @@ inline MRegKey::MRegKey(MRegKey& key) : m_hKey(CloneHandleDx(key))
 
 inline /*virtual*/ MRegKey::~MRegKey()
 {
-    if (m_hKey)
-        RegCloseKey();
+    RegCloseKey();
 }
 
 inline HKEY MRegKey::Handle() const
@@ -428,8 +427,7 @@ inline LONG MRegKey::RegCloseKey()
 {
     if (Handle())
     {
-        LONG result = ::RegCloseKey(Handle());
-        m_hKey = NULL;
+        LONG result = ::RegCloseKey(Detach());
         return result;
     }
     return ERROR_INVALID_HANDLE;

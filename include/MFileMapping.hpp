@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      22      /* Version 22 */
+#define MZC4_MFILEMAPPING_HPP_      23      /* Version 23 */
 
 class MMapView;
     template <typename T>
@@ -104,6 +104,7 @@ public:
     MFileMapping();
     MFileMapping(HANDLE hMapping);
     MFileMapping(const MFileMapping& mapping);
+    MFileMapping& operator=(HANDLE hMapping);
     MFileMapping& operator=(const MFileMapping& mapping);
     ~MFileMapping();
 
@@ -404,10 +405,9 @@ inline BOOL MFileMapping::OpenFileMapping(
 
 inline BOOL MFileMapping::CloseHandle()
 {
-    if (m_hMapping)
+    if (Handle())
     {
-        BOOL bOK = ::CloseHandle(m_hMapping);
-        m_hMapping = NULL;
+        BOOL bOK = ::CloseHandle(Detach());
         return bOK;
     }
     return FALSE;
@@ -482,15 +482,27 @@ inline /*static*/ HANDLE MFileMapping::CloneHandleDx(HANDLE hMapping)
     return hDup;
 }
 
+inline MFileMapping& MFileMapping::operator=(HANDLE hMapping)
+{
+    if (Handle() != hMapping)
+    {
+        Attach(hMapping);
+    }
+    m_index = 0;
+    GetGranularity(m_granularity);
+    return *this;
+}
+
 inline MFileMapping& MFileMapping::operator=(const MFileMapping& mapping)
 {
-    if (m_hMapping != mapping.m_hMapping)
+    if (Handle() != mapping.m_hMapping)
     {
         HANDLE hMapping = CloneHandleDx(mapping);
         Attach(hMapping);
     }
     m_index = mapping.m_index;
     m_granularity = mapping.m_granularity;
+    return *this;
 }
 
 inline LPVOID

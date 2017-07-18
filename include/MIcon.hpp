@@ -245,10 +245,9 @@ inline BOOL MIcon::CreateIconIndirect(PICONINFO pIconInfo)
 
 inline BOOL MIcon::DestroyIcon()
 {
-    if (m_hIcon)
+    if (Handle())
     {
-        BOOL bOK = ::DestroyIcon(m_hIcon);
-        m_hIcon = NULL;
+        BOOL bOK = ::DestroyIcon(Detach());
         return bOK;
     }
     return FALSE;

@@ -114,7 +114,7 @@ inline bool MSyncBase::operator!=(HANDLE hObject) const
 
 inline MSyncBase& MSyncBase::operator=(HANDLE hObject)
 {
-    if (m_hObject != hObject)
+    if (Handle() != hObject)
     {
         Attach(hObject);
     }
@@ -143,10 +143,9 @@ inline /*virtual*/ BOOL MSyncBase::Lock(DWORD dwTimeout/* = INFINITE*/)
 
 inline BOOL MSyncBase::CloseHandle()
 {
-    if (m_hObject)
+    if (Handle())
     {
-        BOOL bOK = ::CloseHandle(m_hObject);
-        m_hObject = NULL;
+        BOOL bOK = ::CloseHandle(Detach());
         return bOK;
     }
     return FALSE;

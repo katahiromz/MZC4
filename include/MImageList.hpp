@@ -213,10 +213,9 @@ inline BOOL MImageList::GetImageInfo(
 
 inline BOOL MImageList::Destroy()
 {
-    if (m_hImageList)
+    if (Handle())
     {
-        BOOL bOK = ImageList_Destroy(m_hImageList);
-        m_hImageList = NULL;
+        BOOL bOK = ImageList_Destroy(Detach());
         return bOK;
     }
     return FALSE;

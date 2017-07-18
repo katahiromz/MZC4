@@ -242,10 +242,9 @@ inline BOOL MCursor::CreateIconIndirect(PICONINFO pIconInfo)
 
 inline BOOL MCursor::DestroyCursor()
 {
-    if (m_hCursor)
+    if (Handle())
     {
-        BOOL bOK = ::DestroyCursor(m_hCursor);
-        m_hCursor = NULL;
+        BOOL bOK = ::DestroyCursor(Detach());
         return bOK;
     }
     return FALSE;
