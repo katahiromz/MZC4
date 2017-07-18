@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      15      /* Version 15 */
+#define MZC4_MFILEMAPPING_HPP_      16      /* Version 16 */
 
 class MMapView;
     template <typename T>
@@ -98,8 +98,8 @@ class MFileMapping
 public:
     MFileMapping();
     MFileMapping(HANDLE hMapping);
-    MFileMapping(MFileMapping& mapping);
-    MFileMapping& operator=(MFileMapping& mapping);
+    MFileMapping(const MFileMapping& mapping);
+    MFileMapping& operator=(const MFileMapping& mapping);
     ~MFileMapping();
 
     HANDLE Handle() const;
@@ -124,16 +124,17 @@ public:
     BOOL CloseHandle();
 
     LPVOID
-    MapViewOfFile(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
-                  DWORD dwNumberOfBytes = 0);
+    MapViewOfFile(DWORD dwFILE_MAP_, DWORD dwOffsetHigh = 0,
+                  DWORD dwOffsetLow = 0, DWORD dwNumberOfBytes = 0);
     LPVOID
-    MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+    MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset = 0,
                     DWORD dwNumberOfBytes = 0);
     LPVOID
-    MapViewOfFileEx(DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
-                    DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
+    MapViewOfFileEx(DWORD dwFILE_MAP_, DWORD dwOffsetHigh = 0,
+                    DWORD dwOffsetLow = 0, DWORD dwNumberOfBytes = 0,
+                    LPVOID lpBaseAddress = NULL);
     LPVOID
-    MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+    MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset = 0,
                       DWORD dwNumberOfBytes = 0, LPVOID lpBaseAddress = NULL);
     BOOL UnmapViewOfFile(LPVOID lpBaseAddress);
 
@@ -276,10 +277,10 @@ inline MFileMapping::MFileMapping(HANDLE hMapping)
     GetGranularity(m_granularity);
 }
 
-inline MFileMapping::MFileMapping(MFileMapping& mapping)
-    : m_hMapping(CloneHandleDx(mapping.m_hMapping)), m_index(mapping.m_index)
+inline MFileMapping::MFileMapping(const MFileMapping& mapping)
+    : m_hMapping(CloneHandleDx(mapping.m_hMapping)), m_index(mapping.m_index),
+      m_granularity(mapping.m_granularity)
 {
-    GetGranularity(m_granularity);
 }
 
 inline MFileMapping::~MFileMapping()
@@ -355,7 +356,7 @@ inline BOOL MFileMapping::CloseHandle()
 
 inline LPVOID
 MFileMapping::MapViewOfFile(
-    DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
+    DWORD dwFILE_MAP_, DWORD dwOffsetHigh/* = 0*/, DWORD dwOffsetLow/* = 0*/,
     DWORD dwNumberOfBytes/* = 0*/)
 {
     LPVOID pMap = ::MapViewOfFile(Handle(), dwFILE_MAP_, dwOffsetHigh,
@@ -365,7 +366,7 @@ MFileMapping::MapViewOfFile(
 
 inline LPVOID 
 MFileMapping::MapViewOfFileEx(
-    DWORD dwFILE_MAP_, DWORD dwOffsetHigh, DWORD dwOffsetLow,
+    DWORD dwFILE_MAP_, DWORD dwOffsetHigh/* = 0*/, DWORD dwOffsetLow/* = 0*/,
     DWORD dwNumberOfBytes/* = 0*/, LPVOID lpBaseAddress/* = NULL*/)
 {
     LPVOID pMap = ::MapViewOfFileEx(Handle(), dwFILE_MAP_, dwOffsetHigh,
@@ -375,11 +376,11 @@ MFileMapping::MapViewOfFileEx(
 }
 
 inline LPVOID
-MFileMapping::MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+MFileMapping::MapViewOfFileEx64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset/* = 0*/,
     DWORD dwNumberOfBytes/* = 0*/, LPVOID lpBaseAddress/* = NULL*/)
 {
-    return MapViewOfFileEx(dwFILE_MAP_, LOLONG(dwlOffset),
-        HILONG(dwlOffset), dwNumberOfBytes, lpBaseAddress);
+    return MapViewOfFileEx(dwFILE_MAP_, HILONG(dwlOffset),
+        LOLONG(dwlOffset), dwNumberOfBytes, lpBaseAddress);
 }
 
 inline BOOL MFileMapping::UnmapViewOfFile(LPVOID lpBaseAddress)
@@ -397,7 +398,7 @@ MFileMapping::MapViewDx(
 }
 
 inline MMapView
-MFileMapping::MapViewDx64(DWORDLONG dwlOffset,
+MFileMapping::MapViewDx64(DWORDLONG dwlOffset/* = 0*/,
                           DWORD dwFILE_MAP_/* = FILE_MAP_ALL_ACCESS*/,
                           DWORD dwNumberOfBytes/* = 0*/)
 {
@@ -422,7 +423,7 @@ inline /*static*/ HANDLE MFileMapping::CloneHandleDx(HANDLE hMapping)
     return hDup;
 }
 
-inline MFileMapping& MFileMapping::operator=(MFileMapping& mapping)
+inline MFileMapping& MFileMapping::operator=(const MFileMapping& mapping)
 {
     if (this != &mapping && m_hMapping != mapping.m_hMapping)
     {
@@ -433,7 +434,7 @@ inline MFileMapping& MFileMapping::operator=(MFileMapping& mapping)
 }
 
 inline LPVOID
-MFileMapping::MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset,
+MFileMapping::MapViewOfFile64(DWORD dwFILE_MAP_, DWORDLONG dwlOffset/* = 0*/,
                               DWORD dwNumberOfBytes/* = 0*/)
 {
     return MapViewOfFile(dwFILE_MAP_, HILONG(dwlOffset), LOLONG(dwlOffset),
