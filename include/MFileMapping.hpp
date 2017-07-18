@@ -3,12 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      16      /* Version 16 */
+#define MZC4_MFILEMAPPING_HPP_      17      /* Version 17 */
 
 class MMapView;
     template <typename T>
     class MTypedMapView;
-
 class MFileMapping;
 
 ////////////////////////////////////////////////////////////////////////////
@@ -431,6 +430,7 @@ inline MFileMapping& MFileMapping::operator=(const MFileMapping& mapping)
         Attach(hMapping);
     }
     m_index = mapping.m_index;
+    m_granularity = mapping.m_granularity;
 }
 
 inline LPVOID
@@ -520,7 +520,8 @@ inline MTypedMapView<T>::MTypedMapView()
 }
 
 template <typename T>
-inline MTypedMapView<T>::MTypedMapView(LPVOID pv, DWORDLONG index, DWORD mod, DWORD size)
+inline MTypedMapView<T>::MTypedMapView(LPVOID pv, DWORDLONG index,
+                                       DWORD mod, DWORD size)
     : m_map_view(pv, index, mod, size)
 {
 }
