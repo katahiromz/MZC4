@@ -170,7 +170,6 @@ inline BOOL MDirWatch::FindFirstChangeNotification(
     DWORD dwNotifyChangeFlags/* = MDirWatch::check_all*/)
 {
     assert(pszPath);
-    FindCloseChangeNotification();
     return Attach(::FindFirstChangeNotification(pszPath, bWatchSubTree,
                                                 dwNotifyChangeFlags));
 }

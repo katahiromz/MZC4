@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MACCEL_HPP_
-#define MZC4_MACCEL_HPP_    4       /* Version 4 */
+#define MZC4_MACCEL_HPP_    5       /* Version 5 */
 
 class MAccel;
 
@@ -22,13 +22,14 @@ public:
     MAccel();
     MAccel(UINT nResourceID);
     MAccel(HACCEL hAccel);
+    MAccel(const MAccel& accel);
+    MAccel& operator=(HACCEL hAccel);
+    MAccel& operator=(const MAccel& accel);
     virtual ~MAccel();
 
     HACCEL Handle() const;
     operator HACCEL() const;
     bool operator!() const;
-    MAccel& operator=(HACCEL hAccel);
-    MAccel& operator=(const MAccel& accel);
 
     BOOL Attach(HACCEL hAccel);
     HACCEL Detach();
@@ -58,7 +59,6 @@ inline MAccel::MAccel() : m_hAccel(NULL)
 inline MAccel::MAccel(UINT nResourceID) : m_hAccel(NULL)
 {
     LoadAccelerators(nResourceID);
-    assert(m_hAccel);
 }
 
 inline /*virtual*/ MAccel::~MAccel()
@@ -67,6 +67,11 @@ inline /*virtual*/ MAccel::~MAccel()
 }
 
 inline MAccel::MAccel(HACCEL hAccel) : m_hAccel(hAccel)
+{
+}
+
+inline MAccel::MAccel(const MAccel& accel)
+    : m_hAccel(CloneHandleDx(accel))
 {
 }
 
@@ -96,7 +101,7 @@ inline MAccel& MAccel::operator=(HACCEL hAccel)
 
 inline MAccel& MAccel::operator=(const MAccel& accel)
 {
-    if (Handle() != accel.m_hAccel)
+    if (Handle() != accel.Handle())
     {
         HACCEL hAccel = CloneHandleDx(accel);
         Attach(hAccel);
@@ -120,44 +125,37 @@ inline HACCEL MAccel::Detach()
 
 inline INT MAccel::GetAcceleratorCount() const
 {
-    assert(m_hAccel);
-    return ::CopyAcceleratorTable(m_hAccel, NULL, 0);
+    assert(Handle());
+    return ::CopyAcceleratorTable(Handle(), NULL, 0);
 }
 
 inline INT MAccel::CopyAcceleratorTable(LPACCEL pAccel, INT cEntries) const
 {
-    assert(m_hAccel);
-    return ::CopyAcceleratorTable(m_hAccel, pAccel, cEntries);
+    assert(Handle());
+    return ::CopyAcceleratorTable(Handle(), pAccel, cEntries);
 }
 
 inline BOOL MAccel::CreateAcceleratorTable(LPACCEL pAccel, INT cEntries)
 {
-    assert(m_hAccel == NULL);
-    m_hAccel = ::CreateAcceleratorTable(pAccel, cEntries);
-    assert(m_hAccel);
-    return (m_hAccel != NULL);
+    return Attach(::CreateAcceleratorTable(pAccel, cEntries));
 }
 
 inline BOOL MAccel::LoadAccelerators(LPCTSTR pszResourceName)
 {
-    assert(m_hAccel == NULL);
-    m_hAccel = ::LoadAccelerators(::GetModuleHandle(NULL), pszResourceName);
-    return (m_hAccel != NULL);
+    return Attach(::LoadAccelerators(::GetModuleHandle(NULL), pszResourceName));
 }
 
 inline BOOL MAccel::LoadAccelerators(INT nResourceID)
 {
-    assert(m_hAccel == NULL);
     assert(nResourceID != 0);
     return LoadAccelerators(MAKEINTRESOURCE(nResourceID));
 }
 
 inline BOOL MAccel::DestroyAcceleratorTable()
 {
-    if (m_hAccel)
+    if (Handle())
     {
-        BOOL bOK = ::DestroyAcceleratorTable(m_hAccel);
-        m_hAccel = NULL;
+        BOOL bOK = ::DestroyAcceleratorTable(Detach());
         return bOK;
     }
     return FALSE;
@@ -165,12 +163,14 @@ inline BOOL MAccel::DestroyAcceleratorTable()
 
 inline BOOL MAccel::TranslateAccelerator(HWND hWnd, MSG *pMsg)
 {
-    return (m_hAccel != NULL &&
-            ::TranslateAccelerator(hWnd, m_hAccel, pMsg));
+    return (Handle() != NULL &&
+            ::TranslateAccelerator(hWnd, Handle(), pMsg));
 }
 
 inline /*static*/ HACCEL MAccel::CloneHandleDx(HACCEL hAccel)
 {
+    if (hAccel == NULL)
+        return NULL;
     INT nCount = ::CopyAcceleratorTable(hAccel, NULL, 0);
     if (nCount == 0)
         return NULL;

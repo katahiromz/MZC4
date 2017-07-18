@@ -103,7 +103,6 @@ MFindReplaceDialog::FindText(HWND hwndOwner, LPCTSTR pszFindWhat/* = NULL*/,
     m_fr.Flags &= ~(FR_REPLACE | FR_REPLACEALL);
 
     SetFindWhat(pszFindWhat);
-
     m_fr.hwndOwner = hwndOwner;
 
     return Attach(::FindText(&m_fr));
@@ -120,7 +119,6 @@ MFindReplaceDialog::ReplaceText(HWND hwndOwner,
 
     SetFindWhat(pszFindWhat);
     SetReplaceWidth(pszReplaceWith);
-
     m_fr.hwndOwner = hwndOwner;
 
     return Attach(::ReplaceText(&m_fr));

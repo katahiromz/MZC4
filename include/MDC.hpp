@@ -576,13 +576,11 @@ inline BOOL MDC::CreateDC(LPCTSTR pszDriver/* = NULL*/,
     LPCTSTR pszDevice/* = NULL*/, LPCTSTR pszOutput/* = NULL*/,
     CONST DEVMODE *lpInitData/* = NULL*/)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateDC(pszDriver, pszDevice, pszOutput, lpInitData));
 }
 
 inline BOOL MDC::CreateCompatibleDC(HDC hBaseDC/* = NULL*/)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateCompatibleDC(hBaseDC));
 }
 

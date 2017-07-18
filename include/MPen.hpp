@@ -111,13 +111,11 @@ inline HPEN MPen::Detach(VOID)
 inline BOOL MPen::CreatePen(COLORREF crColor/* = RGB(0, 0, 0)*/,
     INT nWidth/* = 0*/, INT fnPenStyle/* = PS_SOLID*/)
 {
-    assert(Handle() == NULL);
     return Attach(::CreatePen(fnPenStyle, nWidth, crColor));
 }
 
 inline BOOL MPen::CreatePenIndirect(CONST LOGPEN *lplp)
 {
-    assert(Handle() == NULL);
     return Attach(::CreatePenIndirect(lplp));
 }
 
@@ -125,7 +123,6 @@ inline BOOL MPen::ExtCreatePen(DWORD dwPenStyle, DWORD dwWidth,
     CONST LOGBRUSH *lplb, DWORD dwStyleCount/* = 0*/,
     CONST DWORD *lpStyle/* = NULL*/)
 {
-    assert(Handle() == NULL);
     return Attach(::ExtCreatePen(dwPenStyle, dwWidth, lplb, dwStyleCount, lpStyle));
 }
 
@@ -133,6 +130,10 @@ inline /*static*/ HPEN MPen::CloneHandleDx(HPEN hPen)
 {
     LOGPEN lp;
     EXTLOGPEN elp;
+
+    if (hPen == NULL)
+        return NULL;
+
     if (::GetObject(hPen, sizeof(EXTLOGPEN), &elp) != 0)
     {
         LOGBRUSH lb;

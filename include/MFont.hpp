@@ -225,19 +225,16 @@ inline HFONT MFont::Detach(VOID)
 
 inline BOOL MFont::CreateFontIndirect(CONST LOGFONT *lplf)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateFontIndirect(lplf));
 }
 
 inline BOOL MFont::CreateAnsiFixedFont()
 {
-    assert(Handle() == NULL);
     return Attach((HFONT)::GetStockObject(ANSI_FIXED_FONT));
 }
 
 inline BOOL MFont::CreateAnsiVarFont()
 {
-    assert(Handle() == NULL);
     return Attach((HFONT)::GetStockObject(ANSI_VAR_FONT));
 }
 
@@ -249,25 +246,21 @@ inline BOOL MFont::CreateDeviceDefaultFont()
 
 inline BOOL MFont::CreateDefaultGuiFont()
 {
-    assert(Handle() == NULL);
     return Attach((HFONT)::GetStockObject(DEFAULT_GUI_FONT));
 }
 
 inline BOOL MFont::CreateOemFixedFont()
 {
-    assert(Handle() == NULL);
     return Attach((HFONT)::GetStockObject(OEM_FIXED_FONT));
 }
 
 inline BOOL MFont::CreateSystemFont()
 {
-    assert(Handle() == NULL);
     return Attach((HFONT)::GetStockObject(SYSTEM_FONT));
 }
 
 inline BOOL MFont::CreateSystemFixedFont()
 {
-    assert(Handle() == NULL);
     return Attach((HFONT)::GetStockObject(SYSTEM_FIXED_FONT));
 }
 
@@ -281,7 +274,6 @@ inline BOOL MFont::CreateFont(LPCTSTR pszFace, INT nHeight,
     DWORD fdwQuality/* = ANTIALIASED_QUALITY*/,
     DWORD fdwPitchAndFamily/* = DEFAULT_PITCH | FF_DONTCARE*/)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateFont(nHeight, nWidth, nEscapement,
         nOrientation, fnWeight, fdwItalic, fdwUnderline, fdwStrikeOut,
         fdwCharSet, fdwOutputPrecision, fdwClipPrecision,
@@ -290,8 +282,7 @@ inline BOOL MFont::CreateFont(LPCTSTR pszFace, INT nHeight,
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline INT CALLBACK
-EnumFontFamProcDx(
+inline INT CALLBACK EnumFontFamProcDx(
     ENUMLOGFONT *lpelf, NEWTEXTMETRIC *lpntm,
     INT nFontType, LPARAM lParam)
 {

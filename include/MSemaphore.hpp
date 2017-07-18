@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSEMAPHORE_HPP_
-#define MZC4_MSEMAPHORE_HPP_     2   /* Version 2 */
+#define MZC4_MSEMAPHORE_HPP_     3   /* Version 3 */
 
 class MSemaphore;
 
@@ -84,8 +84,7 @@ inline BOOL MSemaphore::CreateSemaphore(
 {
     assert(lMaxCount > 0);
     assert(lInitialCount <= lMaxCount);
-    return Attach(::CreateSemaphore(
-        lpsaAttributes, lInitialCount, lMaxCount, pstrName));
+    return Attach(::CreateSemaphore(lpsaAttributes, lInitialCount, lMaxCount, pstrName));
 }
 
 inline /*virtual*/ BOOL MSemaphore::Unlock(LONG lCount, LPLONG lprevCount/* = NULL*/)

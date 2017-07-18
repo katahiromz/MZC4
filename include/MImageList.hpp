@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MIMAGELIST_HPP_
-#define MZC4_MIMAGELIST_HPP_    3       /* Version 3 */
+#define MZC4_MIMAGELIST_HPP_    4       /* Version 4 */
 
 class MImageList;
 
@@ -166,14 +166,12 @@ inline HIMAGELIST MImageList::Detach()
 inline BOOL MImageList::Create(
     INT cx, INT cy, UINT uILC_flags, INT nInitial, INT nGrow)
 {
-    assert(m_hImageList == NULL);
     return Attach(ImageList_Create(cx, cy, uILC_flags, nInitial, nGrow));
 }
 
 inline BOOL MImageList::Create(LPCTSTR lpszBitmapID,
     INT cx, INT nGrow, COLORREF crMask, HINSTANCE hInstance/* = NULL*/)
 {
-    assert(m_hImageList == NULL);
     if (hInstance == NULL)
         hInstance = ::GetModuleHandle(NULL);
     return Attach(ImageList_LoadBitmap(hInstance, lpszBitmapID, cx, nGrow, crMask));
@@ -182,33 +180,32 @@ inline BOOL MImageList::Create(LPCTSTR lpszBitmapID,
 inline BOOL MImageList::Merge(HIMAGELIST hIml1, INT nImage1,
     HIMAGELIST hIml2, INT nImage2, INT dx, INT dy)
 {
-    assert(m_hImageList == NULL);
     return Attach(ImageList_Merge(hIml1, nImage1, hIml2, nImage2, dx, dy));
 }
 
 inline INT MImageList::GetImageCount() const
 {
-    assert(m_hImageList);
-    return ImageList_GetImageCount(m_hImageList);
+    assert(Handle());
+    return ImageList_GetImageCount(Handle());
 }
 
 inline COLORREF MImageList::SetBkColor(COLORREF cr)
 {
-    assert(m_hImageList);
-    return ImageList_SetBkColor(m_hImageList, cr);
+    assert(Handle());
+    return ImageList_SetBkColor(Handle(), cr);
 }
 
 inline COLORREF MImageList::GetBkColor() const
 {
-    assert(m_hImageList);
-    return ImageList_GetBkColor(m_hImageList);
+    assert(Handle());
+    return ImageList_GetBkColor(Handle());
 }
 
 inline BOOL MImageList::GetImageInfo(
     INT nImage, IMAGEINFO* pImageInfo) const
 {
-    assert(m_hImageList);
-    return ImageList_GetImageInfo(m_hImageList, nImage, pImageInfo);
+    assert(Handle());
+    return ImageList_GetImageInfo(Handle(), nImage, pImageInfo);
 }
 
 inline BOOL MImageList::Destroy()
@@ -224,72 +221,72 @@ inline BOOL MImageList::Destroy()
 #if (_WIN32_IE >= 0x0300)
     inline BOOL MImageList::SetImageCount(UINT uNewCount)
     {
-        assert(m_hImageList);
-        return ImageList_SetImageCount(m_hImageList, uNewCount);
+        assert(Handle());
+        return ImageList_SetImageCount(Handle(), uNewCount);
     }
 #endif  // (_WIN32_IE >= 0x0300)
 
 inline BOOL MImageList::GetImageSize(INT *cx, INT *cy) const
 {
-    assert(m_hImageList);
-    return ImageList_GetIconSize(m_hImageList, cx, cy);
+    assert(Handle());
+    return ImageList_GetIconSize(Handle(), cx, cy);
 }
 
 inline BOOL MImageList::SetImageSizeAndClear(INT cx, INT cy)
 {
-    assert(m_hImageList);
-    return ImageList_SetIconSize(m_hImageList, cx, cy);
+    assert(Handle());
+    return ImageList_SetIconSize(Handle(), cx, cy);
 }
 
 inline INT MImageList::Add(HBITMAP hbmImage, HBITMAP hbmMask)
 {
-    assert(m_hImageList);
-    return ImageList_Add(m_hImageList, hbmImage, hbmMask);
+    assert(Handle());
+    return ImageList_Add(Handle(), hbmImage, hbmMask);
 }
 
 inline INT MImageList::Add(HBITMAP hbmImage, COLORREF crMask)
 {
-    assert(m_hImageList);
-    return ImageList_AddMasked(m_hImageList, hbmImage, crMask);
+    assert(Handle());
+    return ImageList_AddMasked(Handle(), hbmImage, crMask);
 }
 
 inline BOOL MImageList::Remove(INT nImage)
 {
-    assert(m_hImageList);
-    return ImageList_Remove(m_hImageList, nImage);
+    assert(Handle());
+    return ImageList_Remove(Handle(), nImage);
 }
 
 inline BOOL MImageList::Replace(
     INT nImage, HBITMAP hbmImage, HBITMAP hbmMask)
 {
-    assert(m_hImageList);
-    return ImageList_Replace(m_hImageList, nImage, hbmImage, hbmMask);
+    assert(Handle());
+    return ImageList_Replace(Handle(), nImage, hbmImage, hbmMask);
 }
 
 inline INT MImageList::Add(HICON hIcon)
 {
-    assert(m_hImageList);
-    return ImageList_AddIcon(m_hImageList, hIcon);
+    assert(Handle());
+    return ImageList_AddIcon(Handle(), hIcon);
 }
 
 inline INT MImageList::Replace(INT nImage, HICON hIcon)
 {
-    assert(m_hImageList);
-    return ImageList_ReplaceIcon(m_hImageList, nImage, hIcon);
+    assert(Handle());
+    return ImageList_ReplaceIcon(Handle(), nImage, hIcon);
 }
 
 inline HICON MImageList::ExtractIcon(INT nImage)
 {
-    assert(m_hImageList);
-    return ImageList_ExtractIcon(NULL, m_hImageList, nImage);
+    assert(Handle());
+    return ImageList_ExtractIcon(NULL, Handle(), nImage);
 }
 
 inline BOOL MImageList::Draw(INT nImage, HDC hDC, INT x, INT y,
     UINT nILD_flags/* = ILD_NORMAL*/)
 {
-    assert(m_hImageList);
-    assert(hDC != NULL);
-    return ImageList_Draw(m_hImageList, nImage, hDC, x, y, nILD_flags);
+    assert(Handle());
+    assert(hDC);
+    return ImageList_Draw(Handle(), nImage, hDC, x, y, nILD_flags);
 }
 
 inline BOOL MImageList::Draw(
@@ -302,10 +299,10 @@ inline BOOL MImageList::DrawEx(INT nImage, HDC hDC, INT x, INT y,
     INT dx, INT dy, COLORREF rgbBk, COLORREF rgbFg/* = CLR_NONE*/,
     UINT nILD_flags/* = ILD_NORMAL*/)
 {
-    assert(m_hImageList);
-    assert(hDC != NULL);
-    return ImageList_DrawEx(m_hImageList, nImage, hDC, x, y, dx, dy,
-        rgbBk, rgbFg, nILD_flags);
+    assert(Handle());
+    assert(hDC);
+    return ImageList_DrawEx(Handle(), nImage, hDC, x, y, dx, dy,
+                            rgbBk, rgbFg, nILD_flags);
 }
 
 inline BOOL MImageList::DrawEx(INT nImage, HDC hDC, LPCRECT prc,
@@ -313,34 +310,33 @@ inline BOOL MImageList::DrawEx(INT nImage, HDC hDC, LPCRECT prc,
     UINT nILD_flags/* = ILD_NORMAL*/)
 {
     return DrawEx(nImage, hDC, prc->left, prc->top, prc->right - prc->left,
-        prc->bottom - prc->top, rgbBk, rgbFg, nILD_flags);
+                  prc->bottom - prc->top, rgbBk, rgbFg, nILD_flags);
 }
 
 inline BOOL MImageList::SetOverlayImage(INT nImage, INT nOverlay)
 {
-    assert(m_hImageList);
-    return ImageList_SetOverlayImage(m_hImageList, nImage, nOverlay);
+    assert(Handle());
+    return ImageList_SetOverlayImage(Handle(), nImage, nOverlay);
 }
+
 #if (_WIN32_IE >= 0x0300)
-    
-inline BOOL MImageList::Copy(
+    inline BOOL MImageList::Copy(
         INT iDst, INT iSrc, UINT uILCF_flags/* = ILCF_MOVE*/)
     {
-        assert(m_hImageList);
-        return ImageList_Copy(
-            m_hImageList, iDst, m_hImageList, iSrc, uILCF_flags);
+        assert(Handle());
+        return ImageList_Copy(Handle(), iDst, Handle(), iSrc, uILCF_flags);
     }
     
-inline BOOL MImageList::Copy(INT iDst, HIMAGELIST hImlSrc, INT iSrc,
+    inline BOOL MImageList::Copy(INT iDst, HIMAGELIST hImlSrc, INT iSrc,
         UINT uILCF_flags/* = ILCF_MOVE*/)
     {
-        assert(m_hImageList);
+        assert(Handle());
         assert(hImlSrc != NULL);
-        return ImageList_Copy(m_hImageList, iDst, hImlSrc, iSrc, uILCF_flags);
+        return ImageList_Copy(Handle(), iDst, hImlSrc, iSrc, uILCF_flags);
     }
     
-inline /*static*/ BOOL MImageList::DrawIndirect(
-        IMAGELISTDRAWPARAMS* pimldp)
+    inline /*static*/ BOOL
+    MImageList::DrawIndirect(IMAGELISTDRAWPARAMS* pimldp)
     {
         return ImageList_DrawIndirect(pimldp);
     }
@@ -348,8 +344,8 @@ inline /*static*/ BOOL MImageList::DrawIndirect(
 
 inline BOOL MImageList::BeginDrag(INT nImage, INT xHotSpot, INT yHotSpot)
 {
-    assert(m_hImageList);
-    return ImageList_BeginDrag(m_hImageList, nImage, xHotSpot, yHotSpot);
+    assert(Handle());
+    return ImageList_BeginDrag(Handle(), nImage, xHotSpot, yHotSpot);
 }
 
 inline BOOL MImageList::BeginDrag(INT nImage, POINT ptHotSpot)
@@ -375,8 +371,8 @@ inline /*static*/ BOOL MImageList::DragMove(POINT pt)
 inline BOOL MImageList::SetDragCursorImage(
     INT nDrag, INT xHotSpot, INT yHotSpot)
 {
-    assert(m_hImageList);
-    return ImageList_SetDragCursorImage(m_hImageList, nDrag, xHotSpot, yHotSpot);
+    assert(Handle());
+    return ImageList_SetDragCursorImage(Handle(), nDrag, xHotSpot, yHotSpot);
 }
 
 inline BOOL MImageList::SetDragCursorImage(INT nDrag, POINT ptHotSpot)

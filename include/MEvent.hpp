@@ -79,8 +79,7 @@ inline BOOL MEvent::CreateEvent(
     LPCTSTR lpszName/* = NULL*/,
     LPSECURITY_ATTRIBUTES lpsaAttribute/* = NULL*/)
 {
-    return Attach(::CreateEvent(
-        lpsaAttribute, bManualReset, bInitiallyOwn, lpszName));
+    return Attach(::CreateEvent(lpsaAttribute, bManualReset, bInitiallyOwn, lpszName));
 }
 
 inline /*virtual*/ BOOL MEvent::Unlock()

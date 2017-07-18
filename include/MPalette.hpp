@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPALETTE_HPP_
-#define MZC4_MPALETTE_HPP_     3   /* Version 3 */
+#define MZC4_MPALETTE_HPP_     4   /* Version 4 */
 
 class MPalette;
 
@@ -134,19 +134,16 @@ inline LOGPALETTE *MPalette::GetLogPalette(VOID) const
 
 inline BOOL MPalette::CreatePalette(CONST LOGPALETTE *lplp)
 {
-    assert(Handle() == NULL);
     return Attach(::CreatePalette(lplp));
 }
 
 inline BOOL MPalette::CreateHalftonePalette(HDC hDC)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateHalftonePalette(hDC));
 }
 
 inline BOOL MPalette::CreateDefaultPalette()
 {
-    assert(Handle() == NULL);
     return Attach((HPALETTE)::GetStockObject(DEFAULT_PALETTE));
 }
 
@@ -154,8 +151,8 @@ inline UINT MPalette::GetPaletteEntries(
     UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const
 {
     assert(Handle());
-    return ::GetPaletteEntries(Handle(),
-        nStartIndex, nNumEntries, lpPaletteColors);
+    return ::GetPaletteEntries(Handle(), nStartIndex, nNumEntries,
+                               lpPaletteColors);
 }
 
 inline UINT MPalette::SetPaletteEntries(

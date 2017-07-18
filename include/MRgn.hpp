@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MRGN_HPP_
-#define MZC4_MRGN_HPP_      3       /* Version 3 */
+#define MZC4_MRGN_HPP_      4       /* Version 4 */
 
 class MRgn;
 
@@ -174,7 +174,6 @@ inline MRgn& MRgn::operator=(const MRgn& rgn)
 inline BOOL MRgn::Attach(HRGN hRgn)
 {
     assert(::GetObjectType(hRgn) == OBJ_REGION);
-    assert(Handle() == NULL);
     return MGdiObject::Attach(hRgn);
 }
 
@@ -190,65 +189,55 @@ inline HRGN MRgn::Handle() const
 
 inline BOOL MRgn::CreateEmptyRgn()
 {
-    assert(Handle() == NULL);
     return CreateRectRgn(0, 0, 0, 0);
 }
 
 inline BOOL MRgn::CreateRectRgn(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateRectRgn(x1, y1, x2, y2));
 }
 
 inline BOOL MRgn::CreateRectRgnIndirect(LPCRECT prc)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateRectRgnIndirect(prc));
 }
 
 inline BOOL MRgn::CreateEllipticRgn(INT x1, INT y1, INT x2, INT y2)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateEllipticRgn(x1, y1, x2, y2));
 }
 
 inline BOOL MRgn::CreateEllipticRgnIndirect(LPCRECT prc)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateEllipticRgnIndirect(prc));
 }
 
 inline BOOL MRgn::CreatePolygonRgn(LPPOINT ppts, INT nCount, INT nMode)
 {
-    assert(Handle() == NULL);
     return Attach(::CreatePolygonRgn(ppts, nCount, nMode));
 }
 
 inline BOOL MRgn::CreatePolyPolygonRgn(
     LPPOINT ppts, LPINT lpPolyCounts, INT nCount, INT nPolyFillMode)
 {
-    assert(Handle() == NULL);
     return Attach(::CreatePolyPolygonRgn(ppts, lpPolyCounts, nCount, nPolyFillMode));
 }
 
 inline BOOL MRgn::CreateRoundRectRgn(
     INT x1, INT y1, INT x2, INT y2, INT x3, INT y3)
 {
-    assert(Handle() == NULL);
     return Attach(::CreateRoundRectRgn(x1, y1, x2, y2, x3, y3));
 }
 
 inline BOOL MRgn::PathToRegion(HDC hDC)
 {
-    assert(Handle() == NULL);
-    assert(hDC != NULL);
+    assert(hDC);
     return Attach(::PathToRegion(hDC));
 }
 
 inline BOOL MRgn::ExtCreateRegion(
     CONST XFORM* lpXForm OPTIONAL, INT nCount, CONST RGNDATA* pRgnData)
 {
-    assert(Handle() == NULL);
     return Attach(::ExtCreateRegion(lpXForm, (DWORD) nCount, pRgnData));
 }
 

@@ -366,7 +366,6 @@ inline BOOL MFile::CreateFile(LPCTSTR pszFileName,
     DWORD dwFlagsAndAttributes/* = FILE_ATTRIBUTE_NORMAL*/,
     HANDLE hTemplateFile/* = NULL*/)
 {
-    assert(m_hFile == NULL || m_hFile == INVALID_HANDLE_VALUE);
     return Attach(::CreateFile(pszFileName, dwDesiredAccess, dwShareMode,
                   pSA, dwCreationDistribution, dwFlagsAndAttributes, hTemplateFile));
 }

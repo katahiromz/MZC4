@@ -304,25 +304,21 @@ inline BOOL MMenu::LoadMenu(LPCTSTR pszMenuName)
 
 inline BOOL MMenu::LoadMenu(HINSTANCE hInst, LPCTSTR pszMenuName)
 {
-    assert(Handle());
     return Attach(::LoadMenu(hInst, pszMenuName));
 }
 
 inline BOOL MMenu::LoadMenu(HINSTANCE hInst, UINT nMenuID)
 {
-    assert(Handle());
     return Attach(::LoadMenu(hInst, MAKEINTRESOURCE(nMenuID)));
 }
 
 inline BOOL MMenu::LoadMenu(UINT nMenuID)
 {
-    assert(Handle());
     return LoadMenu(MAKEINTRESOURCE(nMenuID));
 }
 
 inline BOOL MMenu::LoadMenuIndirect(const void *pMenuTemplate)
 {
-    assert(Handle());
     return Attach(::LoadMenuIndirect(reinterpret_cast<const MENUTEMPLATE *>(pMenuTemplate)));
 }
 
