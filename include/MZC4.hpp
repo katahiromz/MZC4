@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_HPP_
-#define MZC4_HPP_    103    /* Version 103 */
+#define MZC4_HPP_    104    /* Version 104 */
 
 #if _MSC_VER > 1000
     #pragma once            // For speed!

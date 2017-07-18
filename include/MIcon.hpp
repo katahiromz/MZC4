@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MICON_HPP_
-#define MZC4_MICON_HPP_         3   /* Version 3 */
+#define MZC4_MICON_HPP_         4   /* Version 4 */
 
 class MIcon;
 
@@ -279,6 +279,8 @@ inline BOOL MIcon::GetIconInfo(PICONINFO pIconInfo) const
 
 inline /*static*/ HICON MIcon::CloneHandleDx(HICON hIcon)
 {
+    if (hIcon == NULL)
+        return NULL;
     return ::CopyIcon(hIcon);
 }
 

@@ -99,13 +99,12 @@ inline MPen& MPen::operator=(const MPen& pen)
 inline BOOL MPen::Attach(HPEN hPen)
 {
     assert(::GetObjectType(hPen) == OBJ_PEN);
-    assert(Handle() == NULL);
     return MGdiObject::Attach(hPen);
 }
 
 inline HPEN MPen::Detach(VOID)
 {
-    return (HPEN)MGdiObject::Detach();
+    return reinterpret_cast<HPEN>(MGdiObject::Detach());
 }
 
 inline BOOL MPen::CreatePen(COLORREF crColor/* = RGB(0, 0, 0)*/,

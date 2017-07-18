@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPALETTE_HPP_
-#define MZC4_MPALETTE_HPP_     4   /* Version 4 */
+#define MZC4_MPALETTE_HPP_     5   /* Version 5 */
 
 class MPalette;
 
@@ -49,6 +49,9 @@ public:
 
 inline /*static*/ HPALETTE MPalette::CloneHandleDx(HPALETTE hPalette)
 {
+    if (hPalette == NULL)
+        return NULL;
+
     MPalette pal(hPalette);
     LOGPALETTE *lp = pal.GetLogPalette();
     HPALETTE hPaletteNew = ::CreatePalette(lp);
@@ -103,13 +106,12 @@ inline MPalette& MPalette::operator=(const MPalette& pal)
 inline BOOL MPalette::Attach(HPALETTE hPalette)
 {
     assert(::GetObjectType(hPalette) == OBJ_PAL);
-    assert(Handle() == NULL);
     return MGdiObject::Attach(hPalette);
 }
 
 inline HPALETTE MPalette::Detach(VOID)
 {
-    return (HPALETTE)MGdiObject::Detach();
+    return reinterpret_cast<HPALETTE>(MGdiObject::Detach());
 }
 
 inline WORD MPalette::GetEntryCount(VOID) const

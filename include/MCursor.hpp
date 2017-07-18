@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MCURSOR_HPP_
-#define MZC4_MCURSOR_HPP_       3   /* Version 3 */
+#define MZC4_MCURSOR_HPP_       4   /* Version 4 */
 
 class MCursor;
 
@@ -275,6 +275,8 @@ inline BOOL MCursor::GetIconInfo(PICONINFO pIconInfo) const
 
 inline /*static*/ HCURSOR MCursor::CloneHandleDx(HCURSOR hCursor)
 {
+    if (hCursor == NULL)
+        return NULL;
     return ::CopyCursorDx(hCursor);
 }
 

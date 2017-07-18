@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MRGN_HPP_
-#define MZC4_MRGN_HPP_      4       /* Version 4 */
+#define MZC4_MRGN_HPP_      5       /* Version 5 */
 
 class MRgn;
 
@@ -106,6 +106,8 @@ BOOL IsRgnEmptyDx(HRGN hRgn);
 
 inline /*static*/ HRGN MRgn::CloneHandleDx(HRGN hRgn)
 {
+    if (hRgn == NULL)
+        return NULL;
     HRGN hRgnNew = ::CreateRectRgn(0, 0, 0, 0);
     assert(hRgnNew != NULL);
     ::CombineRgn(hRgnNew, hRgnNew, hRgn, RGN_OR);
@@ -179,7 +181,7 @@ inline BOOL MRgn::Attach(HRGN hRgn)
 
 inline HRGN MRgn::Detach(VOID)
 {
-    return (HRGN)MGdiObject::Detach();
+    return reinterpret_cast<HRGN>(MGdiObject::Detach());
 }
 
 inline HRGN MRgn::Handle() const

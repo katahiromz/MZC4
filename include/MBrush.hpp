@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MBRUSH_HPP_
-#define MZC4_MBRUSH_HPP_        3   /* Version 3 */
+#define MZC4_MBRUSH_HPP_        4   /* Version 4 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -127,7 +127,7 @@ inline BOOL MBrush::Attach(HBRUSH hBrush)
 
 inline HBRUSH MBrush::Detach(VOID)
 {
-    return (HBRUSH)MGdiObject::Detach();
+    return reinterpret_cast<HBRUSH>(MGdiObject::Detach());
 }
 
 inline BOOL MBrush::CreateBrushIndirect(CONST LOGBRUSH *lplb)

@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFONT_HPP_
-#define MZC4_MFONT_HPP_         3   /* Version 3 */
+#define MZC4_MFONT_HPP_         4   /* Version 4 */
 
 class MFont;
 
@@ -159,6 +159,8 @@ MFont::GetFontList(HDC hdc, std::vector<MString>& vec, LPLOGFONT plf,
 
 inline /*static*/ HFONT MFont::CloneHandleDx(HFONT hFont)
 {
+    if (hFont == NULL)
+        return NULL;
     LOGFONT lf;
     ::GetObject(hFont, sizeof(LOGFONT), &lf);
     return ::CreateFontIndirect(&lf);
@@ -220,7 +222,7 @@ inline BOOL MFont::Attach(HFONT hFont)
 
 inline HFONT MFont::Detach(VOID)
 {
-    return (HFONT)MGdiObject::Detach();
+    return reinterpret_cast<HFONT>(MGdiObject::Detach());
 }
 
 inline BOOL MFont::CreateFontIndirect(CONST LOGFONT *lplf)
