@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEMAPPING_HPP_
-#define MZC4_MFILEMAPPING_HPP_      24      /* Version 24 */
+#define MZC4_MFILEMAPPING_HPP_      25      /* Version 25 */
 
 class MMapView;
     template <typename T>
@@ -153,7 +153,7 @@ public:
     DWORD GetPos(LPDWORD pdwHigh = NULL) const;
     DWORDLONG GetPos64() const;
 
-    DWORD SetPos(DWORD dwOffsetHigh, DWORD dwOffsetLow)
+    DWORDLONG SetPos(DWORD dwOffsetHigh, DWORD dwOffsetLow)
     {
         m_index = MAKELONGLONG(dwOffsetLow, dwOffsetHigh);
         return m_index;
