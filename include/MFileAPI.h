@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        10  /* Version 10 */
+#define MZC4_MFILEAPI_H_        11  /* Version 11 */
 
 /*
  * MPath_... functions
@@ -305,8 +305,6 @@ MFile_GetContents(const MChar *filename, size_t *psize)
         }
         CloseHandle(hFile);
     }
-
-    return pb;
 #else
     FILE *fp;
     struct stat sbuf;
@@ -346,7 +344,7 @@ MFile_GetContents(const MChar *filename, size_t *psize)
 inline bool MFile_PutText(const MChar *filename, const MChar *str)
 {
     USING_NAMESPACE_STD;
-    return MFile_PutContents(filename, str, strlen(str) * sizeof(MChar));
+    return MFile_PutContents(filename, str, _tcslen(str) * sizeof(MChar));
 }
 
 inline bool
