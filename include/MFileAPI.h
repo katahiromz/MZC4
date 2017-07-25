@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        11  /* Version 11 */
+#define MZC4_MFILEAPI_H_        12  /* Version 12 */
 
 /*
  * MPath_... functions
@@ -168,6 +168,9 @@ bool MFile_Copy(const MChar *existing_file, const MChar *new_file,
                 bool bFailIfExists optional_(false));
 bool MFile_Delete(const MChar *filename);
 
+unsigned long MFile_GetSize(const MChar *filename, unsigned long *high);
+uint64_t      MFile_GetSize64(const MChar *filename);
+
 /**************************************************************************/
 
 inline bool MPath_Exists(const MChar *pathname)
@@ -260,6 +263,68 @@ inline bool MFile_Delete(const MChar *filename)
     return remove(filename) == 0;
 #else
     return unlink(filename) == 0;
+#endif
+}
+
+inline uint64_t
+MFile_GetSize64(const MChar *filename)
+{
+    USING_NAMESPACE_STD;
+    assert(filename);
+#ifdef _WIN32
+    HANDLE hFile = ::CreateFile(filename, GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+        OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+        return (uint64_t)-1;
+
+    DWORD low, high;
+    low = ::GetFileSize(hFile, &high);
+    CloseHandle(hFile);
+    return low | ((uint64_t)high << 32);
+#else
+    struct stat st;
+    if (stat(filename, &st))
+        return (uint64_t)-1;
+    return st.st_size;
+#endif
+}
+
+inline unsigned long
+MFile_GetSize(const MChar *filename, unsigned long *high)
+{
+    USING_NAMESPACE_STD;
+    assert(filename);
+
+    if (high)
+        *high = 0;
+
+#ifdef _WIN32
+    HANDLE hFile = ::CreateFile(filename, GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+        OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+        return 0xFFFFFFFF;
+
+    DWORD low = ::GetFileSize(hFile, high);
+    CloseHandle(hFile);
+    return low;
+#else
+    struct stat st;
+    if (stat(filename, &st))
+        return 0xFFFFFFFF;
+
+    if (sizeof(st.st_size) >= 8 && st.st_size > 0xFFFFFFFF)
+    {
+        if (high)
+        {
+            *high = st.st_size >> 32;
+            return (unsigned long)st.st_size;
+        }
+        return 0xFFFFFFFF;
+    }
+
+    return (unsigned long)st.st_size;
 #endif
 }
 
