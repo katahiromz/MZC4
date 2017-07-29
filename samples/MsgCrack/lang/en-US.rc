@@ -9,8 +9,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 
 1 DIALOG 0, 0, 270, 210
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "MsgCrack 1.3 by Katayama Hirofumi MZ"
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX
+CAPTION "MsgCrack 1.4 by Katayama Hirofumi MZ"
 FONT 10, "MS Shell Dlg"
 {
     CONTROL "1. &Type the first few letters of the windows message you're looking for.", -1, "STATIC", SS_LEFT | WS_CHILD | WS_VISIBLE | WS_GROUP, 5, 7, 260, 14
