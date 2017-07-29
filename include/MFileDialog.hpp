@@ -3,14 +3,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEDIALOG_HPP_
-#define MZC4_MFILEDIALOG_HPP_       3       /* Version 3 */
+#define MZC4_MFILEDIALOG_HPP_       5       /* Version 5 */
 
 class MFileDialog;
 
 ////////////////////////////////////////////////////////////////////////////
 
 #include "MCommonDialog.hpp"
-#include "MFile.hpp"
+#include "MFileAPI.h"
 
 class MFileDialog : public MCommonDialog
 {
