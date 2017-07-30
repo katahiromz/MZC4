@@ -17,6 +17,7 @@
 #define IDM_SELECTALL   11
 #define IDM_UNDO        12
 #define IDM_DATETIME    13
+#define IDM_DOTEST      14
 
 #define IDD_ABOUTBOX 1
 

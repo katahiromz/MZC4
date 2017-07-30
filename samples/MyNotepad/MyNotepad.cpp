@@ -38,7 +38,6 @@ struct MMyNotepad : public MWindowBase
 
     virtual void ModifyWndClassDx(WNDCLASSEX& wcx)
     {
-        MWindowBase::ModifyWndClassDx(wcx);
         wcx.lpszMenuName = MAKEINTRESOURCE(1);
         wcx.hIcon = m_hIcon;
         wcx.hIconSm = m_hIconSm;
@@ -56,10 +55,16 @@ struct MMyNotepad : public MWindowBase
             DO_MSG(WM_DESTROY, OnDestroy);
             DO_MSG(WM_CLOSE, OnClose);
             DO_MSG(WM_INITMENU, OnInitMenu);
+            DO_MSG(WM_ACTIVATE, OnActivate);
         default:
             return DefaultProcDx(hwnd, uMsg, wParam, lParam);
         }
         return 0;
+    }
+
+    void OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized)
+    {
+        ::SetFocus(m_edit_ctrl);
     }
 
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
@@ -339,7 +344,20 @@ struct MMyNotepad : public MWindowBase
         case IDM_DATETIME:
             OnDateTime();
             break;
+        case IDM_DOTEST:
+            OnDoTest();
+            break;
         }
+    }
+
+    void OnDoTest()
+    {
+        MString text = m_edit_ctrl.GetWindowText();
+        mstr_replace_all(text, TEXT("&"), TEXT("(=AmP=)"));
+        mstr_replace_all(text, TEXT("<"), TEXT("&lt;"));
+        mstr_replace_all(text, TEXT(">"), TEXT("&gt;"));
+        mstr_replace_all(text, TEXT("(=AmP=)"), TEXT("&amp;"));
+        m_edit_ctrl.SetWindowText(text.c_str());
     }
 
     // IDM_ABOUT

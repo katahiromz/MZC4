@@ -93,6 +93,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Date and Time\tF5",       IDM_DATETIME
     END
+    POPUP "&Test"
+    BEGIN
+        MENUITEM "Do Test!",                IDM_DOTEST
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About...",               IDM_ABOUT
