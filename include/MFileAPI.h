@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        12  /* Version 12 */
+#define MZC4_MFILEAPI_H_        13  /* Version 13 */
 
 /*
  * MPath_... functions
@@ -83,7 +83,11 @@
     #endif
 
     #ifndef MAX_PATH
-        #define MAX_PATH 256
+        #ifdef PATH_MAX
+            #define MAX_PATH    PATH_MAX
+        #else
+            #define MAX_PATH    260
+        #endif
     #endif
 
     #ifndef TEXT
