@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MRESIZABLE_HPP_
-#define MZC4_MRESIZABLE_HPP_        2   /* Version 2 */
+#define MZC4_MRESIZABLE_HPP_        3   /* Version 3 */
 
 struct MCtrlLayout;
 class MResizable;
@@ -61,7 +61,7 @@ public:
                         BOOL bShowSizeGrip = TRUE);
 
     // NOTE: Please call OnSize on parent's WM_SIZE.
-    VOID OnSize();
+    VOID OnSize(const RECT *prcClient = NULL);
 
     // NOTE: Please call SetLayoutAnchor after OnParentCreate.
     // NOTE: sizLA_1 is upper left anchor, sizLA_2 is lower right anchor.
@@ -88,8 +88,7 @@ protected:
     VOID ShowSizeGrip(BOOL bShow = TRUE);
     VOID ModifyParentStyle(BOOL bEnableResize);
     VOID MoveSizeGrip();
-    VOID ArrangeLayout();
-    VOID ArrangeLayout(const MRect& ClientRect);
+    VOID ArrangeLayout(const RECT *prc);
 
 private:
     // NOTE: MResizable is not copyable
@@ -113,13 +112,6 @@ inline VOID MResizable::ClearLayouts()
     m_layouts.clear();
 }
 
-inline VOID MResizable::ArrangeLayout()
-{
-    MRect ClientRect;
-    ::GetClientRect(m_hwndParent, ClientRect);
-    ArrangeLayout(&ClientRect);
-}
-
 inline VOID MResizable::SetLayoutAnchor(
     UINT nCtrlID, MSize sizLA_1, MSize sizLA_2/* = mzcLA_NO_ANCHOR*/)
 {
@@ -130,12 +122,12 @@ inline VOID MResizable::SetLayoutAnchor(
         ::GetDlgItem(m_hwndParent, nCtrlID), sizLA_1, sizLA_2);
 }
 
-inline VOID MResizable::OnSize()
+inline VOID MResizable::OnSize(const RECT *prcClient/* = NULL*/)
 {
     assert(m_hwndParent);
     assert(::IsWindow(m_hwndParent));
 
-    ArrangeLayout();
+    ArrangeLayout(prcClient);
     MoveSizeGrip();
 }
 
@@ -264,10 +256,20 @@ inline VOID MResizable::OnParentCreate(HWND hwndParent, BOOL bEnableResize,
     EnableResize(bEnableResize, bShowSizeGrip);
 }
 
-inline VOID MResizable::ArrangeLayout(const MRect& ClientRect)
+inline VOID MResizable::ArrangeLayout(const RECT *prc)
 {
     assert(m_hwndParent);
     assert(::IsWindow(m_hwndParent));
+
+    MRect ClientRect;
+    if (prc)
+    {
+        ClientRect = *prc;
+    }
+    else
+    {
+        ::GetClientRect(m_hwndParent, &ClientRect);
+    }
 
     const INT count = INT(m_layouts.size());
     if (count == 0)
