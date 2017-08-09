@@ -324,7 +324,7 @@ public:
             OnOK(hwnd);
             break;
         case IDCANCEL:
-            ::EndDialog(hwnd, IDCANCEL);
+            EndDialog(IDCANCEL);
             break;
         case lst1:
             if (codeNotify == LBN_SELCHANGE)
