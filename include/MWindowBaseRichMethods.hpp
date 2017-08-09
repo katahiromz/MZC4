@@ -698,7 +698,7 @@ HDC GetWindowDC()
     assert(::IsWindow(Handle()));
     return ::GetWindowDC(Handle());
 }
-static HDC GetWindowDC(HWND hwnd) const
+static HDC GetWindowDC(HWND hwnd)
 {
     assert(::IsWindow(hwnd));
     return ::GetWindowDC(hwnd);
@@ -909,7 +909,7 @@ INT MapWindowPoints(HWND hwndTo, LPPOINT ppt, UINT cPoints) const
     assert(::IsWindow(Handle()));
     return ::MapWindowPoints(Handle(), hwndTo, ppt, cPoints);
 }
-static INT MapWindowPoints(HWND hwnd, HWND hwndTo, LPPOINT ppt, UINT cPoints) const
+static INT MapWindowPoints(HWND hwnd, HWND hwndTo, LPPOINT ppt, UINT cPoints)
 {
     assert(::IsWindow(hwnd));
     return ::MapWindowPoints(hwnd, hwndTo, ppt, cPoints);

@@ -31,7 +31,7 @@ class MDialogBase;
     #define CXX11           1
 #endif
 
-//#define MZC4_FAT_AND_RICH   1
+#define MZC4_FAT_AND_RICH   1
 
 //////////////////////////////////////////////////////////////////////////////
 // headers
