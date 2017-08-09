@@ -107,19 +107,19 @@ public:
 
     BOOL ParseLine(char *line)
     {
-        char *pch1 = strchr(line, ':');
+        char *pch1 = strstr(line, "<>");
         if (pch1 == NULL)
             return FALSE;
 
-        char *pch2 = strchr(pch1 + 1, ':');
+        char *pch2 = strstr(pch1 + 2, "<>");
         if (pch2 == NULL)
             return FALSE;
 
         *pch1 = *pch2 = 0;
 
         MStringA str1 = line;
-        MStringA str2 = pch1 + 1;
-        MStringA str3 = pch2 + 1;
+        MStringA str2 = pch1 + 2;
+        MStringA str3 = pch2 + 2;
 
         mstr_trim(str1);
         mstr_trim(str2);
@@ -172,8 +172,8 @@ public:
         if (fp == NULL)
             return FALSE;
 
-        char buf[256];
-        while (fgets(buf, 256, fp) != NULL)
+        static char buf[1024];
+        while (fgets(buf, 1024, fp) != NULL)
         {
             ParseLine(buf);
         }
