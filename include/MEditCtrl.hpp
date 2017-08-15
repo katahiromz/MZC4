@@ -3,14 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MEDITCTRL_HPP_
-#define MZC4_MEDITCTRL_HPP_     2   /* Version 2 */
+#define MZC4_MEDITCTRL_HPP_     3   /* Version 3 */
 
 class MEditCtrl;
 
 ////////////////////////////////////////////////////////////////////////////
 
 #include "MWindowBase.hpp"
-#include "MPointSizeRect.hpp"
 
 class MEditCtrl : public MWindowBase
 {
@@ -36,7 +35,7 @@ public:
     UINT GetLimitText() const;
     VOID SetLimitText(UINT nMax);
 
-    MPoint PosFromChar(UINT nChar) const;
+    POINT PosFromChar(UINT nChar) const;
     INT CharFromPos(POINT pt) const;
 
     VOID EmptyUndoBuffer();
@@ -168,7 +167,7 @@ inline UINT MEditCtrl::GetLimitText() const
     return (UINT)SendMessageDx(EM_GETLIMITTEXT);
 }
 
-inline MPoint MEditCtrl::PosFromChar(UINT nChar) const
+inline POINT MEditCtrl::PosFromChar(UINT nChar) const
 {
     POINT pt;
     SendMessageDx(EM_POSFROMCHAR, (WPARAM)&pt, (LPARAM)nChar);
