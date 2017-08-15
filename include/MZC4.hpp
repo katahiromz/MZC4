@@ -29,6 +29,7 @@
 #include "MColorDialog.hpp"
 #include "MComboBox.hpp"
 #include "MComboBoxEx.hpp"
+#include "MCommandUI.hpp"
 #include "MCommonDialog.hpp"
 #include "MCriticalSection.hpp"
 #include "MCursor.hpp"
