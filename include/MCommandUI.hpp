@@ -67,6 +67,11 @@ public:
     BOOL SetCommandCaption(INT nCommandID, const MString& strCaption);
     BOOL SetCommandDescription(INT nCommandID, const MString& strDescription);
 
+    BOOL DrawCommand(INT nCommandID, HDC hDC, INT x, INT y,
+                     UINT nILD_ = ILD_NORMAL | ILD_TRANSPARENT);
+    BOOL DrawCommandEx(INT nCommandID, HDC hDC, INT x, INT y, INT cx, INT cy,
+                       UINT nILD_ = ILD_NORMAL | ILD_TRANSPARENT);
+
 protected:
     HIMAGELIST      m_himl;
     entries_type    m_entries;
@@ -285,6 +290,24 @@ inline BOOL MCommandUI::LoadBitmap(
     }
 
     return TRUE;
+}
+
+inline BOOL
+MCommandUI::DrawCommand(INT nCommandID, HDC hDC, INT x, INT y,
+                        UINT nILD_/* = ILD_NORMAL | ILD_TRANSPARENT*/)
+{
+    INT nImage = ImageFromCommandID(nCommandID);
+    return ImageList_Draw(ImageList(), nImage, hDC, x, y, nILD_);
+}
+
+inline BOOL
+MCommandUI::DrawCommandEx(INT nCommandID, HDC hDC, INT x, INT y,
+                          INT cx, INT cy,
+                          UINT nILD_/* = ILD_NORMAL | ILD_TRANSPARENT*/)
+{
+    INT nImage = ImageFromCommandID(nCommandID);
+    return ImageList_DrawEx(ImageList(), nImage, hDC, x, y, cx, cy,
+                            CLR_NONE, CLR_NONE, nILD_);
 }
 
 ////////////////////////////////////////////////////////////////////////////
