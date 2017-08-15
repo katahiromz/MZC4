@@ -80,6 +80,9 @@ public:
     }
     VOID SetPane(INT nIndex, HWND hwndPane)
     {
+        if (m_nPaneCount == 0)
+            return;
+
         assert(0 <= nIndex && nIndex < m_nPaneCount);
         m_vecPanes[nIndex].hwndPane = hwndPane;
     }
@@ -91,6 +94,9 @@ public:
     }
     VOID SetPanePos(INT nIndex, INT nPos, BOOL bBounded = TRUE)
     {
+        if (m_nPaneCount == 0)
+            return;
+
         assert(0 <= nIndex && nIndex <= m_nPaneCount);
         if (nIndex == 0)
             return;
@@ -115,13 +121,26 @@ public:
 
     VOID SetPaneWidth(INT nIndex, INT cxy, BOOL bUpdate = TRUE)
     {
+        if (m_nPaneCount == 0)
+            return;
+
         assert(0 <= nIndex && nIndex < m_nPaneCount);
-        SetPanePos(nIndex + 1, m_vecPanes[nIndex].xyPos + cxy, bUpdate);
+        if (nIndex == m_nPaneCount - 1)
+        {
+            SetPanePos(nIndex, m_vecPanes[m_nPaneCount].xyPos - cxy);
+        }
+        else
+        {
+            SetPanePos(nIndex + 1, m_vecPanes[nIndex].xyPos + cxy);
+        }
         UpdatePanes();
     }
 
     VOID SetPaneMinWidth(INT nIndex, INT cxyMin = MSplitterWnd::m_cxyMinWidth)
     {
+        if (m_nPaneCount == 0)
+            return;
+
         assert(0 <= nIndex && nIndex < m_nPaneCount);
         m_vecPanes[nIndex].cxyMin = cxyMin;
     }
@@ -296,6 +315,11 @@ protected:
         RECT rc;
         GetClientRect(hwnd, &rc);
         INT cxy = (IsVertical() ? rc.bottom : rc.right);
+        Resize(cxy);
+    }
+
+    void Resize(INT cxy)
+    {
         if (IsRightBottomAlign())
         {
             INT dxy = cxy - m_vecPanes[m_nPaneCount].xyPos;
