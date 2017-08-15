@@ -27,87 +27,215 @@ public:
     {
         INT nCommandID;
         INT nImage;
+        MString strCaption;
+        MString strDescription;
     };
     typedef std::vector<UIENTRY> entries_type;
 
-    MCommandUI() : m_himl(NULL)
-    {
-    }
+    MCommandUI();
+    ~MCommandUI();
 
-    ~MCommandUI()
-    {
-        DestroyImageList();
-    }
-
-    HIMAGELIST& ImageList()
-    {
-        return m_himl;
-    }
-    const HIMAGELIST& ImageList() const
-    {
-        return m_himl;
-    }
-
-    void DestroyImageList()
-    {
-        if (ImageList())
-        {
-            ImageList_Destroy(ImageList());
-            ImageList() = NULL;
-        }
-    }
-
-    INT ImageFromCommand(INT nCommandID) const
-    {
-        entries_type::const_iterator it, end = m_entries.end();
-        for (it = m_entries.begin(); it != end; ++it)
-        {
-            if (it->nCommandID == nCommandID)
-                return it->nImage;
-        }
-        return -1;
-    }
+          HIMAGELIST& ImageList();
+    const HIMAGELIST& ImageList() const;
+    void DestroyImageList();
 
     BOOL LoadBitmap(HINSTANCE hi, LPCTSTR pszBmpName,
-                    UINT nCommandID, INT cx = 16,
-                    COLORREF crMask = RGB(255, 0, 255))
-    {
-        HBITMAP hbm = ::LoadBitmap(hi, pszBmpName);
-        BITMAP bm;
-        if (!GetObject(hbm, sizeof(bm), &bm))
-            return FALSE;
-        DeleteObject(hbm);
+                    INT nFirstCommandID, INT nFirstCaptionID = -1,
+                    INT nFirstDescriptionID = -1, 
+                    INT cx = 16, COLORREF crMask = RGB(255, 0, 255));
 
-        DestroyImageList();
+    MString CaptionFromCommand(INT nCommandID) const;
+    MString DescriptionFromCommand(INT nCommandID) const;
+    INT     ImageFromCommandID(INT nCommandID) const;
+    INT     IndexFromCommandID(INT nCommandID) const;
+    INT     CommandIDFromIndex(INT nIndex) const;
 
-        const INT cGrow = 8;
-        if (bm.bmBitsPixel == 32)
-        {
-            ImageList() = ImageList_LoadBitmap(hi, pszBmpName, cx, cGrow, CLR_NONE);
-        }
-        else
-        {
-            ImageList() = ImageList_LoadBitmap(hi, pszBmpName, cx, cGrow, crMask);
-        }
-
-        if (ImageList() == NULL)
-            return FALSE;
-
-        const INT nCount = bm.bmWidth / cx;
-        for (INT i = 0; i < nCount; ++i)
-        {
-            UIENTRY entry;
-            entry.nCommandID = nCommandID++;
-            entry.nImage = i;
-            m_entries.push_back(entry);
-        }
-        return TRUE;
-    }
+    BOOL SetCommandImage(INT nCommandID, INT nImage);
+    BOOL SetCommandCaption(INT nCommandID, const MString& strCaption);
+    BOOL SetCommandDescription(INT nCommandID, const MString& strDescription);
 
 protected:
     HIMAGELIST      m_himl;
     entries_type    m_entries;
 };
+
+////////////////////////////////////////////////////////////////////////////
+
+inline MCommandUI::MCommandUI() : m_himl(NULL)
+{
+}
+
+inline MCommandUI::~MCommandUI()
+{
+    DestroyImageList();
+}
+
+inline HIMAGELIST& MCommandUI::ImageList()
+{
+    return m_himl;
+}
+
+inline const HIMAGELIST& MCommandUI::ImageList() const
+{
+    return m_himl;
+}
+
+inline void MCommandUI::DestroyImageList()
+{
+    if (ImageList())
+    {
+        ImageList_Destroy(ImageList());
+        ImageList() = NULL;
+    }
+}
+
+inline MString MCommandUI::CaptionFromCommand(INT nCommandID) const
+{
+    entries_type::const_iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it)
+    {
+        if (it->nCommandID == nCommandID)
+            return it->strCaption;
+    }
+    return MString();
+}
+
+inline MString MCommandUI::DescriptionFromCommand(INT nCommandID) const
+{
+    entries_type::const_iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it)
+    {
+        if (it->nCommandID == nCommandID)
+            return it->strDescription;
+    }
+    return MString();
+}
+
+inline INT MCommandUI::ImageFromCommandID(INT nCommandID) const
+{
+    entries_type::const_iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it)
+    {
+        if (it->nCommandID == nCommandID)
+            return it->nImage;
+    }
+    return -1;
+}
+
+inline BOOL MCommandUI::SetCommandImage(INT nCommandID, INT nImage)
+{
+    entries_type::iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it)
+    {
+        if (it->nCommandID == nCommandID)
+        {
+            it->nImage = nImage;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+inline BOOL
+MCommandUI::SetCommandCaption(INT nCommandID, const MString& strCaption)
+{
+    entries_type::iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it)
+    {
+        if (it->nCommandID == nCommandID)
+        {
+            it->strCaption = strCaption;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+inline BOOL
+MCommandUI::SetCommandDescription(INT nCommandID, const MString& strDescription)
+{
+    entries_type::iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it)
+    {
+        if (it->nCommandID == nCommandID)
+        {
+            it->strDescription = strDescription;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+inline INT MCommandUI::IndexFromCommandID(INT nCommandID) const
+{
+    INT nIndex = 0;
+    entries_type::const_iterator it, end = m_entries.end();
+    for (it = m_entries.begin(); it != end; ++it, ++nIndex)
+    {
+        if (it->nCommandID == nCommandID)
+        {
+            return nIndex;
+        }
+    }
+    return -1;
+}
+
+inline INT MCommandUI::CommandIDFromIndex(INT nIndex) const
+{
+    if (size_t(nIndex) < m_entries.size())
+        return m_entries[nIndex].nCommandID;
+    return -1;
+}
+
+inline BOOL
+MCommandUI::LoadBitmap(HINSTANCE hi, LPCTSTR pszBmpName,
+    INT nFirstCommandID, INT nFirstCaptionID/* = -1*/,
+    INT nFirstDescriptionID/* = -1*/, 
+    INT cx/* = 16*/, COLORREF crMask/* = RGB(255, 0, 255)*/)
+{
+    HBITMAP hbm = ::LoadBitmap(hi, pszBmpName);
+    BITMAP bm;
+    if (!GetObject(hbm, sizeof(bm), &bm))
+        return FALSE;
+    DeleteObject(hbm);
+
+    DestroyImageList();
+
+    const INT cGrow = 8;
+    if (bm.bmBitsPixel == 32)
+    {
+        ImageList() = ImageList_LoadBitmap(hi, pszBmpName, cx, cGrow, CLR_NONE);
+    }
+    else
+    {
+        ImageList() = ImageList_LoadBitmap(hi, pszBmpName, cx, cGrow, crMask);
+    }
+
+    if (ImageList() == NULL)
+    {
+        return FALSE;
+    }
+
+    const INT nCount = bm.bmWidth / cx;
+    for (INT i = 0; i < nCount; ++i)
+    {
+        UIENTRY entry;
+        entry.nCommandID = nFirstCommandID++;
+        entry.nImage = i;
+        if (nFirstCaptionID != -1)
+        {
+            entry.strCaption = LoadStringDx(nFirstCaptionID++);
+        }
+        if (nFirstDescriptionID != -1)
+        {
+            entry.strDescription = LoadStringDx(nFirstDescriptionID++);
+        }
+
+        m_entries.push_back(entry);
+    }
+
+    return TRUE;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
