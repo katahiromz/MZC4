@@ -70,6 +70,7 @@ public:
     BOOL DrawCommand(INT nCommandID, HDC hDC, INT x, INT y,
                      UINT nILD_ = ILD_NORMAL | ILD_TRANSPARENT);
     BOOL DrawCommandEx(INT nCommandID, HDC hDC, INT x, INT y, INT cx, INT cy,
+                       COLORREF crForeground = CLR_NONE,
                        UINT nILD_ = ILD_NORMAL | ILD_TRANSPARENT);
 
 protected:
@@ -302,12 +303,12 @@ MCommandUI::DrawCommand(INT nCommandID, HDC hDC, INT x, INT y,
 
 inline BOOL
 MCommandUI::DrawCommandEx(INT nCommandID, HDC hDC, INT x, INT y,
-                          INT cx, INT cy,
+                          INT cx, INT cy, COLORREF crForeground/* = CLR_NONE*/,
                           UINT nILD_/* = ILD_NORMAL | ILD_TRANSPARENT*/)
 {
     INT nImage = ImageFromCommandID(nCommandID);
     return ImageList_DrawEx(ImageList(), nImage, hDC, x, y, cx, cy,
-                            CLR_NONE, CLR_NONE, nILD_);
+                            CLR_NONE, crForeground, nILD_);
 }
 
 ////////////////////////////////////////////////////////////////////////////
