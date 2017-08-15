@@ -27,16 +27,6 @@ class MSound;
 
 ////////////////////////////////////////////////////////////////////////////
 
-// FootmarkDx and FootmarkThisDx
-#ifndef FootmarkDx
-    #define FootmarkDx()
-#endif
-#ifndef FootmarkThisDx
-    #define FootmarkThisDx()
-#endif
-
-////////////////////////////////////////////////////////////////////////////
-
 #include "MByteStream.hpp"
 #include "MFile.hpp"
 
@@ -212,14 +202,14 @@ inline BOOL ConvertMp3ToWaveDx(MByteStream& bin, LPBYTE& pb, DWORD& cb)
     if (::acmFormatSuggest(NULL, (WAVEFORMATEX *)&wfmp3, &wfwav, 
             sizeof(WAVEFORMATEX), ACM_FORMATSUGGESTF_WFORMATTAG))
     {
-        FootmarkDx();
+        assert(FALSE);
         return FALSE;
     }
 
     if (::acmStreamOpen(&has, NULL, (WAVEFORMATEX *)&wfmp3, &wfwav, 
             NULL, 0, 0, ACM_STREAMOPENF_NONREALTIME))
     {
-        FootmarkDx();
+        assert(FALSE);
         return FALSE;
     }
 
@@ -238,7 +228,7 @@ inline BOOL ConvertMp3ToWaveDx(MByteStream& bin, LPBYTE& pb, DWORD& cb)
 
     if (::acmStreamPrepareHeader(has, &ash, 0))
     {
-        FootmarkDx();
+        assert(FALSE);
         ::acmStreamClose(has, 0);
         return FALSE;
     }
@@ -259,7 +249,7 @@ inline BOOL ConvertMp3ToWaveDx(MByteStream& bin, LPBYTE& pb, DWORD& cb)
 
         if (cb < cbFrame)
         {
-            FootmarkDx();
+            assert(FALSE);
             break;
         }
 
@@ -269,7 +259,7 @@ inline BOOL ConvertMp3ToWaveDx(MByteStream& bin, LPBYTE& pb, DWORD& cb)
         ash.cbSrcLength = cbFrame;
         if (::acmStreamConvert(has, &ash, 0))
         {
-            FootmarkDx();
+            assert(FALSE);
             break;
         }
 
@@ -339,8 +329,8 @@ inline BOOL MSound::LoadWaveFromFile(LPCTSTR pszFile)
         free(pb);
         return TRUE;
     }
+    assert(FALSE);
     free(pb);
-    FootmarkThisDx();
     return FALSE;
 }
 
@@ -367,7 +357,7 @@ MSound::LoadWaveFromResource(LPCTSTR pszResource, HINSTANCE hInstance/* = NULL*/
             }
         }
     }
-    FootmarkThisDx();
+    assert(FALSE);
     return FALSE;
 }
 
@@ -388,8 +378,7 @@ inline BOOL MSound::LoadMp3FromFile(LPCTSTR pszFile)
         bOK = LoadMp3FromMemory(pb, cb);
         free(pb);
     }
-    if (!bOK)
-        FootmarkThisDx();
+    assert(bOK);
     return bOK;
 }
 
@@ -410,7 +399,7 @@ MSound::LoadMp3FromResource(LPCTSTR pszResource, HINSTANCE hInstance/* = NULL*/)
                 return LoadMp3FromMemory(pv, cb);
         }
     }
-    FootmarkThisDx();
+    assert(FALSE);
     return FALSE;
 }
 
@@ -424,10 +413,9 @@ inline BOOL MSound::LoadMp3FromMemory(LPVOID pv, DWORD cb)
 {
     LPBYTE pb = (LPBYTE)pv;
     BOOL b = ConvertMp3ToWaveDx(m_binWave, pb, cb);
+    assert(b);
     if (b)
         m_bAlloc = TRUE;
-    else
-        FootmarkThisDx();
     return b;
 }
 

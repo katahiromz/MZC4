@@ -139,7 +139,6 @@
     inline INT MComboBoxEx::AddString(LPCTSTR)
     {
         DebugPrintDx(TEXT("WARNING: You shouldn't call AddString for MComboBoxEx!\n"));
-        FootmarkThisDx();
         assert(FALSE);
         return 0;
     }
@@ -147,7 +146,6 @@
     inline INT MComboBoxEx::InsertString(INT, LPCTSTR)
     {
         DebugPrintDx(TEXT("WARNING: You shouldn't call InsertString for MComboBoxEx!\n"));
-        FootmarkThisDx();
         assert(FALSE);
         return 0;
     }
@@ -155,7 +153,6 @@
     inline INT MComboBoxEx::Dir(UINT, LPCTSTR)
     {
         DebugPrintDx(TEXT("WARNING: You shouldn't call Dir for MComboBoxEx!\n"));
-        FootmarkThisDx();
         assert(FALSE);
         return 0;
     }
@@ -163,7 +160,6 @@
     inline INT MComboBoxEx::FindString(INT, LPCTSTR) const
     {
         DebugPrintDx(TEXT("WARNING: You shouldn't call FindString for MComboBoxEx!\n"));
-        FootmarkThisDx();
         assert(FALSE);
         return 0;
     }

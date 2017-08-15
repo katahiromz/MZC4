@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    45     /* Version 45 */
+#define MZC4_MWINDOWBASE_HPP_    46     /* Version 46 */
 
 class MWindowBase;
 class MDialogBase;
@@ -75,14 +75,6 @@ class MDialogBase;
     #else
         #define MString     MStringA
     #endif
-#endif
-
-// FootmarkDx and FootmarkThisDx
-#ifndef FootmarkDx
-    #define FootmarkDx()
-#endif
-#ifndef FootmarkThisDx
-    #define FootmarkThisDx()
 #endif
 
 // NOTE: Old Digital Mars C/C++ Compiler doesn't define INT_PTR type likely.

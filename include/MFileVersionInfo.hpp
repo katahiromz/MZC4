@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEVERSIONINFO_HPP_
-#define MZC4_MFILEVERSIONINFO_HPP_
+#define MZC4_MFILEVERSIONINFO_HPP_      2   /* Version 2 */
 
 struct MLangAndCodePage;
 class MFileVersionInfo;
@@ -29,14 +29,6 @@ class MFileVersionInfo;
     #else
         #define MString     MStringA
     #endif
-#endif
-
-// FootmarkDx and FootmarkThisDx
-#ifndef FootmarkDx
-    #define FootmarkDx()
-#endif
-#ifndef FootmarkThisDx
-    #define FootmarkThisDx()
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
@@ -219,7 +211,7 @@ inline BOOL MFileVersionInfo::Open(LPCTSTR pszFileName)
     DWORD cb = ::GetFileVersionInfoSize(pszFile, NULL);
     if (cb == 0)
     {
-        FootmarkThisDx();
+        assert(FALSE);
         return FALSE;
     }
 
@@ -228,7 +220,7 @@ inline BOOL MFileVersionInfo::Open(LPCTSTR pszFileName)
     assert(m_pbData);
     if (!::GetFileVersionInfo(pszFile, 0, cb, m_pbData))
     {
-        FootmarkThisDx();
+        assert(FALSE);
         delete[] m_pbData;
         m_pbData = NULL;
         return FALSE;
@@ -247,7 +239,7 @@ inline BOOL MFileVersionInfo::QueryTranslation()
     if (!::VerQueryValue(m_pbData, TEXT("\\VarFileInfo\\Translation"),
                          &lpBuffer, &cbBuffer))
     {
-        FootmarkThisDx();
+        assert(FALSE);
         return FALSE;
     }
 
@@ -290,7 +282,7 @@ inline BOOL MFileVersionInfo::GetValue(LPCTSTR pszBlockName, MString& strValue) 
 
     if (m_pbData == NULL || m_pTranslations == NULL)
     {
-        FootmarkThisDx();
+        assert(FALSE);
         return FALSE;
     }
 
@@ -320,7 +312,7 @@ inline BOOL MFileVersionInfo::GetValue(LPCTSTR pszBlockName, MString& strValue) 
         }
     }
 
-    FootmarkThisDx();
+    assert(FALSE);
     return FALSE;
 }
 
@@ -328,7 +320,7 @@ inline BOOL MFileVersionInfo::GetFixedFileInfo(VS_FIXEDFILEINFO& info) const
 {
     if (m_pbData == NULL)
     {
-        FootmarkThisDx();
+        assert(FALSE);
         return FALSE;
     }
 
@@ -336,7 +328,7 @@ inline BOOL MFileVersionInfo::GetFixedFileInfo(VS_FIXEDFILEINFO& info) const
     UINT cbBuffer;
     if (!::VerQueryValue(m_pbData, TEXT("\\"), &lpBuffer, &cbBuffer))
     {
-        FootmarkThisDx();
+        assert(FALSE);
         return FALSE;
     }
 
