@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSPLITTERWND_HPP_
-#define MZC4_MSPLITTERWND_HPP_      1   /* Version 1 */
+#define MZC4_MSPLITTERWND_HPP_      2   /* Version 2 */
 
 class MSplitterWnd;
 
@@ -143,6 +143,16 @@ public:
 
         assert(0 <= nIndex && nIndex < m_nPaneCount);
         m_vecPanes[nIndex].cxyMin = cxyMin;
+    }
+
+    INT GetTotalMinWidth() const
+    {
+        INT cxy = 0;
+        for (INT i = 0; i < m_nPaneCount; ++i)
+        {
+            cxy += m_vecPanes[i].cxyMin;
+        }
+        return cxy;
     }
 
     VOID GetPaneRect(INT nIndex, RECT *prc) const
