@@ -12,6 +12,9 @@ class MCommandUI;
 #ifndef _INC_WINDOWS
     #include <windows.h>    // for Win32API
 #endif
+#ifndef _INC_COMMCTRL
+    #include <commctrl.h>   // for common controls
+#endif
 #include <cassert>          // for assert
 #include <vector>           // for std::vector
 
