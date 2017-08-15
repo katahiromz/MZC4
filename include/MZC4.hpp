@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_HPP_
-#define MZC4_HPP_    104    /* Version 104 */
+#define MZC4_HPP_    105    /* Version 105 */
 
 #if _MSC_VER > 1000
     #pragma once            // For speed!
@@ -92,6 +92,7 @@
 #include "MSizeGrip.hpp"
 #include "MSlider.hpp"
 #include "MSound.hpp"
+#include "MSplitterWnd.hpp"
 #include "MStaticCtrl.hpp"
 #include "MStatusBar.hpp"
 #include "MString.hpp"
