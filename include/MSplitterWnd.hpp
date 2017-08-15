@@ -23,7 +23,7 @@ class MSplitterWnd;
 class MSplitterWnd : public MWindowBase
 {
 public:
-    enum { m_cxyBorder = 4, m_cxyMinWidth = 8 };
+    enum { m_cxyBorder = 4, m_cxyMin = 8 };
 
     MSplitterWnd() : m_iDraggingBorder(-1), m_nPaneCount(0)
     {
@@ -119,7 +119,7 @@ public:
         m_vecPanes[nIndex].xyPos = nPos;
     }
 
-    VOID SetPaneWidth(INT nIndex, INT cxy, BOOL bUpdate = TRUE)
+    VOID SetPaneExtent(INT nIndex, INT cxy, BOOL bUpdate = TRUE)
     {
         if (m_nPaneCount == 0)
             return;
@@ -136,7 +136,7 @@ public:
         UpdatePanes();
     }
 
-    VOID SetPaneMinWidth(INT nIndex, INT cxyMin = MSplitterWnd::m_cxyMinWidth)
+    VOID SetPaneMinExtent(INT nIndex, INT cxyMin = MSplitterWnd::m_cxyMin)
     {
         if (m_nPaneCount == 0)
             return;
@@ -145,7 +145,7 @@ public:
         m_vecPanes[nIndex].cxyMin = cxyMin;
     }
 
-    INT GetTotalMinWidth() const
+    INT GetTotalMinExtent() const
     {
         INT cxy = 0;
         for (INT i = 0; i < m_nPaneCount; ++i)
@@ -270,7 +270,7 @@ protected:
         {
             hwndPane = NULL;
             xyPos = 0;
-            cxyMin = m_cxyMinWidth;
+            cxyMin = m_cxyMin;
         }
     };
     INT                     m_iDraggingBorder;

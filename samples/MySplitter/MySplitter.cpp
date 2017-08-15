@@ -36,8 +36,8 @@ public:
             m_splitter.SetPane(i, m_edit[i]);
         }
 
-        m_splitter.SetPaneWidth(0, 50);
-        m_splitter.SetPaneMinWidth(1, 100);
+        m_splitter.SetPaneExtent(0, 50);
+        m_splitter.SetPaneMinExtent(1, 100);
 
         return TRUE;
     }
