@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    46     /* Version 46 */
+#define MZC4_MWINDOWBASE_HPP_    47     /* Version 47 */
 
 class MWindowBase;
 class MDialogBase;
@@ -225,8 +225,8 @@ public:
                         INT cx = CW_USEDEFAULT, INT cy = CW_USEDEFAULT,
                         HMENU hMenu = NULL);
     BOOL CreateAsChildDx(HWND hwndParent, LPCTSTR pszText,
-                         DWORD Style = WS_CHILD, DWORD ExStyle = 0,
-                         INT nCtrlID = -1,
+                         DWORD Style = WS_CHILD | WS_VISIBLE,
+                         DWORD ExStyle = 0, INT nCtrlID = -1,
                          INT x = CW_USEDEFAULT, INT y = CW_USEDEFAULT,
                          INT cx = CW_USEDEFAULT, INT cy = CW_USEDEFAULT);
 
@@ -799,7 +799,7 @@ inline BOOL MWindowBase::CreateWindowDx(
 inline BOOL
 MWindowBase::CreateAsChildDx(
     HWND hwndParent, LPCTSTR pszText,
-    DWORD Style/* = WS_CHILD*/,
+    DWORD Style/* = WS_CHILD | WS_VISIBLE*/,
     DWORD ExStyle/* = 0*/, INT nCtrlID/* = -1*/,
     INT x/* = CW_USEDEFAULT*/, INT y/* = CW_USEDEFAULT*/,
     INT cx/* = CW_USEDEFAULT*/, INT cy/* = CW_USEDEFAULT*/)
