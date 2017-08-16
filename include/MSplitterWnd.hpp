@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSPLITTERWND_HPP_
-#define MZC4_MSPLITTERWND_HPP_      3   /* Version 3 */
+#define MZC4_MSPLITTERWND_HPP_      4   /* Version 4 */
 
 class MSplitterWnd;
 
@@ -210,6 +210,7 @@ public:
             xy += cxyPane;
         }
         m_vecPanes[m_nPaneCount].xyPos = cxy;
+        PostMessageDx(WM_SIZE);
     }
 
     void UpdatePanes()
