@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        13  /* Version 13 */
+#define MZC4_MFILEAPI_H_        14  /* Version 14 */
 
 /*
  * MPath_... functions
@@ -389,11 +389,12 @@ MFile_GetContents(const MChar *filename, size_t *psize)
 
     if (stat(filename, &sbuf) == 0)
     {
-        pb = (uint8_t *)calloc(1, sbuf.st_size + 1);
+        pb = (uint8_t *)malloc(sbuf.st_size + 1);
         if (pb)
         {
             if (fread(pb, sbuf.st_size, 1, fp))
             {
+                pb[sbuf.st_size] = 0;
                 if (psize)
                     *psize = sbuf.st_size;
             }
