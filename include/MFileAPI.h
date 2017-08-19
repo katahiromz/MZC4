@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        14  /* Version 14 */
+#define MZC4_MFILEAPI_H_        15  /* Version 15 */
 
 /*
  * MPath_... functions
@@ -354,14 +354,16 @@ MFile_GetContents(const MChar *filename, size_t *psize)
         cbFile = GetFileSize(hFile, NULL);
         if (cbFile != 0xFFFFFFFF)
         {
-            LPVOID pv = malloc((cbFile + 1) * sizeof(char));
+            LPVOID pv = malloc((cbFile + 3) * sizeof(char));
             pb = reinterpret_cast<uint8_t *>(pv);
             if (pb)
             {
                 if (::ReadFile(hFile, pb, cbFile, &cbRead, NULL) &&
                     cbFile == cbRead)
                 {
-                    pb[cbFile] = 0;
+                    pb[cbFile + 0] = 0;
+                    pb[cbFile + 1] = 0;
+                    pb[cbFile + 2] = 0;
                     if (psize)
                         *psize = cbFile;
                 }
@@ -389,12 +391,14 @@ MFile_GetContents(const MChar *filename, size_t *psize)
 
     if (stat(filename, &sbuf) == 0)
     {
-        pb = (uint8_t *)malloc(sbuf.st_size + 1);
+        pb = (uint8_t *)malloc(sbuf.st_size + 3);
         if (pb)
         {
             if (fread(pb, sbuf.st_size, 1, fp))
             {
-                pb[sbuf.st_size] = 0;
+                pb[sbuf.st_size + 0] = 0;
+                pb[sbuf.st_size + 1] = 0;
+                pb[sbuf.st_size + 2] = 0;
                 if (psize)
                     *psize = sbuf.st_size;
             }
