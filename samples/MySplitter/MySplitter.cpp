@@ -19,6 +19,9 @@ public:
 
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     {
+        MSplitterWnd::CursorNS() = LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(1));
+        MSplitterWnd::CursorWE() = LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(2));
+
         DWORD style = WS_CHILD | WS_VISIBLE | SWS_HORZ | SWS_RIGHTALIGN;
         DWORD exstyle = 0;
         if (!m_splitter.CreateDx(hwnd, 3, style, exstyle))

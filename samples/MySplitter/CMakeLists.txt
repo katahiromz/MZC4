@@ -48,7 +48,7 @@ if (CMAKE_HOST_WIN32)
     ENABLE_LANGUAGE(RC)
 
     # Win32
-    add_executable(MySplitter WIN32 ${SOURCES})
+    add_executable(MySplitter WIN32 ${SOURCES} MySplitter_res.rc)
 else()
     message(FATAL_ERROR "To build this project, use Win32 C++ compiler")
 endif()
