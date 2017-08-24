@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MREGKEY_HPP_
-#define MZC4_MREGKEY_HPP_       3   /* Version 3 */
+#define MZC4_MREGKEY_HPP_       4   /* Version 4 */
 
 #ifndef HKCR
     #define HKCR    HKEY_CLASSES_ROOT
@@ -25,6 +25,9 @@ class MRegKey;
 #include <cassert>          // assert
 #include <new>              // std::nothrow
 #include <algorithm>        // std::max
+
+#undef max
+#undef min
 
 ////////////////////////////////////////////////////////////////////////////
 
