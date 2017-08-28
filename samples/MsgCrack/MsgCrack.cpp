@@ -425,8 +425,14 @@ public:
             DO_MSG(WM_INITDIALOG, OnInitDialog);
             DO_MSG(WM_COMMAND, OnCommand);
             DO_MSG(WM_TIMER, OnTimer);
+            DO_MSG(WM_ACTIVATE, OnActivate);
         }
         return DefaultProcDx();
+    }
+
+    void OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized)
+    {
+        SetFocus(m_hEdt1);
     }
 }; // MMsgCrackApp
 

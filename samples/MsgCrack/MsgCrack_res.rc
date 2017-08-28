@@ -17,8 +17,8 @@
 // Version Info
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     1, 5, 0, 0
-PRODUCTVERSION  1, 5, 0, 0
+FILEVERSION     1, 6, 0, 0
+PRODUCTVERSION  1, 6, 0, 0
 FILEOS          VOS_NT_WINDOWS32
 FILETYPE        VFT_APP
 BEGIN
@@ -29,10 +29,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Katayama Hirofumi MZ\0"
             VALUE "FileDescription", "MsgCrack\0"
-            VALUE "FileVersion", "1.5\0"
+            VALUE "FileVersion", "1.6\0"
             VALUE "LegalCopyright", "Copyright (C) 2015-2017 Katayama Hirofumi MZ\0"
             VALUE "ProductName", "MsgCrack\0"
-            VALUE "ProductVersion", "1.5\0"
+            VALUE "ProductVersion", "1.6\0"
         END
     END
 #ifndef NO_JAP_ALLOWED
@@ -43,10 +43,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "•ÐŽR”Ž•¶MZ\0"
             VALUE "FileDescription", "MsgCrack\0"
-            VALUE "FileVersion", "1.5\0"
+            VALUE "FileVersion", "1.6\0"
             VALUE "LegalCopyright", "Copyright (C) 2015-2017 •ÐŽR”Ž•¶MZ\0"
             VALUE "ProductName", "MsgCrack\0"
-            VALUE "ProductVersion", "1.5\0"
+            VALUE "ProductVersion", "1.6\0"
         END
     END
 #endif
