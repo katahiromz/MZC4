@@ -53,8 +53,9 @@ public:
     void DestroyLargeImageList();
 
     BOOL LoadBitmap(HINSTANCE hi, INT cEntries, const MCommandEntry *pEntries,
-        LPCTSTR pszBitmap, INT cx = 16, LPCTSTR pszLargeBitmap = NULL,
-        INT cxLarge = 32, COLORREF crMask = RGB(255, 0, 255));
+        LPCTSTR pszBitmap = NULL, INT cx = 16,
+        LPCTSTR pszLargeBitmap = NULL, INT cxLarge = 32,
+        COLORREF crMask = RGB(255, 0, 255));
 
     MString CaptionFromCommand(INT nCommandID) const;
     MString DescriptionFromCommand(INT nCommandID) const;
@@ -263,13 +264,27 @@ MCommandUI::load_image(HIMAGELIST& himl, HINSTANCE hi,
 inline BOOL
 MCommandUI::LoadBitmap(
     HINSTANCE hi, INT cEntries, const MCommandEntry *pEntries,
-    LPCTSTR pszBitmap, INT cx/* = 16*/, LPCTSTR pszLargeBitmap/* = NULL*/,
-    INT cxLarge/* = 32*/, COLORREF crMask/* = RGB(255, 0, 255)*/)
+    LPCTSTR pszBitmap/* = NULL*/, INT cx/* = 16*/,
+    LPCTSTR pszLargeBitmap/* = NULL*/, INT cxLarge/* = 32*/,
+    COLORREF crMask/* = RGB(255, 0, 255)*/)
 {
-    if (!load_image(ImageList(), hi, pszBitmap, cx, crMask))
-        return FALSE;
-    if (!load_image(LargeImageList(), hi, pszLargeBitmap, cxLarge, crMask))
-        return FALSE;
+    INT nCount1, nCount2;
+    if (pszBitmap)
+    {
+        nCount1 = load_image(ImageList(), hi, pszBitmap, cx, crMask);
+        if (!nCount1)
+            return FALSE;
+    }
+    if (pszLargeBitmap)
+    {
+        nCount2 = load_image(LargeImageList(), hi, pszLargeBitmap, cxLarge, crMask))
+        if (!nCount2)
+            return FALSE;
+    }
+    if (pszBitmap && pszLargeBitmap)
+    {
+        assert(nCount1 == nCount2);
+    }
 
     for (INT i = 0; i < cEntries; ++i)
     {
