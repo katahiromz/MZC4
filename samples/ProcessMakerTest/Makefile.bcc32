@@ -1,0 +1,28 @@
+# Makefile for Borland C++ Compiler 5.5.1
+
+DOTOBJ = .obj
+DOTEXE = .exe
+
+CXX = bcc32
+RC = brc32
+
+CXXFLAGS = -W -I..\..\include
+RCFLAGS = 
+
+OBJECTS = \
+	build\ProcessMakerTest$(DOTOBJ)
+
+all: build\ProcessMakerTest$(DOTEXE)
+
+build:
+	if not exist build mkdir build
+
+build\ProcessMakerTest$(DOTEXE): $(OBJECTS) build\ProcessMakerTest_res.res
+	$(CXX) $(CXXFLAGS) -ebuild\ProcessMakerTest$(DOTEXE) $(OBJECTS)
+	$(RC) $(RCFLAGS) build\ProcessMakerTest_res.res build\ProcessMakerTest$(DOTEXE)
+
+build\ProcessMakerTest$(DOTOBJ): build ProcessMakerTest.cpp
+	$(CXX) -c $(CXXFLAGS) -obuild\ProcessMakerTest$(DOTOBJ) ProcessMakerTest.cpp
+
+build\ProcessMakerTest_res.res: ProcessMakerTest_res.rc
+	$(RC) -r $(RCFLAGS) -fobuild\ProcessMakerTest_res.res ProcessMakerTest_res.rc

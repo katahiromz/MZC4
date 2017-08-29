@@ -1,0 +1,100 @@
+#include "targetver.h"
+#include <windows.h>
+#include <dlgs.h>
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// Encoding
+
+#pragma code_page(65001)    // UTF-8
+
+/////////////////////////////////////////////////////////////////////////////
+// Icon
+
+1 ICON "ProcessMakerTest.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+// Version Info
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     0, 0, 0, 0
+PRODUCTVERSION  0, 0, 0, 0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    // English (U.S.)
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "@PROGRAM_AUTHORS\0"
+            VALUE "FileDescription", "ProcessMakerTest\0"
+            VALUE "FileVersion", "0.0.0\0"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2017 Katayama Hirofumi MZ\0"
+            VALUE "ProductName", "ProcessMakerTest\0"
+            VALUE "ProductVersion", "0.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        // English (U.S.)
+        VALUE "Translation", 0x0409, 0x04E4
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// Accelerator
+
+1 ACCELERATORS
+BEGIN
+    "?",            IDM_ABOUT,              ASCII,  ALT
+    "/",            IDM_ABOUT,              ASCII,  ALT
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// Menu
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+1 MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                   IDM_EXIT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About...",               IDM_ABOUT
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// Dialog
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+IDD_ABOUTBOX DIALOG 0, 0, 200, 70
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About ProcessMakerTest"
+FONT 10, "MS Shell Dlg"
+BEGIN
+    CONTROL 1, -1, "STATIC", SS_ICON | WS_CHILD | WS_VISIBLE, 14, 14, 21, 20
+    CONTROL "ProcessMakerTest Version 0.0.0", -1, "STATIC", SS_LEFT | SS_NOPREFIX | WS_CHILD | WS_VISIBLE, 45, 15, 150, 8
+    CONTROL "Copyright (C) 2017 Katayama Hirofumi MZ", -1, "STATIC", SS_RIGHT | WS_CHILD | WS_VISIBLE | WS_GROUP, 45, 30, 150, 16
+    CONTROL "OK", 1, "BUTTON", BS_DEFPUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_GROUP | WS_TABSTOP, 70, 50, 50, 14
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// String Table
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+STRINGTABLE
+BEGIN
+    IDS_APPNAME,   "ProcessMakerTest"
+END
+
+/////////////////////////////////////////////////////////////////////////////
