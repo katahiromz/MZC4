@@ -229,7 +229,7 @@ struct MProcessMakerTest : public MWindowBase
         if (codeNotify == BN_CLICKED && id == 3)
         {
             char buf[256];
-            GetWindowTextA(m_hTextBox, buf, _countof(buf));
+            ::GetWindowTextA(m_hTextBox, buf, _countof(buf));
             lstrcatA(buf, "\r\n");
             int len = lstrlenA(buf);
             DWORD cbWritten;

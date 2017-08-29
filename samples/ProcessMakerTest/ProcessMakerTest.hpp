@@ -4,13 +4,6 @@
 #ifndef PROCESSMAKERTEST_HPP_
 #define PROCESSMAKERTEST_HPP_
 
-#ifndef UNICODE
-    #define UNICODE
-#endif
-#ifndef _UNICODE
-    #define _UNICODE
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
 
 #define _CRT_SECURE_NO_WARNINGS

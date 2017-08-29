@@ -5,14 +5,14 @@
 // Microsoft Visual C++ generated include file.
 // Used by MyBrowser.rc
 
-#define IDM_EXIT        1
-#define IDM_ABOUT       2
-#define IDM_GOOGLE      3
-#define IDM_YAHOO       4
-#define IDM_BLANK       5
-#define IDM_ADDRESS     6
-#define IDM_GO          7
-#define IDM_REFRESH     8
+#define IDM_EXIT        101
+#define IDM_ABOUT       102
+#define IDM_GOOGLE      103
+#define IDM_YAHOO       104
+#define IDM_BLANK       105
+#define IDM_ADDRESS     106
+#define IDM_GO          107
+#define IDM_REFRESH     108
 
 #define IDD_ABOUTBOX 1
 
