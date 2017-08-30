@@ -73,7 +73,7 @@ struct MMyBrowser : public MWindowBase
         if (!m_static.CreateAsChildDx(hwnd, TEXT("Address:"), style, exstyle, stc1))
             return FALSE;
 
-        style = ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | 
+        style = ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | ES_MULTILINE | ES_AUTOVSCROLL |
                 WS_BORDER | WS_TABSTOP | WS_VISIBLE;
         exstyle = WS_EX_CLIENTEDGE;
         if (!m_address_box.CreateAsChildDx(hwnd, m_url.c_str(), style, exstyle, edt1))

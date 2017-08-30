@@ -5,38 +5,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct MSubclassedEditCtrl : public MEditCtrl
-{
-public:
-    virtual LRESULT CALLBACK
-    WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-    {
-        switch (uMsg)
-        {
-        case WM_KEYUP:
-            if (wParam == VK_RETURN)
-            {
-                return 0;
-            }
-            break;
-        case WM_KEYDOWN:
-            if (wParam == VK_RETURN)
-            {
-                PostMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(3, BN_CLICKED), (LPARAM)m_hwnd);
-                return 0;
-            }
-            break;
-        case WM_CHAR:
-            if (wParam == '\n')
-            {
-                return 0;
-            }
-            break;
-        }
-        return DefaultProcDx();
-    }
-};
-
 // the Win32 application
 struct MProcessMakerTest : public MWindowBase
 {
@@ -52,7 +20,7 @@ struct MProcessMakerTest : public MWindowBase
     unsigned    m_child_thread_id;
     unsigned    m_main_thread_id;
     MEditCtrl   m_hConsoleOutput;
-    MSubclassedEditCtrl     m_hTextBox;
+    MEditCtrl   m_hTextBox;
     MButton     m_hEnterButton;
     MFile       m_hInputWrite;
     MFile       m_hOutputRead;
@@ -150,13 +118,13 @@ struct MProcessMakerTest : public MWindowBase
         if (!m_hConsoleOutput.CreateAsChildDx(hwnd, NULL, style, exstyle, 1))
             return FALSE;
 
-        style = ES_LEFT | ES_AUTOHSCROLL | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+        style = ES_LEFT | ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
         exstyle = WS_EX_CLIENTEDGE;
         if (!m_hTextBox.CreateAsChildDx(hwnd, NULL, style, exstyle, 2))
             return FALSE;
         m_hTextBox.SubclassDx(m_hTextBox);
 
-        style = BS_PUSHBUTTON | BS_CENTER | BS_VCENTER | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+        style = BS_DEFPUSHBUTTON | BS_CENTER | BS_VCENTER | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
         exstyle = 0;
         if (!m_hEnterButton.CreateAsChildDx(hwnd, TEXT("Enter"), style, exstyle, 3))
             return FALSE;
@@ -226,7 +194,8 @@ struct MProcessMakerTest : public MWindowBase
 
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     {
-        if (codeNotify == BN_CLICKED && id == 3)
+        if ((id == 3 && codeNotify == BN_CLICKED) ||
+            (id == 2 && codeNotify == EN_VSCROLL))
         {
             char buf[256];
             ::GetWindowTextA(m_hTextBox, buf, _countof(buf));
@@ -234,7 +203,6 @@ struct MProcessMakerTest : public MWindowBase
             int len = lstrlenA(buf);
             DWORD cbWritten;
             m_hInputWrite.WriteFile(buf, len, &cbWritten);
-            ::SetWindowTextA(m_hConsoleOutput, m_text.c_str());
             ::SetWindowTextA(m_hTextBox, "");
             return;
         }
