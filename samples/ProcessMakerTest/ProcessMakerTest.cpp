@@ -145,7 +145,7 @@ struct MProcessMakerTest : public MWindowBase
         m_pmaker.SetShowWindow(SW_HIDE);
         m_pmaker.SetCreationFlags(CREATE_NEW_CONSOLE);
         if (m_pmaker.PrepareForRedirect(&m_hInputWrite, &m_hOutputRead) &&
-            m_pmaker.CreateProcess(NULL, TEXT("cmd.exe")))
+            m_pmaker.CreateProcessDx(NULL, TEXT("cmd.exe")))
         {
             m_hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, this, 0, &m_child_thread_id);
         }
