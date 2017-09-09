@@ -21,6 +21,7 @@
 #include "MAnimateCtrl.hpp"
 #include "MAppBar.hpp"
 #include "MBitmap.hpp"
+#include "MBitmapDx.hpp"
 #include "MBrush.hpp"
 #include "MButton.hpp"
 #include "MByteStream.hpp"
