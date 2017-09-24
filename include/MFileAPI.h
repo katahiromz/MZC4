@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        15  /* Version 15 */
+#define MZC4_MFILEAPI_H_        16  /* Version 16 */
 
 /*
  * MPath_... functions
