@@ -496,7 +496,7 @@ MFile_Move(const MChar *existing_file, const MChar *new_file)
     assert(existing_file);
     assert(new_file);
 #ifdef _WIN32
-    return ::MoveFile(existing_file, new_file);
+    return (bool)::MoveFile(existing_file, new_file);
 #else
     return rename(existing_file, new_file) == 0;
 #endif
@@ -508,7 +508,7 @@ MFile_Copy(const MChar *existing_file, const MChar *new_file,
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
-    return ::CopyFile(existing_file, new_file, bFailIfExists);
+    return (bool)::CopyFile(existing_file, new_file, bFailIfExists);
 #else
     size_t size;
     void *ptr = MFile_GetContents(existing_file, &size);
@@ -717,7 +717,7 @@ inline bool MDir_Remove(const MChar *pathname)
         if (dirp == NULL)
             return false;
 
-        return FindNextFile(dirp, info);
+        return (bool)FindNextFile(dirp, info);
     #else
         struct dirent *ent;
 
