@@ -3,10 +3,12 @@
 /****************************************************************************/
 
 #ifndef MZC4_PSTDINT_H_
-#define MZC4_PSTDINT_H_     4   /* Version 4 */
+#define MZC4_PSTDINT_H_     5   /* Version 5 */
 
 #if __cplusplus >= 201103L
     #include <cstdint>
+#elif __STDC_VERSION__ >= 199901L
+    #include <stdint.h>
 #elif defined(_WIN32)
     #ifndef _INC_WINDOWS
         #include <windows.h>
