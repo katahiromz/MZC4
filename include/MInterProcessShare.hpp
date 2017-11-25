@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MINTERPROCESSSHARE_HPP_
-#define MZC4_MINTERPROCESSSHARE_HPP_    3   /* Version 3 */
+#define MZC4_MINTERPROCESSSHARE_HPP_    5   /* Version 5 */
 
 // class MInterProcessShare<T_DATA>;
 
@@ -33,7 +33,7 @@ public:
     bool operator!() const;
 
     T_DATA* Lock(DWORD dwTimeout = 1500);
-    void    Unlock();
+    BOOL Unlock();
     BOOL IsLocked() const;
 
           HANDLE& Handle();
@@ -153,8 +153,8 @@ BOOL MInterProcessShare<T_DATA>::Create(
         Close();
         return FALSE;
     }
-
     DWORD dwError = ::GetLastError();
+
     ::ReleaseMutex(m_hMutex);
 
     if (dwError == ERROR_ALREADY_EXISTS && pfAlreadyExists)
@@ -168,7 +168,7 @@ BOOL MInterProcessShare<T_DATA>::Create(
 template <typename T_DATA>
 void MInterProcessShare<T_DATA>::Close()
 {
-    if (m_pData)
+    if (IsLocked())
     {
         Unlock();
     }
@@ -191,7 +191,11 @@ void MInterProcessShare<T_DATA>::Close()
 template <typename T_DATA>
 inline T_DATA* MInterProcessShare<T_DATA>::Lock(DWORD dwTimeout/* = 1500*/)
 {
-    assert(!m_pData);
+    assert(!IsLocked());
+
+    if (IsLocked())
+        return m_pData;
+
     if (::WaitForSingleObject(m_hMutex, dwTimeout) != WAIT_OBJECT_0)
         return NULL;
 
@@ -203,24 +207,23 @@ inline T_DATA* MInterProcessShare<T_DATA>::Lock(DWORD dwTimeout/* = 1500*/)
 }
 
 template <typename T_DATA>
-inline void MInterProcessShare<T_DATA>::Unlock()
+inline BOOL MInterProcessShare<T_DATA>::Unlock()
 {
-    BOOL bRet;
+    if (!IsLocked())
+        return FALSE;
 
-    assert(m_pData);
-    if (m_pData)
-    {
-        bRet = ::FlushViewOfFile(m_pData, sizeof(T_DATA));
-        assert(bRet);
+    BOOL bRet = ::FlushViewOfFile(m_pData, sizeof(T_DATA));
+    assert(bRet);
 
-        bRet = ::UnmapViewOfFile(m_pData);
-        assert(bRet);
+    bRet = ::UnmapViewOfFile(m_pData);
+    assert(bRet);
 
-        m_pData = NULL;
-    }
+    m_pData = NULL;
 
     bRet = ::ReleaseMutex(m_hMutex);
     assert(bRet);
+
+    return bRet;
 }
 
 ////////////////////////////////////////////////////////////////////////////
