@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MINTERPROCESSSHARE_HPP_
-#define MZC4_MINTERPROCESSSHARE_HPP_    2   /* Version 2 */
+#define MZC4_MINTERPROCESSSHARE_HPP_    3   /* Version 3 */
 
 // class MInterProcessShare<T_DATA>;
 
@@ -21,19 +21,26 @@ class MInterProcessShare
 {
 public:
     MInterProcessShare();
-    MInterProcessShare(LPCTSTR pszName, LPBOOL pfAlreadyExists = NULL);
+    MInterProcessShare(const TCHAR *pszName, BOOL *pfAlreadyExists = NULL,
+                       SECURITY_ATTRIBUTES *psa = NULL);
     virtual ~MInterProcessShare();
 
-    BOOL Create(LPCTSTR pszName, LPBOOL pfAlreadyExists = NULL);
-    VOID Close();
+    BOOL Create(const TCHAR *pszName, BOOL *pfAlreadyExists = NULL,
+                SECURITY_ATTRIBUTES *psa = NULL);
+    void Close();
 
+    operator bool() const;
     bool operator!() const;
 
     T_DATA* Lock(DWORD dwTimeout = 1500);
-    VOID    Unlock();
+    void    Unlock();
+    BOOL IsLocked() const;
 
-    HANDLE GetMutexHandle();
-    HANDLE GetFileMappingHandle();
+          HANDLE& Handle();
+    const HANDLE& Handle() const;
+
+          HANDLE& MutexHandle();
+    const HANDLE& MutexHandle() const;
 
 protected:
     HANDLE m_hMutex;
@@ -51,98 +58,132 @@ inline MInterProcessShare<T_DATA>::MInterProcessShare() :
 
 template <typename T_DATA>
 inline MInterProcessShare<T_DATA>::MInterProcessShare(
-    LPCTSTR pszName, LPBOOL pfAlreadyExists/* = NULL*/
-) : m_hMutex(NULL), m_hFileMapping(NULL), m_pData(NULL)
+    const TCHAR *pszName, BOOL *pfAlreadyExists/* = NULL*/,
+    SECURITY_ATTRIBUTES *psa/* = NULL*/)
+    : m_hMutex(NULL), m_hFileMapping(NULL), m_pData(NULL)
 {
-    Create(pszName, pfAlreadyExists);
+    Create(pszName, pfAlreadyExists, psa);
 }
 
 template <typename T_DATA>
 inline /*virtual*/ MInterProcessShare<T_DATA>::~MInterProcessShare()
 {
-    if (m_hMutex)
-        Close();
+    Close();
 }
 
 template <typename T_DATA>
-inline HANDLE MInterProcessShare<T_DATA>::GetMutexHandle()
+inline HANDLE& MInterProcessShare<T_DATA>::MutexHandle()
 {
     return m_hMutex;
 }
 
 template <typename T_DATA>
-inline HANDLE MInterProcessShare<T_DATA>::GetFileMappingHandle()
+inline const HANDLE& MInterProcessShare<T_DATA>::MutexHandle() const
+{
+    return m_hMutex;
+}
+
+template <typename T_DATA>
+inline HANDLE& MInterProcessShare<T_DATA>::Handle()
 {
     return m_hFileMapping;
 }
 
 template <typename T_DATA>
+inline const HANDLE& Handle() const
+{
+    return m_hFileMapping;
+}
+
+template <typename T_DATA>
+inline HANDLE& MInterProcessShare<T_DATA>::Handle()
+{
+    return m_hFileMapping;
+}
+
+template <typename T_DATA>
+inline BOOL MInterProcessShare<T_DATA>::IsLocked() const
+{
+    return m_pData != NULL;
+}
+
+template <typename T_DATA>
+MInterProcessShare<T_DATA>::operator bool() const
+{
+    return m_hMutex != NULL;
+}
+
+template <typename T_DATA>
 inline bool MInterProcessShare<T_DATA>::operator!() const
 {
-    return m_hMutex == NULL;
+    return !m_hMutex;
 }
 
 template <typename T_DATA>
 BOOL MInterProcessShare<T_DATA>::Create(
-    LPCTSTR pszName, LPBOOL pfAlreadyExists/* = NULL*/)
+    const TCHAR *pszName, BOOL *pfAlreadyExists/* = NULL*/,
+    SECURITY_ATTRIBUTES *psa/* = NULL*/)
 {
-    assert(m_hMutex == NULL);
-    assert(m_hFileMapping == NULL);
-    assert(m_pData == NULL);
+    Close();
 
+    if (pfAlreadyExists)
+    {
+        *pfAlreadyExists = FALSE;
+    }
+
+    // mutex name
     TCHAR szName[MAX_PATH];
     lstrcpyn(szName, pszName, MAX_PATH);
     lstrcat(szName, TEXT(" Mutex"));
 
-    if (pfAlreadyExists)
-        *pfAlreadyExists = FALSE;
-    m_hMutex = ::CreateMutex(NULL, TRUE, szName);
-    if (m_hMutex == NULL)
+    m_hMutex = ::CreateMutex(psa, TRUE, szName);
+    if (!m_hMutex)
+    {
         return FALSE;
+    }
 
+    // file mapping name
     lstrcpyn(szName, pszName, MAX_PATH);
     lstrcat(szName, TEXT(" FileMapping"));
 
     m_hFileMapping = ::CreateFileMapping(INVALID_HANDLE_VALUE,
-        NULL, PAGE_READWRITE, 0, sizeof(T_DATA), szName);
-    if (m_hFileMapping == NULL)
+        psa, PAGE_READWRITE, 0, sizeof(T_DATA), szName);
+    if (!m_hFileMapping)
     {
-        BOOL bOK;
-        bOK = ::ReleaseMutex(m_hMutex);
-        assert(bOK);
-
-        bOK = ::CloseHandle(m_hMutex);
-        m_hMutex = NULL;
-        assert(bOK);
-
+        Close();
         return FALSE;
     }
+
     DWORD dwError = ::GetLastError();
     ::ReleaseMutex(m_hMutex);
 
     if (dwError == ERROR_ALREADY_EXISTS && pfAlreadyExists)
+    {
         *pfAlreadyExists = TRUE;
+    }
 
     return TRUE;
 }
 
 template <typename T_DATA>
-VOID MInterProcessShare<T_DATA>::Close()
+void MInterProcessShare<T_DATA>::Close()
 {
-    if (m_pData != NULL)
-        Unlock();
-
-    if (m_hFileMapping != NULL)
+    if (m_pData)
     {
-        BOOL bOK = ::CloseHandle(m_hFileMapping);
-        assert(bOK);
+        Unlock();
+    }
+
+    if (m_hFileMapping)
+    {
+        BOOL bRet = ::CloseHandle(m_hFileMapping);
+        assert(bRet);
         m_hFileMapping = NULL;
     }
 
-    if (m_hMutex != NULL)
+    if (m_hMutex)
     {
-        BOOL bOK = ::CloseHandle(m_hMutex);
-        assert(bOK);
+        BOOL bRet = ::CloseHandle(m_hMutex);
+        assert(bRet);
         m_hMutex = NULL;
     }
 }
@@ -150,30 +191,36 @@ VOID MInterProcessShare<T_DATA>::Close()
 template <typename T_DATA>
 inline T_DATA* MInterProcessShare<T_DATA>::Lock(DWORD dwTimeout/* = 1500*/)
 {
-    assert(m_pData == NULL);
+    assert(!m_pData);
     if (::WaitForSingleObject(m_hMutex, dwTimeout) != WAIT_OBJECT_0)
         return NULL;
+
     m_pData = reinterpret_cast<T_DATA *>(::MapViewOfFile(
         m_hFileMapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(T_DATA)));
     assert(m_pData);
+
     return m_pData;
 }
 
 template <typename T_DATA>
-inline VOID MInterProcessShare<T_DATA>::Unlock()
+inline void MInterProcessShare<T_DATA>::Unlock()
 {
-    BOOL bOK;
+    BOOL bRet;
+
     assert(m_pData);
-    if (m_pData != NULL)
+    if (m_pData)
     {
-        bOK = ::FlushViewOfFile(m_pData, sizeof(T_DATA));
-        assert(bOK);
-        bOK = ::UnmapViewOfFile(m_pData);
-        assert(bOK);
+        bRet = ::FlushViewOfFile(m_pData, sizeof(T_DATA));
+        assert(bRet);
+
+        bRet = ::UnmapViewOfFile(m_pData);
+        assert(bRet);
+
         m_pData = NULL;
     }
-    bOK = ::ReleaseMutex(m_hMutex);
-    assert(bOK);
+
+    bRet = ::ReleaseMutex(m_hMutex);
+    assert(bRet);
 }
 
 ////////////////////////////////////////////////////////////////////////////
