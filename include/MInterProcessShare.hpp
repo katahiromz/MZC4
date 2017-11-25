@@ -48,6 +48,8 @@ protected:
     T_DATA *m_pData;
 };
 
+
+
 ////////////////////////////////////////////////////////////////////////////
 
 template <typename T_DATA>
@@ -90,13 +92,7 @@ inline HANDLE& MInterProcessShare<T_DATA>::Handle()
 }
 
 template <typename T_DATA>
-inline const HANDLE& Handle() const
-{
-    return m_hFileMapping;
-}
-
-template <typename T_DATA>
-inline HANDLE& MInterProcessShare<T_DATA>::Handle()
+inline const HANDLE& MInterProcessShare<T_DATA>::Handle() const
 {
     return m_hFileMapping;
 }
