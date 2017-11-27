@@ -3,7 +3,7 @@
 /****************************************************************************/
 
 #ifndef MZC4_MTESTER_H_
-#define MZC4_MTESTER_H_     6   /* Version 6 */
+#define MZC4_MTESTER_H_     8   /* Version 8 */
 
 /****************************************************************************/
 
@@ -24,6 +24,17 @@
         #define USING_NAMESPACE_STD     using namespace std
     #else
         #define USING_NAMESPACE_STD     /* empty */
+    #endif
+#endif
+
+/* Some C compilers don't support inline keyword. Use __inline instread if so. */
+#ifndef MZC_INLINE
+    #ifdef __cplusplus
+        #define MZC_INLINE inline
+    #elif (__STDC_VERSION__ >= 199901L)
+        #define MZC_INLINE inline
+    #else
+        #define MZC_INLINE __inline
     #endif
 #endif
 
@@ -77,7 +88,7 @@ extern MTESTCASE        g_testcases[];
 /****************************************************************************/
 /* mtester functions */
 
-inline int MTester_finish(const char *name)
+MZC_INLINE int MTester_finish(const char *name)
 {
     USING_NAMESPACE_STD;
     printf("\n%s: %d tests executed (%d failures), %d skipped.\n",
@@ -85,7 +96,7 @@ inline int MTester_finish(const char *name)
     return g_failures > 0;
 }
 
-inline int MTester_execute(MTESTCASE *testcase)
+MZC_INLINE int MTester_execute(MTESTCASE *testcase)
 {
     USING_NAMESPACE_STD;
     g_executed = g_failures = g_skipped = 0;
@@ -94,7 +105,7 @@ inline int MTester_execute(MTESTCASE *testcase)
     return MTester_finish(testcase->name);
 }
 
-inline int MTester_list(void)
+MZC_INLINE int MTester_list(void)
 {
     USING_NAMESPACE_STD;
     int i;
@@ -108,7 +119,7 @@ inline int MTester_list(void)
     return 1;
 }
 
-inline MTESTCASE *MTester_find(const char *name)
+MZC_INLINE MTESTCASE *MTester_find(const char *name)
 {
     USING_NAMESPACE_STD;
     int i;
@@ -122,7 +133,7 @@ inline MTESTCASE *MTester_find(const char *name)
     return NULL;
 }
 
-inline int MTester_main(int argc, char **argv)
+MZC_INLINE int MTester_main(int argc, char **argv)
 {
     int i, ret = 0;
     MTESTCASE *testcase;
@@ -165,7 +176,7 @@ inline int MTester_main(int argc, char **argv)
     }
 }
 
-inline void MTester_do_skip(const char *file, int line, const char *fmt, ...)
+MZC_INLINE void MTester_do_skip(const char *file, int line, const char *fmt, ...)
 {
     USING_NAMESPACE_STD;
     va_list va;
@@ -176,14 +187,14 @@ inline void MTester_do_skip(const char *file, int line, const char *fmt, ...)
     g_skipped++;
 }
 
-inline void
+MZC_INLINE void
 MTester_head(const char *file, int line)
 {
     USING_NAMESPACE_STD;
     printf("%s:%d: Test failed: ", file, line);
 }
 
-inline int
+MZC_INLINE int
 MTester_body_v(int cond, const char *fmt, va_list va)
 {
     USING_NAMESPACE_STD;
@@ -195,7 +206,7 @@ MTester_body_v(int cond, const char *fmt, va_list va)
     return cond;
 }
 
-inline int
+MZC_INLINE int
 MTester_body(int cond, const char *fmt, ...)
 {
     va_list va;
@@ -205,7 +216,7 @@ MTester_body(int cond, const char *fmt, ...)
     return cond;
 }
 
-inline void
+MZC_INLINE void
 MTester_do_test(const char *file, int line, int cond, const char *fmt, ...)
 {
     USING_NAMESPACE_STD;
@@ -220,7 +231,7 @@ MTester_do_test(const char *file, int line, int cond, const char *fmt, ...)
     g_executed++;
 }
 
-inline char *MTester_sprintf(const char *fmt, ...)
+MZC_INLINE char *MTester_sprintf(const char *fmt, ...)
 {
     USING_NAMESPACE_STD;
     char *buffer = g_test_buffer.buffer[g_test_buffer.index];
@@ -297,30 +308,30 @@ inline char *MTester_sprintf(const char *fmt, ...)
 /* Win32API */
 
 #ifdef _WIN32
-    inline const char *MTester_point(const POINT *ppt)
+    MZC_INLINE const char *MTester_point(const POINT *ppt)
     {
         if (ppt == NULL)
             return "(null)";
         return MTester_sprintf("(%d, %d)", ppt->x, ppt->y);
     }
-    inline const char *MTester_size(const SIZE *psiz)
+    MZC_INLINE const char *MTester_size(const SIZE *psiz)
     {
         if (psiz == NULL)
             return "(null)";
         return MTester_sprintf("(%d, %d)", psiz->cx, psiz->cy);
     }
-    inline const char *MTester_rect(const RECT *prc)
+    MZC_INLINE const char *MTester_rect(const RECT *prc)
     {
         if (prc == NULL)
             return "(null)";
         return MTester_sprintf("(%d, %d) - (%d, %d)",
                                prc->left, prc->top, prc->right, prc->bottom);
     }
-    inline const char *MTester_longlong(LONGLONG ll)
+    MZC_INLINE const char *MTester_longlong(LONGLONG ll)
     {
         return MTester_sprintf("0x%08%08X", (LONG)(ll >> 32), (LONG)ll);
     }
-    inline const char *MTester_guid(const GUID *id)
+    MZC_INLINE const char *MTester_guid(const GUID *id)
     {
         if (id == NULL)
             return "(null)";

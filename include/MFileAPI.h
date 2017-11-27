@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        17  /* Version 17 */
+#define MZC4_MFILEAPI_H_        18  /* Version 18 */
 
 /*
  * MPath_... functions
@@ -20,6 +20,17 @@
 #endif
 #if __cplusplus >= 201103L && !defined(CXX11)
     #define CXX11           1
+#endif
+
+/* Some C compilers don't support inline keyword. Use __inline instread if so. */
+#ifndef MZC_INLINE
+    #ifdef __cplusplus
+        #define MZC_INLINE inline
+    #elif (__STDC_VERSION__ >= 199901L)
+        #define MZC_INLINE inline
+    #else
+        #define MZC_INLINE __inline
+    #endif
 #endif
 
 /* <stdbool.h> and <stdint.h> */
@@ -177,7 +188,7 @@ uint64_t      MFile_GetSize64(const MChar *filename);
 
 /**************************************************************************/
 
-inline bool MPath_Exists(const MChar *pathname)
+MZC_INLINE bool MPath_Exists(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
     assert(pathname);
@@ -196,7 +207,7 @@ inline bool MPath_Exists(const MChar *pathname)
 #endif
 }
 
-inline bool MFile_Exists(const MChar *filename)
+MZC_INLINE bool MFile_Exists(const MChar *filename)
 {
     USING_NAMESPACE_STD;
     assert(filename);
@@ -220,7 +231,7 @@ inline bool MFile_Exists(const MChar *filename)
 #endif
 }
 
-inline bool MDir_Exists(const MChar *pathname)
+MZC_INLINE bool MDir_Exists(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
     assert(pathname);
@@ -244,7 +255,7 @@ inline bool MDir_Exists(const MChar *pathname)
 #endif
 }
 
-inline MChar *MPath_GetFull(MChar *full, const MChar *relative)
+MZC_INLINE MChar *MPath_GetFull(MChar *full, const MChar *relative)
 {
     USING_NAMESPACE_STD;
     assert(full);
@@ -257,7 +268,7 @@ inline MChar *MPath_GetFull(MChar *full, const MChar *relative)
 #endif
 }
 
-inline bool MFile_Delete(const MChar *filename)
+MZC_INLINE bool MFile_Delete(const MChar *filename)
 {
     USING_NAMESPACE_STD;
     assert(filename);
@@ -270,7 +281,7 @@ inline bool MFile_Delete(const MChar *filename)
 #endif
 }
 
-inline uint64_t
+MZC_INLINE uint64_t
 MFile_GetSize64(const MChar *filename)
 {
     USING_NAMESPACE_STD;
@@ -294,7 +305,7 @@ MFile_GetSize64(const MChar *filename)
 #endif
 }
 
-inline unsigned long
+MZC_INLINE unsigned long
 MFile_GetSize(const MChar *filename, unsigned long *high)
 {
     USING_NAMESPACE_STD;
@@ -332,7 +343,7 @@ MFile_GetSize(const MChar *filename, unsigned long *high)
 #endif
 }
 
-inline uint8_t *
+MZC_INLINE uint8_t *
 MFile_GetContents(const MChar *filename, size_t *psize)
 {
     USING_NAMESPACE_STD;
@@ -415,13 +426,13 @@ MFile_GetContents(const MChar *filename, size_t *psize)
     return pb;
 }
 
-inline bool MFile_PutText(const MChar *filename, const MChar *str)
+MZC_INLINE bool MFile_PutText(const MChar *filename, const MChar *str)
 {
     USING_NAMESPACE_STD;
     return MFile_PutContents(filename, str, _tcslen(str) * sizeof(MChar));
 }
 
-inline bool
+MZC_INLINE bool
 MFile_PutContents(const MChar *filename, const void *pvContents, size_t size)
 {
     USING_NAMESPACE_STD;
@@ -477,7 +488,7 @@ MFile_PutContents(const MChar *filename, const void *pvContents, size_t size)
     return bOK;
 }
 
-inline bool MDir_Create(const MChar *pathname)
+MZC_INLINE bool MDir_Create(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -489,7 +500,7 @@ inline bool MDir_Create(const MChar *pathname)
 #endif
 }
 
-inline bool
+MZC_INLINE bool
 MFile_Move(const MChar *existing_file, const MChar *new_file)
 {
     USING_NAMESPACE_STD;
@@ -502,7 +513,7 @@ MFile_Move(const MChar *existing_file, const MChar *new_file)
 #endif
 }
 
-inline bool
+MZC_INLINE bool
 MFile_Copy(const MChar *existing_file, const MChar *new_file,
           bool bFailIfExists)
 {
@@ -516,7 +527,7 @@ MFile_Copy(const MChar *existing_file, const MChar *new_file,
 #endif
 }
 
-inline MChar *MPath_SetDotExt(MChar *pathname, const MChar *dot_ext)
+MZC_INLINE MChar *MPath_SetDotExt(MChar *pathname, const MChar *dot_ext)
 {
     USING_NAMESPACE_STD;
     assert(pathname);
@@ -529,7 +540,7 @@ inline MChar *MPath_SetDotExt(MChar *pathname, const MChar *dot_ext)
     return pathname;
 }
 
-inline MChar *MPath_AddSep(MChar *pathname)
+MZC_INLINE MChar *MPath_AddSep(MChar *pathname)
 {
     USING_NAMESPACE_STD;
     size_t path_len;
@@ -567,7 +578,7 @@ inline MChar *MPath_AddSep(MChar *pathname)
     return pathname;
 }
 
-inline MChar *MPath_FindDotExt(MChar *pathname)
+MZC_INLINE MChar *MPath_FindDotExt(MChar *pathname)
 {
     USING_NAMESPACE_STD;
     MChar *title, *dot_ext;
@@ -586,7 +597,7 @@ inline MChar *MPath_FindDotExt(MChar *pathname)
 #endif
 }
 
-inline MChar *MPath_RemoveSep(MChar *pathname)
+MZC_INLINE MChar *MPath_RemoveSep(MChar *pathname)
 {
     USING_NAMESPACE_STD;
     size_t path_len;
@@ -620,7 +631,7 @@ inline MChar *MPath_RemoveSep(MChar *pathname)
     return pathname;
 }
 
-inline MChar *MPath_FindTitle(MChar *pathname)
+MZC_INLINE MChar *MPath_FindTitle(MChar *pathname)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -644,7 +655,7 @@ inline MChar *MPath_FindTitle(MChar *pathname)
 #endif
 }
 
-inline MChar *MPath_SetTitle(MChar *pathname, const MChar *title)
+MZC_INLINE MChar *MPath_SetTitle(MChar *pathname, const MChar *title)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -655,7 +666,7 @@ inline MChar *MPath_SetTitle(MChar *pathname, const MChar *title)
     return pathname;
 }
 
-inline bool MDir_Remove(const MChar *pathname)
+MZC_INLINE bool MDir_Remove(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -666,7 +677,7 @@ inline bool MDir_Remove(const MChar *pathname)
 }
 
 #ifndef MSDOS
-    inline MZC_DIR_P MDir_FindFirstItem(const MChar *pathname, MZC_DIR_INFO *info)
+    MZC_INLINE MZC_DIR_P MDir_FindFirstItem(const MChar *pathname, MZC_DIR_INFO *info)
     {
         USING_NAMESPACE_STD;
     #ifdef _WIN32
@@ -707,7 +718,7 @@ inline bool MDir_Remove(const MChar *pathname)
     #endif
     }
 
-    inline bool MDir_FindNextItem(MZC_DIR_P dirp, MZC_DIR_INFO *info)
+    MZC_INLINE bool MDir_FindNextItem(MZC_DIR_P dirp, MZC_DIR_INFO *info)
     {
         USING_NAMESPACE_STD;
     #ifdef _WIN32
@@ -736,7 +747,7 @@ inline bool MDir_Remove(const MChar *pathname)
     #endif
     }
 
-    inline bool MDir_FindClose(MZC_DIR_P dirp)
+    MZC_INLINE bool MDir_FindClose(MZC_DIR_P dirp)
     {
         USING_NAMESPACE_STD;
         assert(dirp);
@@ -748,7 +759,7 @@ inline bool MDir_Remove(const MChar *pathname)
     #endif
     }
 
-    inline bool MDir_Delete(const MChar *dir)
+    MZC_INLINE bool MDir_Delete(const MChar *dir)
     {
     #ifdef _WIN32
         TCHAR dir_old[MAX_PATH];
@@ -788,7 +799,7 @@ inline bool MDir_Remove(const MChar *pathname)
     }
 #endif  /* ndef MSDOS */
 
-inline bool MDir_Get(MChar *pathname, size_t maxbuf)
+MZC_INLINE bool MDir_Get(MChar *pathname, size_t maxbuf)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -810,7 +821,7 @@ inline bool MDir_Get(MChar *pathname, size_t maxbuf)
 #endif
 }
 
-inline bool MDir_Set(const MChar *pathname)
+MZC_INLINE bool MDir_Set(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
@@ -820,14 +831,14 @@ inline bool MDir_Set(const MChar *pathname)
 #endif
 }
 
-inline bool MPath_IsDots(const MChar *name)
+MZC_INLINE bool MPath_IsDots(const MChar *name)
 {
     return name[0] == TEXT('.') && (
         name[1] == 0 || (name[1] == TEXT('.') && name[2] == 0)
     );
 }
 
-inline bool
+MZC_INLINE bool
 MDir_CreateRecurse(const MChar *path, bool fForce)
 {
     MChar *new_path, *pch, *last_sep;
@@ -900,7 +911,7 @@ MDir_CreateRecurse(const MChar *path, bool fForce)
     return true;
 }
 
-inline void MPath_BackslashToSlash(MChar *pathname)
+MZC_INLINE void MPath_BackslashToSlash(MChar *pathname)
 {
     MChar *pch = pathname;
 #ifdef _WIN32
@@ -924,7 +935,7 @@ inline void MPath_BackslashToSlash(MChar *pathname)
 #endif
 }
 
-inline void MPath_SlashToBackslash(MChar *pathname)
+MZC_INLINE void MPath_SlashToBackslash(MChar *pathname)
 {
     MChar *pch = pathname;
 #ifdef _WIN32
