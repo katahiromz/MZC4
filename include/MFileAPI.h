@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        20  /* Version 20 */
+#define MZC4_MFILEAPI_H_        21  /* Version 21 */
 
 /*
  * MPath_... functions
@@ -826,6 +826,8 @@ MZC_INLINE bool MDir_Remove(const MChar *pathname)
                     }
                 } while (MDir_FindNextItem(dir_p, &info));
                 MDir_FindClose(dir_p);
+
+                std::sort(items.begin(), items.end());
                 return true;
             }
             return false;
