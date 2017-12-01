@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        18  /* Version 18 */
+#define MZC4_MFILEAPI_H_        20  /* Version 20 */
 
 /*
  * MPath_... functions
@@ -109,6 +109,8 @@
 #ifdef __cplusplus
     #include <cassert>          /* assert */
     #include <cstring>          /* strlen, wcslen */
+    #include <vector>           /* for std::vector */
+    #include <algorithm>        /* for std::sort */
 #else
     #include <assert.h>
     #include <string.h>
@@ -126,7 +128,7 @@
 /* pathname */
 
 bool MPath_Exists(const MChar *pathname);
-MChar *MPath_GetFull(MChar *full, const MChar *relative);
+MChar *MPath_GetFullPath(MChar *full, const MChar *relative);
 MChar *MPath_AddSep(MChar *pathname);
 MChar *MPath_RemoveSep(MChar *pathname);
 MChar *MPath_FindTitle(MChar *pathname);
@@ -164,6 +166,14 @@ bool MDir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
     bool      MDir_FindClose(MZC_DIR_P dirp);
 
     bool MDir_Delete(const MChar *dir);
+
+    #ifdef __cplusplus
+        #ifndef MString
+            typedef std::basic_string<MChar> MString;
+        #endif
+        bool MDir_GetItemList(const MChar *dirname, std::vector<MString>& items);
+        bool MDir_GetFullPathList(const MChar *dirname, std::vector<MString>& paths, bool recursive);
+    #endif
 #endif  /* ndef MSDOS */
 
 /**************************************************************************/
@@ -255,7 +265,7 @@ MZC_INLINE bool MDir_Exists(const MChar *pathname)
 #endif
 }
 
-MZC_INLINE MChar *MPath_GetFull(MChar *full, const MChar *relative)
+MZC_INLINE MChar *MPath_GetFullPath(MChar *full, const MChar *relative)
 {
     USING_NAMESPACE_STD;
     assert(full);
@@ -366,7 +376,7 @@ MFile_GetContents(const MChar *filename, size_t *psize)
         if (cbFile != 0xFFFFFFFF)
         {
             LPVOID pv = malloc((cbFile + 3) * sizeof(char));
-            pb = reinterpret_cast<uint8_t *>(pv);
+            pb = (uint8_t *)(pv);
             if (pb)
             {
                 if (::ReadFile(hFile, pb, cbFile, &cbRead, NULL) &&
@@ -797,6 +807,64 @@ MZC_INLINE bool MDir_Remove(const MChar *pathname)
 
         return MDir_Remove(dir);
     }
+
+    #ifdef __cplusplus
+        inline bool MDir_GetItemList(const MChar *dirname, std::vector<MString>& items)
+        {
+            if (!MDir_Exists(dirname))
+                return false;
+
+            MZC_DIR_INFO info;
+            MZC_DIR_P dir_p = MDir_FindFirstItem(dirname, &info);
+            if (dir_p)
+            {
+                do
+                {
+                    if (!MPath_IsDots(info.cFileName))
+                    {
+                        items.push_back(info.cFileName);
+                    }
+                } while (MDir_FindNextItem(dir_p, &info));
+                MDir_FindClose(dir_p);
+                return true;
+            }
+            return false;
+        }
+
+        inline bool
+        MDir_GetFullPathList(const MChar *dirname, std::vector<MString>& paths, bool recursive)
+        {
+            MChar cur_dir[MAX_PATH], full_path[MAX_PATH];
+
+            MDir_Get(cur_dir);
+            if (!MDir_Set(dirname))
+                return false;
+
+            std::vector<MString> items;
+            MDir_GetItemList(TEXT("."), items);
+
+            bool ret = true;
+            std::vector<MString>::iterator it, end = items.end();
+            for (it = items.begin(); it != end; ++it)
+            {
+                if (recursive)
+                {
+                    if (MDir_Exists(it->c_str()))
+                    {
+                        if (!MDir_GetFullPathList(it->c_str(), paths, true))
+                            ret = false;
+                    }
+                }
+                MPath_GetFullPath(full_path, it->c_str());
+                paths.push_back(full_path);
+            }
+
+            MDir_Set(cur_dir);
+
+            std::sort(paths.begin(), paths.end());
+            return ret;
+        }
+    #endif  /* __cplusplus */
 #endif  /* ndef MSDOS */
 
 MZC_INLINE bool MDir_Get(MChar *pathname, size_t maxbuf)
