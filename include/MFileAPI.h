@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        25  /* Version 25 */
+#define MZC4_MFILEAPI_H_        30  /* Version 30 */
 
 /*
  * mpath_... functions
@@ -139,9 +139,9 @@ bool mpath_Exists(const MChar *pathname);
 MChar *mpath_GetFullPath(MChar *full, const MChar *relative);
 MChar *mpath_AddSep(MChar *pathname);
 MChar *mpath_RemoveSep(MChar *pathname);
-MChar *mpath_FindTitle(MChar *pathname);
+MChar *mpath_FindTitle(const MChar *pathname);
 MChar *mpath_SetTitle(MChar *pathname, const MChar *title);
-MChar *mpath_FindDotExt(MChar *pathname);
+MChar *mpath_FindDotExt(const MChar *pathname);
 MChar *mpath_SetDotExt(MChar *pathname, const MChar *dot_ext);
 bool mpath_IsDots(const MChar *name);
 void mpath_BackslashToSlash(MChar *pathname);
@@ -602,7 +602,7 @@ MZC_INLINE MChar *mpath_AddSep(MChar *pathname)
     return pathname;
 }
 
-MZC_INLINE MChar *mpath_FindDotExt(MChar *pathname)
+MZC_INLINE MChar *mpath_FindDotExt(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
     MChar *title, *dot_ext;
@@ -612,12 +612,12 @@ MZC_INLINE MChar *mpath_FindDotExt(MChar *pathname)
     dot_ext = _tcsrchr(title, TEXT('.'));
     if (dot_ext)
         return dot_ext;
-    return pathname + _tcslen(pathname);
+    return (MChar *)pathname + _tcslen(pathname);
 #else
     dot_ext = strrchr(title, '.');
     if (dot_ext)
         return dot_ext;
-    return pathname + strlen(pathname);
+    return (MChar *)pathname + strlen(pathname);
 #endif
 }
 
@@ -655,26 +655,28 @@ MZC_INLINE MChar *mpath_RemoveSep(MChar *pathname)
     return pathname;
 }
 
-MZC_INLINE MChar *mpath_FindTitle(MChar *pathname)
+MZC_INLINE MChar *mpath_FindTitle(const MChar *pathname)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
+    const MChar *ret;
     MChar *pch1 = _tcsrchr(pathname, _T('\\'));
     MChar *pch2 = _tcsrchr(pathname, _T('/'));
-    if (pch1 == NULL && pch2 == NULL)
-        return pathname;
-    if (pch1 == NULL)
-        return pch2 + 1;
-    if (pch2 == NULL)
-        return pch1 + 1;
-    if (pch1 < pch2)
-        return pch2 + 1;
+    if (!pch1 && !pch2)
+        ret = pathname;
+    else if (!pch1)
+        ret = pch2 + 1;
+    else if (!pch2)
+        ret = pch1 + 1;
+    else if (pch1 < pch2)
+        ret = pch2 + 1;
     else
-        return pch1 + 1;
+        ret = pch1 + 1;
+    return (MChar *)ret;
 #else
     MChar *pch = strrchr(pathname, '/');
-    if (pch == NULL)
-        return pathname;
+    if (!pch)
+        return (MChar *)pathname;
     return pch + 1;
 #endif
 }
