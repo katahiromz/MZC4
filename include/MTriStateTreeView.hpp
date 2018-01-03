@@ -111,6 +111,8 @@ inline BOOL MTriStateTreeView::InitStateImageList(INT nBitmapResourceID)
 {
     assert(IsWindow(m_hwnd));
 
+    ModifyStyleDx(0, TVS_CHECKBOXES);
+
     if (m_himl)
     {
         ImageList_Destroy(m_himl);
@@ -120,15 +122,12 @@ inline BOOL MTriStateTreeView::InitStateImageList(INT nBitmapResourceID)
     m_himl = ImageList_LoadBitmap(
         GetModuleHandle(NULL), MAKEINTRESOURCE(nBitmapResourceID),
         CSTATE_WIDTH, 0, RGB(255, 0, 255));
-    TreeView_SetImageList(m_hwnd, m_himl, TVSIL_STATE);
+    SetImageList(m_himl, TVSIL_STATE);
     if (m_himl == NULL)
     {
         DebugPrintDx(TEXT("nBitmapResource:%d is not a valid resource bitmap!\n"));
     }
-    if (GetItemHeight() < CSTATE_HEIGHT)
-        SetItemHeight(CSTATE_HEIGHT);
 
-    ModifyStyleDx(0, TVS_CHECKBOXES);
     return m_himl != NULL;
 }
 
@@ -161,20 +160,21 @@ inline void MTriStateTreeView::ChangeParent(HTREEITEM hParent)
     while (hParent)
     {
         HTREEITEM hItem = GetChildItem(hParent);
-        INT nState = GetCheckState(hItem);
-        while (hItem)
+        if (hItem)
         {
-            INT nAnotherState = GetCheckState(hItem);
-            if (nAnotherState != nState)
+            INT nState = GetCheckState(hItem);
+            while (hItem)
             {
-                nState = CSTATE_INDETERMINATE;
-                break;
+                INT nAnotherState = GetCheckState(hItem);
+                if (nAnotherState != nState)
+                {
+                    nState = CSTATE_INDETERMINATE;
+                    break;
+                }
+                hItem = GetNextSiblingItem(hItem);
             }
-
-            hItem = GetNextSiblingItem(hItem);
+            InternalCheck(hParent, nState);
         }
-
-        InternalCheck(hParent, nState);
         hParent = GetParentItem(hParent);
     }
 }
