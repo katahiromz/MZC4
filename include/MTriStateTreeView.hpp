@@ -3,16 +3,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTRISTATETREEVIEW_HPP_
-#define MZC4_MTRISTATETREEVIEW_HPP_     1       /* Version 1 */
+#define MZC4_MTRISTATETREEVIEW_HPP_     2       /* Version 2 */
 
 #include "MTreeView.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 
 #define UM_TRISTATETREEVIEW     (WM_USER + 100)
+
+// 3 states
 #define TSTV_UNCHECKED      0
 #define TSTV_CHECKED        1
 #define TSTV_INDETERMINATE  2
+
+// width and height of check mark
+#ifndef TSTV_WIDTH
+    #define TSTV_WIDTH  16
+    #define TSTV_HEIGHT 16
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +41,8 @@ public:
 
     void InternalCheck(HTREEITEM hItem, INT nNewState);
     void SetCheckState(HTREEITEM hItem, INT nNewState);
+
+    virtual INT GetNextCheckState(HTREEITEM hItem, INT nState) const;
 
 protected:
     HIMAGELIST m_himl;
@@ -65,6 +75,18 @@ inline INT MTriStateTreeView::GetCheckState(HTREEITEM hItem)
     return (UINT(res) >> 12) - 1;
 }
 
+inline INT MTriStateTreeView::GetNextCheckState(HTREEITEM hItem, INT nState) const
+{
+    if (nState == TSTV_UNCHECKED)
+    {
+        return TSTV_CHECKED;
+    }
+    else
+    {
+        return TSTV_UNCHECKED;
+    }
+}
+
 inline BOOL MTriStateTreeView::InitStateImageList(INT nBitmapResourceID)
 {
     assert(IsWindow(m_hwnd));
@@ -77,13 +99,14 @@ inline BOOL MTriStateTreeView::InitStateImageList(INT nBitmapResourceID)
 
     m_himl = ImageList_LoadBitmap(
         GetModuleHandle(NULL), MAKEINTRESOURCE(nBitmapResourceID),
-        16, 0, RGB(255, 0, 255));
+        TSTV_WIDTH, 0, RGB(255, 0, 255));
     TreeView_SetImageList(m_hwnd, m_himl, TVSIL_STATE);
     if (m_himl == NULL)
     {
         DebugPrintDx(TEXT("nBitmapResource:%d is not a valid resource bitmap!\n"));
     }
-    SetItemHeight(16);
+    if (GetItemHeight() < TSTV_HEIGHT)
+        SetItemHeight(TSTV_HEIGHT);
 
     ModifyStyleDx(0, TVS_CHECKBOXES);
     return m_himl != NULL;
@@ -114,26 +137,25 @@ inline void MTriStateTreeView::SetCheckState(HTREEITEM hItem, INT nNewState)
 
 inline void MTriStateTreeView::ChangeParent(HTREEITEM hParent)
 {
-    if (hParent == NULL)
-        return;
-
-    HTREEITEM hItem = GetChildItem(hParent);
-    INT nState = GetCheckState(hItem);
-    while (hItem)
+    while (hParent)
     {
-        INT nAnotherState = GetCheckState(hItem);
-        if (nAnotherState != nState)
+        HTREEITEM hItem = GetChildItem(hParent);
+        INT nState = GetCheckState(hItem);
+        while (hItem)
         {
-            nState = TSTV_INDETERMINATE;
-            break;
+            INT nAnotherState = GetCheckState(hItem);
+            if (nAnotherState != nState)
+            {
+                nState = TSTV_INDETERMINATE;
+                break;
+            }
+
+            hItem = GetNextSiblingItem(hItem);
         }
 
-        hItem = GetNextSiblingItem(hItem);
+        InternalCheck(hParent, nState);
+        hParent = GetParentItem(hParent);
     }
-
-    InternalCheck(hParent, nState);
-    hParent = GetParentItem(hParent);
-    ChangeParent(hParent);
 }
 
 inline void MTriStateTreeView::ChangeItemState(HTREEITEM hItem, INT nNewState)
@@ -157,16 +179,10 @@ MTriStateTreeView::WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 inline LRESULT
 MTriStateTreeView::OnTriStateTreeViewClick(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-    HTREEITEM hItem = (HTREEITEM)wParam;
-    INT nPreState = (INT)lParam;
-    if (nPreState == TSTV_UNCHECKED)
-    {
-        ChangeItemState(hItem, TSTV_CHECKED);
-    }
-    else
-    {
-        ChangeItemState(hItem, TSTV_UNCHECKED);
-    }
+    HTREEITEM hItem = HTREEITEM(wParam);
+    INT nState = INT(lParam);
+    nState = GetNextCheckState(hItem, nState);
+    ChangeItemState(hItem, nState);
 }
 
 inline LRESULT
