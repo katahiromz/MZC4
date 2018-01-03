@@ -3,13 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTRISTATETREEVIEW_HPP_
-#define MZC4_MTRISTATETREEVIEW_HPP_     5       /* Version 5 */
+#define MZC4_MTRISTATETREEVIEW_HPP_     6       /* Version 6 */
 
 #include "MTreeView.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 
-#define UM_TRISTATETREEVIEW     (WM_USER + 100)
+#define UM_TRISTATETREEVIEW     (WM_APP + 100)
 
 // width and height of check mark
 #ifndef CSTATE_WIDTH
@@ -37,14 +37,14 @@ public:
     // Call me. Please use "3statechecks.bmp" for nBitmapResourceID.
     BOOL InitStateImageList(INT nBitmapResourceID);
 
-    // Call me from parent's WM_NOTIFY
+    // Call me from parent's WM_NOTIFY.
     LRESULT OnNotifyFromParent(HWND hwnd, int idFrom, LPNMHDR pnmhdr);
 
     BOOL IsValidCheckState(INT nState) const;
     INT GetCheckState(HTREEITEM hItem);
 
-    void InternalCheck(HTREEITEM hItem, INT nNewState);
-    void SetCheckState(HTREEITEM hItem, INT nNewState);
+    void InternalCheck(HTREEITEM hItem, INT nNewState = CSTATE_CHECKED);
+    void SetCheckState(HTREEITEM hItem, INT nNewState = CSTATE_CHECKED);
 
     virtual INT GetNextCheckState(HTREEITEM hItem, INT nState) const;
 

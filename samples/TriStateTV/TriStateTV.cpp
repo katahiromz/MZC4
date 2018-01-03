@@ -63,11 +63,15 @@ struct MTriStateTVSample : public MDialogBase
         m_hTV.SetItemHeight(16);
 
         HTREEITEM hRoot = InsertTreeItem(TVI_ROOT, TEXT("A"));
-        HTREEITEM hParent = InsertTreeItem(hRoot, TEXT("B"));
-        HTREEITEM hChild1 = InsertTreeItem(hParent, TEXT("C"));
-        HTREEITEM hChild2 = InsertTreeItem(hParent, TEXT("D"));
+        HTREEITEM hParent1 = InsertTreeItem(hRoot, TEXT("B"));
+        HTREEITEM hChild1 = InsertTreeItem(hParent1, TEXT("C"));
+        HTREEITEM hChild2 = InsertTreeItem(hParent1, TEXT("D"));
+        HTREEITEM hParent2 = InsertTreeItem(hRoot, TEXT("E"));
+        HTREEITEM hChild3 = InsertTreeItem(hParent2, TEXT("F"));
+        HTREEITEM hChild4 = InsertTreeItem(hParent2, TEXT("G"));
         m_hTV.Expand(hRoot);
-        m_hTV.Expand(hParent);
+        m_hTV.Expand(hParent1);
+        m_hTV.Expand(hParent2);
 
         return TRUE;
     }
