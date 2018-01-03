@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTREEVIEW_HPP_
-#define MZC4_MTREEVIEW_HPP_     2       /* Version 2 */
+#define MZC4_MTREEVIEW_HPP_     5       /* Version 5 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -71,7 +71,7 @@ public:
     BOOL SelectDropTarget(HTREEITEM hItem);
     BOOL SelectSetFirstVisible(HTREEITEM hItem);
     HWND EditLabel(HTREEITEM hItem);
-    HTREEITEM HitTest(MPoint pt, UINT* pTVHT_flags = NULL) const;
+    HTREEITEM HitTest(POINT pt, UINT* pTVHT_flags = NULL) const;
     HTREEITEM HitTest(TVHITTESTINFO* pHitTestInfo) const;
     HIMAGELIST CreateDragImage(HTREEITEM hItem);
     BOOL SortChildren(HTREEITEM hItem, BOOL bRecurse = FALSE);
@@ -512,7 +512,7 @@ MTreeView::InsertItem(UINT nMask, LPCTSTR lpszItem,
     return (HTREEITEM)SendMessageDx(TVM_INSERTITEM, 0, (LPARAM)&tvis);
 }
 
-inline HTREEITEM MTreeView::HitTest(MPoint pt, UINT* pTVHT_flags/* = NULL*/) const
+inline HTREEITEM MTreeView::HitTest(POINT pt, UINT* pTVHT_flags/* = NULL*/) const
 {
     TVHITTESTINFO hti;
     ZeroMemory(&hti, sizeof(hti));
