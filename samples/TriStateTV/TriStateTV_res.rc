@@ -13,6 +13,8 @@
 
 1 ICON "TriStateTV.ico"
 1 BITMAP "3statechecks.bmp"
+2 BITMAP "buttons.bmp"
+1 MANIFEST "TriStateTV_exe.manifest"
 
 /////////////////////////////////////////////////////////////////////////////
 // Version Info

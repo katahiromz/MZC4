@@ -15,13 +15,23 @@ struct MTriStateTVSample : public MDialogBase
     HICON       m_hIcon;        // the icon handle
     HICON       m_hIconSm;      // the small icon handle
     HACCEL      m_hAccel;       // the accelerator handle
+    HIMAGELIST  m_himl;
 
     MTriStateTreeView m_hTV;
 
     MTriStateTVSample(int argc, TCHAR **targv, HINSTANCE hInst) :
         m_argc(argc), m_targv(targv), m_hInst(hInst),
-        m_hIcon(NULL), m_hIconSm(NULL), m_hAccel(NULL)
+        m_hIcon(NULL), m_hIconSm(NULL), m_hAccel(NULL), m_himl(NULL)
     {
+    }
+
+    ~MTriStateTVSample()
+    {
+        if (m_himl)
+        {
+            ImageList_Destroy(m_himl);
+            m_himl = NULL;
+        }
     }
 
     // start up
@@ -41,13 +51,15 @@ struct MTriStateTVSample : public MDialogBase
         return INT(DialogBoxDx(NULL, 1));
     }
 
-    HTREEITEM InsertTreeItem(HTREEITEM hitemParent, LPCTSTR lpszName)
+    HTREEITEM InsertTreeItem(HTREEITEM hitemParent, LPCTSTR lpszName, INT iImage)
     {
         TV_INSERTSTRUCT is = {0};
 
         is.hParent      = hitemParent;
-        is.item.mask    = TVIF_TEXT;
+        is.item.mask    = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
         is.item.pszText = const_cast<LPTSTR>(lpszName);
+        is.item.iImage = iImage;
+        is.item.iSelectedImage = iImage;
 
         return m_hTV.InsertItem(&is);
     }
@@ -62,13 +74,17 @@ struct MTriStateTVSample : public MDialogBase
         m_hTV.InitStateImageList(1);
         m_hTV.SetItemHeight(16);
 
-        HTREEITEM hRoot = InsertTreeItem(TVI_ROOT, TEXT("A"));
-        HTREEITEM hParent1 = InsertTreeItem(hRoot, TEXT("B"));
-        HTREEITEM hChild1 = InsertTreeItem(hParent1, TEXT("C"));
-        HTREEITEM hChild2 = InsertTreeItem(hParent1, TEXT("D"));
-        HTREEITEM hParent2 = InsertTreeItem(hRoot, TEXT("E"));
-        HTREEITEM hChild3 = InsertTreeItem(hParent2, TEXT("F"));
-        HTREEITEM hChild4 = InsertTreeItem(hParent2, TEXT("G"));
+        m_himl = ImageList_LoadBitmap(m_hInst, MAKEINTRESOURCE(2), 16, 0, RGB(255, 0, 255));
+        assert(m_himl);
+        m_hTV.SetImageList(m_himl, TVSIL_NORMAL);
+
+        HTREEITEM hRoot = InsertTreeItem(TVI_ROOT, TEXT("A"), 0);
+        HTREEITEM hParent1 = InsertTreeItem(hRoot, TEXT("B"), 1);
+        HTREEITEM hChild1 = InsertTreeItem(hParent1, TEXT("C"), 2);
+        HTREEITEM hChild2 = InsertTreeItem(hParent1, TEXT("D"), 3);
+        HTREEITEM hParent2 = InsertTreeItem(hRoot, TEXT("E"), 4);
+        HTREEITEM hChild3 = InsertTreeItem(hParent2, TEXT("F"), 5);
+        HTREEITEM hChild4 = InsertTreeItem(hParent2, TEXT("G"), 6);
         m_hTV.Expand(hRoot);
         m_hTV.Expand(hParent1);
         m_hTV.Expand(hParent2);
