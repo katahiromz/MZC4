@@ -3,5 +3,6 @@ subdirs(MsgCrack
         MyNotepad
         MySplitter
         ProcessMakerTest
+        TriStateTV
         TypicalDialogApp
         TypicalWindowsApp)

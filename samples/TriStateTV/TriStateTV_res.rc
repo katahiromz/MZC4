@@ -1,0 +1,77 @@
+#include "targetver.h"
+#include <windows.h>
+#include <dlgs.h>
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// Encoding
+
+#pragma code_page(65001)    // UTF-8
+
+/////////////////////////////////////////////////////////////////////////////
+// Icon
+
+1 ICON "TriStateTV.ico"
+1 BITMAP "3statechecks.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+// Version Info
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     0, 0, 0, 0
+PRODUCTVERSION  0, 0, 0, 0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    // English (U.S.)
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Katayama Hirofumi MZ\0"
+            VALUE "FileDescription", "TriStateTV\0"
+            VALUE "FileVersion", "0.0.0\0"
+            VALUE "LegalCopyright", "Copyright (C) 2018 Katayama Hirofumi MZ\0"
+            VALUE "ProductName", "TriStateTV\0"
+            VALUE "ProductVersion", "0.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        // English (U.S.)
+        VALUE "Translation", 0x0409, 0x04E4
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+// Menu
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+// Dialog
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+1 DIALOG 0, 0, 200, 150
+CAPTION "TriStateTV"
+STYLE DS_CENTER | WS_POPUPWINDOW | WS_DLGFRAME | WS_THICKFRAME
+FONT 9, "MS Shell Dlg"
+{
+    CONTROL "", ctl1, "SysTreeView32", TVS_FULLROWSELECT | TVS_CHECKBOXES | TVS_LINESATROOT | TVS_HASLINES | TVS_HASBUTTONS | WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP, 0, 0, 200, 150
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// String Table
+
+// English (U.S.)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+STRINGTABLE
+BEGIN
+    IDS_APPNAME,   "TypicalDialogApp"
+END
+
+/////////////////////////////////////////////////////////////////////////////
