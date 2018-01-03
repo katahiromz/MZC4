@@ -152,7 +152,7 @@ struct MMyNotepad : public MWindowBase
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
         MStringW wide = mstr_from_bin(bin, size, &m_text_type);
 
-        MWideToText text(wide);
+        MWideToText text(CP_ACP, wide);
         m_edit_ctrl.SetWindowText(text);
         free(bin);
 
@@ -163,7 +163,7 @@ struct MMyNotepad : public MWindowBase
 
     BOOL SaveDx(HWND hwnd, LPCTSTR pszFileName)
     {
-        MStringW wide(MTextToWide(m_edit_ctrl.GetWindowText()));
+        MStringW wide(MTextToWide(CP_ACP, m_edit_ctrl.GetWindowText()));
         m_text_type.nNewLine = MNEWLINE_NOCHANGE;
         std::string bin = mbin_from_str(wide, m_text_type);
         if (mfile_PutContents(pszFileName, &bin[0], bin.size()))

@@ -132,7 +132,7 @@ inline /*virtual*/ void MWebBrowser::Navigate(LPCTSTR pszURL)
 {
     VARIANT vURL;
     vURL.vt = VT_BSTR;
-    vURL.bstrVal = ::SysAllocString(MTextToWide(pszURL));
+    vURL.bstrVal = ::SysAllocString(MTextToWide(CP_ACP, pszURL));
 
     VARIANT ve1, ve2, ve3, ve4;
     ve1.vt = VT_EMPTY;

@@ -528,7 +528,7 @@ inline STDMETHODIMP MActXCtrl::SetStatusText(LPCOLESTR pszStatusText)
 {
     if (m_hwndStatus && ::IsWindow(m_hwndStatus))
     {
-        MWideToText strText(pszStatusText);
+        MWideToText strText(CP_ACP, pszStatusText);
         if (::IsWindow(m_hwndStatus))
         {
             ::SendMessage(m_hwndStatus, SB_SETTEXT, 0,
