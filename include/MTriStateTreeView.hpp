@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTRISTATETREEVIEW_HPP_
-#define MZC4_MTRISTATETREEVIEW_HPP_     6       /* Version 6 */
+#define MZC4_MTRISTATETREEVIEW_HPP_     7       /* Version 7 */
 
 #include "MTreeView.hpp"
 
@@ -44,7 +44,7 @@ public:
     INT GetCheckState(HTREEITEM hItem);
 
     void InternalCheck(HTREEITEM hItem, INT nNewState = CSTATE_CHECKED);
-    void SetCheckState(HTREEITEM hItem, INT nNewState = CSTATE_CHECKED);
+    void SetCheckState(HTREEITEM hItem, INT nNewState = CSTATE_CHECKED, BOOL bDoParent = TRUE);
 
     virtual INT GetNextCheckState(HTREEITEM hItem, INT nState) const;
 
@@ -142,16 +142,22 @@ inline void MTriStateTreeView::InternalCheck(HTREEITEM hItem, INT nNewState)
     SetItem(&item);
 }
 
-inline void MTriStateTreeView::SetCheckState(HTREEITEM hItem, INT nNewState)
+inline void MTriStateTreeView::SetCheckState(HTREEITEM hItem, INT nNewState, BOOL bDoParent)
 {
     InternalCheck(hItem, nNewState);
 
     HTREEITEM hChildItem = GetChildItem(hItem);
     while (hChildItem)
     {
-        SetCheckState(hChildItem, nNewState);
+        SetCheckState(hChildItem, nNewState, FALSE);
 
         hChildItem = GetNextSiblingItem(hChildItem);
+    }
+
+    if (bDoParent)
+    {
+        HTREEITEM hParent = GetParentItem(hItem);
+        ChangeParent(hParent);
     }
 }
 
@@ -182,10 +188,7 @@ inline void MTriStateTreeView::ChangeParent(HTREEITEM hParent)
 inline void MTriStateTreeView::ChangeItemState(HTREEITEM hItem, INT nNewState)
 {
     assert(IsValidCheckState(nNewState));
-    SetCheckState(hItem, nNewState);
-
-    HTREEITEM hParent = GetParentItem(hItem);
-    ChangeParent(hParent);
+    SetCheckState(hItem, nNewState, TRUE);
 }
 
 inline LRESULT CALLBACK
