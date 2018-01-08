@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTEXTTOTEXT_HPP_
-#define MZC4_MTEXTTOTEXT_HPP_       3       /* Version 3 */
+#define MZC4_MTEXTTOTEXT_HPP_       4       /* Version 4 */
 
 class MAnsiToWide;
 class MWideToAnsi;
@@ -112,8 +112,8 @@ protected:
 
 ////////////////////////////////////////////////////////////////////////////
 
-#define MAnsiToAnsi(cp,ansi)   (ansi)
-#define MWideToWide(cp,wide)   (wide)
+#define MAnsiToAnsi(cp,ansi)   std::string(ansi)
+#define MWideToWide(cp,wide)   std::wstring(wide)
 
 #ifdef UNICODE
     #define MAnsiToText MAnsiToWide
