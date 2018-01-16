@@ -3,14 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTOOLBARCTRL_HPP_
-#define MZC4_MTOOLBARCTRL_HPP_      2   /* Version 2 */
+#define MZC4_MTOOLBARCTRL_HPP_      3   /* Version 3 */
 
 class MToolBarCtrl;
 
 ////////////////////////////////////////////////////////////////////////////
 
 #include "MWindowBase.hpp"
-#include "MPointSizeRect.hpp"
 
 class MToolBarCtrl : public MWindowBase
 {
@@ -41,12 +40,12 @@ public:
     #if (_WIN32_IE >= 0x0300)
         BOOL GetRect(INT nButtonID, LPRECT prc) const;
 
-        MSize GetButtonSize() const;
+        SIZE GetButtonSize() const;
     #endif  // (_WIN32_IE >= 0x0300)
 
-    BOOL SetButtonSize(MSize size);
+    BOOL SetButtonSize(SIZE size);
 
-    BOOL SetBitmapSize(MSize size);
+    BOOL SetBitmapSize(SIZE size);
 
     HWND GetToolTips() const;
     VOID SetToolTips(HWND hwndTT);
@@ -225,18 +224,22 @@ inline VOID MToolBarCtrl::SetButtonStructSize(INT nSize)
         return (BOOL)SendMessageDx(TB_GETRECT, (WPARAM)nButtonID, (LPARAM)prc);
     }
 
-    inline MSize MToolBarCtrl::GetButtonSize() const
+    inline SIZE MToolBarCtrl::GetButtonSize() const
     {
-        return MSize((DWORD)SendMessageDx(TB_GETBUTTONSIZE));
+		SIZE siz;
+		DWORD dw = (DWORD)SendMessageDx(TB_GETBUTTONSIZE);
+		siz.cx = GET_X_LPARAM(dw);
+		siz.cy = GET_Y_LPARAM(dw);
+        return siz;
     }
 #endif  // (_WIN32_IE >= 0x0300)
 
-inline BOOL MToolBarCtrl::SetButtonSize(MSize size)
+inline BOOL MToolBarCtrl::SetButtonSize(SIZE size)
 {
     return (BOOL)SendMessageDx(TB_SETBUTTONSIZE, 0, MAKELPARAM(size.cx, size.cy));
 }
 
-inline BOOL MToolBarCtrl::SetBitmapSize(MSize size)
+inline BOOL MToolBarCtrl::SetBitmapSize(SIZE size)
 {
     return (BOOL)SendMessageDx(TB_SETBITMAPSIZE, 0, MAKELPARAM(size.cx, size.cy));
 }
