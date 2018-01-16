@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTOOLBARCTRL_HPP_
-#define MZC4_MTOOLBARCTRL_HPP_      3   /* Version 3 */
+#define MZC4_MTOOLBARCTRL_HPP_      4   /* Version 4 */
 
 class MToolBarCtrl;
 
@@ -228,8 +228,8 @@ inline VOID MToolBarCtrl::SetButtonStructSize(INT nSize)
     {
 		SIZE siz;
 		DWORD dw = (DWORD)SendMessageDx(TB_GETBUTTONSIZE);
-		siz.cx = GET_X_LPARAM(dw);
-		siz.cy = GET_Y_LPARAM(dw);
+		siz.cx = (SHORT)LOWORD(dw);
+		siz.cy = (SHORT)HIWORD(dw);
         return siz;
     }
 #endif  // (_WIN32_IE >= 0x0300)
