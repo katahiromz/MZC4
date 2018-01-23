@@ -35,37 +35,27 @@ BEGIN
             VALUE "ProductVersion", "1.6\0"
         END
     END
-#ifndef NO_JAP_ALLOWED
     // Japanese
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "041103A4"
         BEGIN
-            VALUE "CompanyName", "ï–éRîéï∂MZ\0"
+            VALUE "CompanyName", "ÁâáÂ±±ÂçöÊñáMZ\0"
             VALUE "FileDescription", "MsgCrack\0"
             VALUE "FileVersion", "1.6\0"
-            VALUE "LegalCopyright", "Copyright (C) 2015-2017 ï–éRîéï∂MZ\0"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2017 ÁâáÂ±±ÂçöÊñáMZ\0"
             VALUE "ProductName", "MsgCrack\0"
             VALUE "ProductVersion", "1.6\0"
         END
     END
-#endif
     BLOCK "VarFileInfo"
     BEGIN
-#ifndef NO_JAP_ALLOWED
         // English (U.S.)
         VALUE "Translation", 0x0409, 0x04E4
-#else
-        // Japanese
-        VALUE "Translation", 0x0411, 0x03A4
-#endif
     END
 END
 
 /////////////////////////////////////////////////////////////////////////////
 
 #include "lang/en-US.rc"
-
-#ifndef NO_JAP_ALLOWED
-    #include "lang/ja-JP.rc"
-#endif
+#include "lang/ja-JP.rc"
