@@ -1,9 +1,9 @@
-// MResizable.hpp -- Win32API resizable window/dialog realizer -*- C++ -*-
+// MResizable.hpp -- Win32 dynamic layout resizable window/dialog -*- C++ -*-
 // This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MRESIZABLE_HPP_
-#define MZC4_MRESIZABLE_HPP_        3   /* Version 3 */
+#define MZC4_MRESIZABLE_HPP_        4   /* Version 4 */
 
 struct MCtrlLayout;
 class MResizable;
@@ -56,7 +56,7 @@ public:
     MResizable();
     virtual ~MResizable();
 
-    // NOTE: Please call OnParentCreate after parent's WM_CREATE.
+    // NOTE: Please call OnParentCreate after parent's WM_CREATE or WM_INITDIALOG.
     VOID OnParentCreate(HWND hwnd, BOOL bEnableResize = TRUE,
                         BOOL bShowSizeGrip = TRUE);
 
