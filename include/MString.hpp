@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSTRING_HPP_
-#define MZC4_MSTRING_HPP_       6   /* Version 6 */
+#define MZC4_MSTRING_HPP_       7   /* Version 7 */
 
 // class MString;
 // class MStringA;
@@ -15,15 +15,58 @@
 
 // MString
 #ifndef MString
-    #include <string>       // std::string and std::wstring
-    typedef std::string     MStringA;
-    typedef std::wstring    MStringW;
+    #include <string>       // for std::basic_string, std::string, ...
+    typedef std::string MStringA;
+    #ifdef _WIN32
+        #include <tchar.h>      // Windows generic text mapping
+        #ifdef _MBCS
+            #include <mbstring.h>   // for _mbsrchr
+        #endif
+        typedef std::wstring MStringW;
+    #else
+        typedef std::u16string MStringW;
+    #endif
     #ifdef UNICODE
         #define MString     MStringW
     #else
         #define MString     MStringA
     #endif
 #endif
+
+// WIDE
+#ifndef WIDE
+    #ifdef _WIN32
+        #define WIDE(sz) L##sz
+    #else
+        #define WIDE(sz) u##sz
+    #endif
+#endif
+
+// TEXT
+#ifndef TEXT
+    #ifdef UNICODE
+        #define TEXT(sz)   WIDE(sz)
+    #else
+        #define TEXT(sz)   sz
+    #endif
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+// C string
+
+template <typename T_CHAR>
+inline size_t mstrlen(const T_CHAR *str);
+
+template <typename T_CHAR>
+T_CHAR *mstrcpy(T_CHAR *dest, const T_CHAR *src);
+
+template <typename T_CHAR>
+T_CHAR *mstrcpyn(T_CHAR *dest, const T_CHAR *src, size_t maxbuf);
+
+template <typename T_CHAR>
+T_CHAR *mstrrchr(T_CHAR *str, T_CHAR ch);
+template <typename T_CHAR>
+const T_CHAR *mstrrchr(const T_CHAR *str, T_CHAR ch);
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -59,6 +102,7 @@ struct MTextType
 };
 
 ////////////////////////////////////////////////////////////////////////////
+// string
 
 bool mstr_is_text_ascii(const char *str, size_t len);
 bool mstr_is_text_ascii(const std::string& str);
@@ -71,13 +115,23 @@ bool mstr_is_text_utf8(const std::string& str);
 
 bool mstr_is_text_unicode(const void *ptr, size_t len);
 
-void mstr_trim(std::string& str, const char *spaces = " \t\r\n");
-void mstr_trim(std::wstring& str, const wchar_t *spaces = L" \t\r\n");
-void mstr_trim(char *str, const char *spaces = " \t\r\n");
-void mstr_trim(wchar_t *str, const wchar_t *spaces = L" \t\r\n");
+template <typename T_CHAR>
+void mstr_trim(std::basic_string<T_CHAR>& str, const T_CHAR *spaces);
+template <typename T_CHAR>
+void mstr_trim(T_CHAR *str, const T_CHAR *spaces);
 
-std::string mstr_repeat(const std::string& str, size_t count);
-std::wstring mstr_repeat(const std::wstring& str, size_t count);
+inline void mstr_trim(MStringA& str)
+{
+    mstr_trim(str, " \t\n\r\f\v");
+}
+inline void mstr_trim(MStringW& str)
+{
+    mstr_trim(str, WIDE(" \t\n\r\f\v"));
+}
+
+template <typename T_CHAR>
+std::basic_string<T_CHAR>
+mstr_repeat(const std::basic_string<T_CHAR>& str, size_t count);
 
 std::string mstr_escape(const std::string& str);
 std::wstring mstr_escape(const std::wstring& str);
@@ -89,18 +143,9 @@ bool mstr_replace_all(T_STR& str,
                       const typename T_STR::value_type *from,
                       const typename T_STR::value_type *to);
 
-void mbin_swap_endian(void *ptr, size_t len);
-void mbin_swap_endian(std::string& bin);
-
-std::wstring
-mstr_from_bin(const void *bin, size_t len, MTextType *pType = NULL);
-std::wstring
-mstr_from_bin(const std::string& bin, MTextType *pType = NULL);
-
-std::string mbin_from_str(const std::wstring& str, const MTextType& type);
-
-std::string mstr_quote(const std::string& str);
-std::wstring mstr_quote(const std::wstring& str);
+template <typename T_CHAR>
+std::basic_string<T_CHAR>
+mstr_quote(const std::basic_string<T_CHAR>& str);
 
 template <typename T_STR_CONTAINER>
 void mstr_split(T_STR_CONTAINER& container,
@@ -111,6 +156,84 @@ template <typename T_STR_CONTAINER>
 typename T_STR_CONTAINER::value_type
 mstr_join(const T_STR_CONTAINER& container,
           const typename T_STR_CONTAINER::value_type& sep);
+
+////////////////////////////////////////////////////////////////////////////
+// binary
+
+void mbin_swap_endian(void *ptr, size_t len);
+void mbin_swap_endian(std::string& bin);
+
+std::wstring
+mstr_from_bin(const void *bin, size_t len, MTextType *pType = NULL);
+std::wstring
+mstr_from_bin(const std::string& bin, MTextType *pType = NULL);
+
+std::string mbin_from_str(const std::wstring& str, const MTextType& type);
+
+////////////////////////////////////////////////////////////////////////////
+
+template <typename T_CHAR>
+inline size_t mstrlen(const T_CHAR *str)
+{
+    return std::char_traits<T_CHAR>::length(str);
+}
+
+template <typename T_CHAR>
+inline T_CHAR *mstrcpy(T_CHAR *dest, const T_CHAR *src)
+{
+    std::char_traits<T_CHAR>::copy(dest, src, mstrlen(src) + 1);
+    return dest;
+}
+
+template <typename T_CHAR>
+inline T_CHAR *mstrcpyn(T_CHAR *dest, const T_CHAR *src, size_t maxbuf)
+{
+    size_t len = mstrlen(src) + 1;
+    if (len >= maxbuf)
+        len = maxbuf;
+    std::char_traits<T_CHAR>::copy(dest, src, len);
+    if (maxbuf)
+        dest[maxbuf - 1] = 0;
+    return dest;
+}
+
+template <typename T_CHAR>
+inline T_CHAR *mstrrchr(T_CHAR *str, T_CHAR ch)
+{
+#if defined(_WIN32) && defined(_MBCS)
+    if (sizeof(T_CHAR) == 1)
+    {
+        return (T_CHAR *)(_mbsrchr((BYTE *)str, ch));
+    }
+#endif
+    T_CHAR *ptr = NULL;
+    while (*str)
+    {
+        if (*str == ch)
+            ptr = ch;
+        ++str;
+    }
+    return ptr;
+}
+
+template <typename T_CHAR>
+inline const T_CHAR *mstrrchr(const T_CHAR *str, T_CHAR ch)
+{
+#if defined(_WIN32) && defined(_MBCS)
+    if (sizeof(T_CHAR) == 1)
+    {
+        return (const T_CHAR *)(_mbsrchr((const BYTE *)str, ch));
+    }
+#endif
+    const T_CHAR *ptr = NULL;
+    while (*str)
+    {
+        if (*str == ch)
+            ptr = ch;
+        ++str;
+    }
+    return ptr;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -173,11 +296,13 @@ inline bool mstr_is_text_unicode(const void *ptr, size_t len)
     return false;
 }
 
-inline void mstr_trim(std::string& str, const char *spaces/* = " \t\r\n"*/)
+template <typename T_CHAR>
+void mstr_trim(std::basic_string<T_CHAR>& str, const T_CHAR *spaces)
 {
+    typedef std::basic_string<T_CHAR> string_type;
     size_t i = str.find_first_not_of(spaces);
     size_t j = str.find_last_not_of(spaces);
-    if ((i == std::string::npos) || (j == std::string::npos))
+    if ((i == string_type::npos) || (j == string_type::npos))
     {
         str.clear();
     }
@@ -187,47 +312,20 @@ inline void mstr_trim(std::string& str, const char *spaces/* = " \t\r\n"*/)
     }
 }
 
-inline void mstr_trim(std::wstring& str, const wchar_t *spaces/* = L" \t\r\n"*/)
+template <typename T_CHAR>
+void mstr_trim(T_CHAR *str, const T_CHAR *spaces)
 {
-    size_t i = str.find_first_not_of(spaces);
-    size_t j = str.find_last_not_of(spaces);
-    if ((i == std::wstring::npos) || (j == std::wstring::npos))
-    {
-        str.clear();
-    }
-    else
-    {
-        str = str.substr(i, j - i + 1);
-    }
-}
-
-inline void mstr_trim(char *str, const char *spaces/* = " \t\r\n"*/)
-{
-    std::string s = str;
+    typedef std::basic_string<T_CHAR> string_type;
+    string_type s = str;
     mstr_trim(s, spaces);
-    std::strcpy(str, s.c_str());
+    mstrcpy(str, s.c_str());
 }
 
-inline void mstr_trim(wchar_t *str, const wchar_t *spaces/* = L" \t\r\n"*/)
+template <typename T_CHAR>
+inline std::basic_string<T_CHAR>
+mstr_repeat(const std::basic_string<T_CHAR>& str, size_t count)
 {
-    std::wstring s = str;
-    mstr_trim(s, spaces);
-    std::wcscpy(str, s.c_str());
-}
-
-inline std::string mstr_repeat(const std::string& str, size_t count)
-{
-    std::string ret;
-    while (count-- > 0)
-    {
-        ret += str;
-    }
-    return ret;
-}
-
-inline std::wstring mstr_repeat(const std::wstring& str, size_t count)
-{
-    std::wstring ret;
+    std::basic_string<T_CHAR> ret;
     while (count-- > 0)
     {
         ret += str;
@@ -548,11 +646,14 @@ mbin_from_str(const std::wstring& str, const MTextType& type)
     return ret;
 }
 
-inline std::string mstr_quote(const std::string& str)
+template <typename T_CHAR>
+inline std::basic_string<T_CHAR>
+mstr_quote(const std::basic_string<T_CHAR>& str)
 {
-    std::string ret = "\"";
+    std::basic_string<T_CHAR> ret;
+    ret += T_CHAR('\"');
     ret += mstr_escape(str);
-    ret += "\"";
+    ret += T_CHAR('\"');
     return ret;
 }
 

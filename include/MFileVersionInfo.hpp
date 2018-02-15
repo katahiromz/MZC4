@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILEVERSIONINFO_HPP_
-#define MZC4_MFILEVERSIONINFO_HPP_      2   /* Version 2 */
+#define MZC4_MFILEVERSIONINFO_HPP_      3   /* Version 3 */
 
 struct MLangAndCodePage;
 class MFileVersionInfo;
@@ -21,9 +21,17 @@ class MFileVersionInfo;
 
 // MString
 #ifndef MString
-    #include <string>       // std::string and std::wstring
-    typedef std::string     MStringA;
-    typedef std::wstring    MStringW;
+    #include <string>       // for std::basic_string, std::string, ...
+    typedef std::string MStringA;
+    #ifdef _WIN32
+        #include <tchar.h>      // Windows generic text mapping
+        #ifdef _MBCS
+            #include <mbstring.h>   // for _mbsrchr
+        #endif
+        typedef std::wstring MStringW;
+    #else
+        typedef std::u16string MStringW;
+    #endif
     #ifdef UNICODE
         #define MString     MStringW
     #else

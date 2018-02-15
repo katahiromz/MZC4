@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFONT_HPP_
-#define MZC4_MFONT_HPP_         4   /* Version 4 */
+#define MZC4_MFONT_HPP_         5   /* Version 5 */
 
 class MFont;
 
@@ -11,9 +11,17 @@ class MFont;
 
 // MString
 #ifndef MString
-    #include <string>       // std::string and std::wstring
-    typedef std::string     MStringA;
-    typedef std::wstring    MStringW;
+    #include <string>       // for std::basic_string, std::string, ...
+    typedef std::string MStringA;
+    #ifdef _WIN32
+        #include <tchar.h>      // Windows generic text mapping
+        #ifdef _MBCS
+            #include <mbstring.h>   // for _mbsrchr
+        #endif
+        typedef std::wstring MStringW;
+    #else
+        typedef std::u16string MStringW;
+    #endif
     #ifdef UNICODE
         #define MString     MStringW
     #else
