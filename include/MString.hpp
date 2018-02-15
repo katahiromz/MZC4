@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSTRING_HPP_
-#define MZC4_MSTRING_HPP_       7   /* Version 7 */
+#define MZC4_MSTRING_HPP_       8   /* Version 8 */
 
 #include <algorithm>    // for std::reverse
 
@@ -50,6 +50,16 @@
         #define TEXT(sz)   WIDE(sz)
     #else
         #define TEXT(sz)   sz
+    #endif
+#endif
+
+// WCHAR
+#ifndef __WCHAR_DEFINED
+    #define __WCHAR_DEFINED
+    #ifdef _WIN32
+        typedef wchar_t WCHAR;
+    #else
+        typedef char16_t WCHAR;
     #endif
 #endif
 
@@ -133,10 +143,21 @@ inline void mstr_trim(MStringW& str)
 {
     mstr_trim(str, WIDE(" \t\n\r\f\v"));
 }
+inline void mstr_trim(char *str)
+{
+    mstr_trim(str, " \t\n\r\f\v");
+}
+inline void mstr_trim(WCHAR *str)
+{
+    mstr_trim(str, WIDE(" \t\n\r\f\v"));
+}
 
 template <typename T_CHAR>
 std::basic_string<T_CHAR>
 mstr_repeat(const std::basic_string<T_CHAR>& str, size_t count);
+template <typename T_CHAR>
+std::basic_string<T_CHAR>
+mstr_repeat(const T_CHAR *str, size_t count);
 
 template <typename T_CHAR>
 std::basic_string<T_CHAR>
@@ -249,10 +270,12 @@ inline std::basic_string<T_CHAR> mchr_to_hex(T_CHAR ch)
     T_CHAR sz[32];
     std::basic_string<T_CHAR> ret;
     static const char hex[] = "0123456789ABCDEF";
-    while (ch)
+    int i = 0;
+    while (ch && i < sizeof(T_CHAR))
     {
         ret += T_CHAR(hex[ch & 0xF]);
         ch >>= 4;
+        ++i;
     }
     if (ret.empty())
         ret += T_CHAR('0');
@@ -303,7 +326,7 @@ inline bool mstr_is_text_unicode(const void *ptr, size_t len)
 }
 
 template <typename T_CHAR>
-void mstr_trim(std::basic_string<T_CHAR>& str, const T_CHAR *spaces)
+inline void mstr_trim(std::basic_string<T_CHAR>& str, const T_CHAR *spaces)
 {
     typedef std::basic_string<T_CHAR> string_type;
     size_t i = str.find_first_not_of(spaces);
@@ -319,7 +342,7 @@ void mstr_trim(std::basic_string<T_CHAR>& str, const T_CHAR *spaces)
 }
 
 template <typename T_CHAR>
-void mstr_trim(T_CHAR *str, const T_CHAR *spaces)
+inline void mstr_trim(T_CHAR *str, const T_CHAR *spaces)
 {
     typedef std::basic_string<T_CHAR> string_type;
     string_type s = str;
@@ -337,6 +360,13 @@ mstr_repeat(const std::basic_string<T_CHAR>& str, size_t count)
         ret += str;
     }
     return ret;
+}
+
+template <typename T_CHAR>
+inline std::basic_string<T_CHAR>
+mstr_repeat(const T_CHAR *str, size_t count)
+{
+    return mstr_repeat(std::basic_string<T_CHAR>(str), count);
 }
 
 template <typename T_CHAR>
