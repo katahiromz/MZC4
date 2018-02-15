@@ -5,6 +5,8 @@
 #ifndef MZC4_MSTRING_HPP_
 #define MZC4_MSTRING_HPP_       7   /* Version 7 */
 
+#include <algorithm>    // for std::reverse
+
 // class MString;
 // class MStringA;
 // class MStringW;
@@ -105,6 +107,9 @@ struct MTextType
 // string
 
 template <typename T_CHAR>
+std::basic_string<T_CHAR> mchr_to_hex(T_CHAR ch);
+
+template <typename T_CHAR>
 bool mstr_is_text_ascii(const T_CHAR *str, size_t len);
 
 template <typename T_CHAR>
@@ -133,8 +138,9 @@ template <typename T_CHAR>
 std::basic_string<T_CHAR>
 mstr_repeat(const std::basic_string<T_CHAR>& str, size_t count);
 
-std::string mstr_escape(const std::string& str);
-std::wstring mstr_escape(const std::wstring& str);
+template <typename T_CHAR>
+std::basic_string<T_CHAR>
+mstr_escape(const std::basic_string<T_CHAR>& str);
 
 template <typename T_STR>
 bool mstr_replace_all(T_STR& str, const T_STR& from, const T_STR& to);
@@ -238,6 +244,23 @@ inline const T_CHAR *mstrrchr(const T_CHAR *str, T_CHAR ch)
 ////////////////////////////////////////////////////////////////////////////
 
 template <typename T_CHAR>
+inline std::basic_string<T_CHAR> mchr_to_hex(T_CHAR ch)
+{
+    T_CHAR sz[32];
+    std::basic_string<T_CHAR> ret;
+    static const char hex[] = "0123456789ABCDEF";
+    while (ch)
+    {
+        ret += T_CHAR(hex[ch & 0xF]);
+        ch >>= 4;
+    }
+    if (ret.empty())
+        ret += T_CHAR('0');
+    std::reverse(ret.begin(), ret.end());
+    return ret;
+}
+
+template <typename T_CHAR>
 inline bool mstr_is_text_ascii(const T_CHAR *str, size_t len)
 {
     if (!len)
@@ -316,69 +339,33 @@ mstr_repeat(const std::basic_string<T_CHAR>& str, size_t count)
     return ret;
 }
 
-inline std::string mstr_escape(const std::string& str)
+template <typename T_CHAR>
+inline std::basic_string<T_CHAR>
+mstr_escape(const std::basic_string<T_CHAR>& str)
 {
-    std::string ret;
+    std::basic_string<T_CHAR> ret;
 
     for (size_t i = 0; i < str.size(); ++i)
     {
-        char ch = str[i];
+        T_CHAR ch = str[i];
         switch (ch)
         {
-        case '\"': ret += "\"\""; break;
-        case '\\': ret += "\\\\"; break;
-        case '\0': ret += "\\0"; break;
-        case '\a': ret += "\\a"; break;
-        case '\b': ret += "\\b"; break;
-        case '\f': ret += "\\f"; break;
-        case '\n': ret += "\\n"; break;
-        case '\r': ret += "\\r"; break;
-        case '\t': ret += "\\t"; break;
-        case '\v': ret += "\\v"; break;
+        case T_CHAR('\"'): ret += T_CHAR('\"'); ret += T_CHAR('\"'); break;
+        case T_CHAR('\\'): ret += T_CHAR('\\'); ret += T_CHAR('\\'); break;
+        case T_CHAR('\0'): ret += T_CHAR('\\'); ret += T_CHAR('0'); break;
+        case T_CHAR('\a'): ret += T_CHAR('\\'); ret += T_CHAR('a'); break;
+        case T_CHAR('\b'): ret += T_CHAR('\\'); ret += T_CHAR('b'); break;
+        case T_CHAR('\f'): ret += T_CHAR('\\'); ret += T_CHAR('f'); break;
+        case T_CHAR('\n'): ret += T_CHAR('\\'); ret += T_CHAR('n'); break;
+        case T_CHAR('\r'): ret += T_CHAR('\\'); ret += T_CHAR('r'); break;
+        case T_CHAR('\t'): ret += T_CHAR('\\'); ret += T_CHAR('t'); break;
+        case T_CHAR('\v'): ret += T_CHAR('\\'); ret += T_CHAR('v'); break;
         default:
             if (ch < 0x20)
             {
-                using namespace std;
-                char sz[32];
-                sprintf(sz, "\\x%02X", ch);
-                ret += sz;
-            }
-            else
-            {
-                ret += ch;
-            }
-        }
-    }
-
-    return ret;
-}
-
-inline std::wstring mstr_escape(const std::wstring& str)
-{
-    std::wstring ret;
-
-    for (size_t i = 0; i < str.size(); ++i)
-    {
-        wchar_t ch = str[i];
-        switch (ch)
-        {
-        case L'\"': ret += L"\"\""; break;
-        case L'\\': ret += L"\\\\"; break;
-        case L'\0': ret += L"\\0"; break;
-        case L'\a': ret += L"\\a"; break;
-        case L'\b': ret += L"\\b"; break;
-        case L'\f': ret += L"\\f"; break;
-        case L'\n': ret += L"\\n"; break;
-        case L'\r': ret += L"\\r"; break;
-        case L'\t': ret += L"\\t"; break;
-        case L'\v': ret += L"\\v"; break;
-        default:
-            if (ch < 0x20)
-            {
-                using namespace std;
-                wchar_t sz[32];
-                wsprintfW(sz, L"\\x%02X", (BYTE)ch);
-                ret += sz;
+                ret += T_CHAR('\\');
+                ret += T_CHAR('x');
+                ret += mchr_to_hex(ch);
             }
             else
             {
