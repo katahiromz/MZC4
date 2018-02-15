@@ -104,11 +104,11 @@ struct MTextType
 ////////////////////////////////////////////////////////////////////////////
 // string
 
-bool mstr_is_text_ascii(const char *str, size_t len);
-bool mstr_is_text_ascii(const std::string& str);
+template <typename T_CHAR>
+bool mstr_is_text_ascii(const T_CHAR *str, size_t len);
 
-bool mstr_is_text_ascii(const wchar_t *str, size_t len);
-bool mstr_is_text_ascii(const std::wstring& str);
+template <typename T_CHAR>
+bool mstr_is_text_ascii(const std::basic_string<T_CHAR>& str);
 
 bool mstr_is_text_utf8(const char *str, size_t len);
 bool mstr_is_text_utf8(const std::string& str);
@@ -237,40 +237,23 @@ inline const T_CHAR *mstrrchr(const T_CHAR *str, T_CHAR ch)
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline bool mstr_is_text_ascii(const char *str, size_t len)
+template <typename T_CHAR>
+inline bool mstr_is_text_ascii(const T_CHAR *str, size_t len)
 {
-    if (len == 0)
+    if (!len)
         return true;
 
     while (len-- > 0)
     {
-        if ((unsigned char)*str > 0x7F)
+        if (*str < 0 || *str > 0x7F)
             return false;
         ++str;
     }
     return true;
 }
 
-inline bool mstr_is_text_ascii(const std::string& str)
-{
-    return mstr_is_text_ascii(&str[0], str.size());
-}
-
-inline bool mstr_is_text_ascii(const wchar_t *str, size_t len)
-{
-    if (len == 0)
-        return true;
-
-    while (len-- > 0)
-    {
-        if ((unsigned short)*str > 0x7F)
-            return false;
-        ++str;
-    }
-    return true;
-}
-
-inline bool mstr_is_text_ascii(const std::wstring& str)
+template <typename T_CHAR>
+inline bool mstr_is_text_ascii(const std::basic_string<T_CHAR>& str)
 {
     return mstr_is_text_ascii(&str[0], str.size());
 }
