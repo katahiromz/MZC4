@@ -5,7 +5,7 @@
 // contains some scrolled child windows.
 
 #ifndef MZC4_MSCROLLVIEW_HPP_
-#define MZC4_MSCROLLVIEW_HPP_       2       /* Version 2 */
+#define MZC4_MSCROLLVIEW_HPP_       3       /* Version 3 */
 
 class MScrollView;
 struct MScrollCtrlInfo;
@@ -608,7 +608,7 @@ inline void MScrollView::UpdateCtrlsPos()
                 NULL,
                 rcCtrl.left - ScrollPos().x, rcCtrl.top - ScrollPos().y,
                 rcCtrl.Width(), rcCtrl.Height(),
-                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+                SWP_NOACTIVATE | SWP_NOZORDER);
         }
         ::EndDeferWindowPos(hDWP);
     }
