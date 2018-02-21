@@ -176,25 +176,7 @@ bool mdir_CreateRecurse(const MChar *pathname, bool fForce optional_(false));
     bool mdir_Delete(const MChar *dir);
 
     #ifdef __cplusplus
-        // MString
-        #ifndef MString
-            #include <string>       // for std::basic_string, std::string, ...
-            typedef std::string MStringA;
-            #ifdef _WIN32
-                #include <tchar.h>      // Windows generic text mapping
-                #ifdef _MBCS
-                    #include <mbstring.h>   // for _mbsrchr
-                #endif
-                typedef std::wstring MStringW;
-            #else
-                typedef std::u16string MStringW;
-            #endif
-            #ifdef UNICODE
-                #define MString     MStringW
-            #else
-                #define MString     MStringA
-            #endif
-        #endif
+        #include "MString.hpp"
 
         bool mdir_GetItemList(const MChar *dirname, std::vector<MString>& items,
                               bool sort = true);

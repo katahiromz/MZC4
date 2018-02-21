@@ -14,25 +14,7 @@ class MMenu;
 #endif
 #include <cassert>          // assert
 
-// MString
-#ifndef MString
-    #include <string>       // for std::basic_string, std::string, ...
-    typedef std::string MStringA;
-    #ifdef _WIN32
-        #include <tchar.h>      // Windows generic text mapping
-        #ifdef _MBCS
-            #include <mbstring.h>   // for _mbsrchr
-        #endif
-        typedef std::wstring MStringW;
-    #else
-        typedef std::u16string MStringW;
-    #endif
-    #ifdef UNICODE
-        #define MString     MStringW
-    #else
-        #define MString     MStringA
-    #endif
-#endif
+#include "MString.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 
