@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    60     /* Version 60 */
+#define MZC4_MWINDOWBASE_HPP_    59     /* Version 59 */
 
 class MWindowBase;
 class MDialogBase;
@@ -70,39 +70,13 @@ class MDialogBase;
 
 // MString
 #ifndef MString
-    #include <string>       // for std::basic_string, std::string, ...
-    typedef std::string MStringA;
-    #ifdef _WIN32
-        #include <tchar.h>      // Windows generic text mapping
-        #ifdef _MBCS
-            #include <mbstring.h>   // for _mbsrchr
-        #endif
-        typedef std::wstring MStringW;
-    #else
-        typedef std::u16string MStringW;
-    #endif
+    #include <string>       // std::string and std::wstring
+    typedef std::string     MStringA;
+    typedef std::wstring    MStringW;
     #ifdef UNICODE
         #define MString     MStringW
     #else
         #define MString     MStringA
-    #endif
-#endif
-
-// WIDE
-#ifndef WIDE
-    #ifdef _WIN32
-        #define WIDE(sz) L##sz
-    #else
-        #define WIDE(sz) u##sz
-    #endif
-#endif
-
-// TEXT
-#ifndef TEXT
-    #ifdef UNICODE
-        #define TEXT(sz)   WIDE(sz)
-    #else
-        #define TEXT(sz)   sz
     #endif
 #endif
 
@@ -317,10 +291,18 @@ public:
         return hwnd;
     }
 
+    virtual void PostSubclassDx(HWND hwnd)
+    {
+    }
+
     BOOL SubclassDx(HWND hwnd)
     {
         Attach(hwnd);
         m_fnOldProc = SubclassWindow(hwnd, MWindowBase::WindowProc);
+        if (m_fnOldProc)
+        {
+            PostSubclassDx(hwnd);
+        }
         return m_fnOldProc != NULL;
     }
 
