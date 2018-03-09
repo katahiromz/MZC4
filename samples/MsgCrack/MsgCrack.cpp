@@ -145,22 +145,23 @@ public:
 
         // find "DATA.DAT" file
         TCHAR *pch = _tcsrchr(Path, TEXT('\\'));
-        lstrcpy(pch, TEXT("\\DATA.DAT"));
+        size_t diff = pch - Path;
+        StringCchCopy(pch, diff, TEXT("\\DATA.DAT"));
         if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
         {
-            lstrcpy(pch, TEXT("\\..\\DATA.DAT"));
+            StringCchCopy(pch, diff, TEXT("\\..\\DATA.DAT"));
             if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
             {
-                lstrcpy(pch, TEXT("\\..\\..\\DATA.DAT"));
+                StringCchCopy(pch, diff, TEXT("\\..\\..\\DATA.DAT"));
                 if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
                 {
-                    lstrcpy(pch, TEXT("\\..\\samples\\MsgCrack\\DATA.DAT"));
+                    StringCchCopy(pch, diff, TEXT("\\..\\samples\\MsgCrack\\DATA.DAT"));
                     if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
                     {
-                        lstrcpy(pch, TEXT("\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
+                        StringCchCopy(pch, diff, TEXT("\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
                         if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
                         {
-                            lstrcpy(pch, TEXT("\\..\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
+                            StringCchCopy(pch, diff, TEXT("\\..\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
                         }
                     }
                 }

@@ -199,7 +199,7 @@ struct MProcessMakerTest : public MWindowBase
         {
             char buf[256];
             ::GetWindowTextA(m_hTextBox, buf, _countof(buf));
-            lstrcatA(buf, "\r");
+            StringCchCopyA(buf, _countof(buf), "\r");
             int len = lstrlenA(buf);
             DWORD cbWritten;
             m_hInputWrite.WriteFile(buf, len, &cbWritten);

@@ -556,7 +556,9 @@ MZC_INLINE MChar *mpath_SetDotExt(MChar *pathname, const MChar *dot_ext)
     assert(pathname);
     assert(dot_ext);
 #ifdef _WIN32
-    lstrcpy(mpath_FindDotExt(pathname), dot_ext);
+    MChar *pch = mpath_FindDotExt(pathname);
+    size_t diff = pch - pathname;
+    StringCchCopy(pch, diff, dot_ext);
 #else
     strcpy(mpath_FindDotExt(pathname), dot_ext);
 #endif
@@ -684,7 +686,9 @@ MZC_INLINE MChar *mpath_SetTitle(MChar *pathname, const MChar *title)
 {
     USING_NAMESPACE_STD;
 #ifdef _WIN32
-    lstrcpy(mpath_FindTitle(pathname), title);
+    MChar *pch = mpath_FindTitle(pathname);
+    size_t diff = pch - pathname;
+    StringCchCopy(pch, diff, title);
 #else
     strcpy(mpath_FindTitle(pathname), title);
 #endif
@@ -712,9 +716,9 @@ MZC_INLINE bool mdir_Remove(const MChar *pathname)
         assert(pathname);
         assert(info);
 
-        lstrcpy(spec, pathname);
+        StringCchCopy(spec, _countof(spec), pathname);
         mpath_AddSep(spec);
-        lstrcat(spec, TEXT("*"));
+        StringCchCat(spec, _countof(spec), TEXT("*"));
 
         dirp = FindFirstFile(spec, info);
         if (dirp == INVALID_HANDLE_VALUE)

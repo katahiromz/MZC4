@@ -30,7 +30,7 @@ public:
         for (INT i = 0; i < 3; ++i)
         {
             TCHAR szText[64];
-            wsprintf(szText, TEXT("m_edit[%d]"), i);
+            StringCchPrintf(szText, _countof(szText), TEXT("m_edit[%d]"), i);
             style = WS_CHILD | WS_VISIBLE | ES_CENTER;
             exstyle = WS_EX_CLIENTEDGE;
             if (!m_edit[i].CreateAsChildDx(m_splitter, szText, style, exstyle))

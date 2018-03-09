@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    59     /* Version 59 */
+#define MZC4_MWINDOWBASE_HPP_    60     /* Version 60 */
 
 class MWindowBase;
 class MDialogBase;
@@ -55,6 +55,8 @@ class MDialogBase;
 #endif
 
 #include <dlgs.h>           // dialog control IDs
+
+#include <strsafe.h>        // StringCch* or StringCb*
 
 // standard C/C++ library
 #include <cassert>          // assert
@@ -686,7 +688,7 @@ inline VOID MZCAPIV DebugPrintDx(const char *format, ...)
         char buffer[512];
         va_list va;
         va_start(va, format);
-        ::wvsprintfA(buffer, format, va);
+        StringCchVPrintfA(buffer, _countof(buffer), format, va);
         va_end(va);
         OutputDebugStringA(buffer);
     #endif
@@ -698,7 +700,7 @@ inline VOID MZCAPIV DebugPrintDx(const WCHAR *format, ...)
         WCHAR buffer[512];
         va_list va;
         va_start(va, format);
-        ::wvsprintfW(buffer, format, va);
+        StringCchVPrintfW(buffer, _countof(buffer), format, va);
         va_end(va);
         OutputDebugStringW(buffer);
     #endif
