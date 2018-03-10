@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        31  /* Version 31 */
+#define MZC4_MFILEAPI_H_        32  /* Version 32 */
 
 /*
  * mpath_... functions
@@ -75,6 +75,10 @@
     #ifndef MChar
         typedef TCHAR MChar;
         #define MChar MChar
+    #endif
+
+    #ifndef NO_STRSAFE
+        #include <strsafe.h>
     #endif
 #else
     #ifdef __cplusplus
@@ -557,8 +561,12 @@ MZC_INLINE MChar *mpath_SetDotExt(MChar *pathname, const MChar *dot_ext)
     assert(dot_ext);
 #ifdef _WIN32
     MChar *pch = mpath_FindDotExt(pathname);
-    size_t diff = pch - pathname;
-    StringCchCopy(pch, diff, dot_ext);
+    #ifndef NO_STRSAFE
+        size_t diff = pch - pathname;
+        StringCchCopy(pch, diff, dot_ext);
+    #else
+        lstrcpy(pch, dot_ext);
+    #endif
 #else
     strcpy(mpath_FindDotExt(pathname), dot_ext);
 #endif
@@ -687,8 +695,12 @@ MZC_INLINE MChar *mpath_SetTitle(MChar *pathname, const MChar *title)
     USING_NAMESPACE_STD;
 #ifdef _WIN32
     MChar *pch = mpath_FindTitle(pathname);
-    size_t diff = pch - pathname;
-    StringCchCopy(pch, diff, title);
+    #ifndef NO_STRSAFE
+        size_t diff = pch - pathname;
+        StringCchCopy(pch, diff, title);
+    #else
+        lstrcpy(pch, title);
+    #endif
 #else
     strcpy(mpath_FindTitle(pathname), title);
 #endif
@@ -716,9 +728,15 @@ MZC_INLINE bool mdir_Remove(const MChar *pathname)
         assert(pathname);
         assert(info);
 
-        StringCchCopy(spec, _countof(spec), pathname);
-        mpath_AddSep(spec);
-        StringCchCat(spec, _countof(spec), TEXT("*"));
+        #ifndef NO_STRSAFE
+            StringCchCopy(spec, _countof(spec), pathname);
+            mpath_AddSep(spec);
+            StringCchCat(spec, _countof(spec), TEXT("*"));
+        #else
+            lstrcpyn(spec, pathname, _countof(spec));
+            mpath_AddSep(spec);
+            lstrcat(spec, _countof(spec), TEXT("*"));
+        #endif
 
         dirp = FindFirstFile(spec, info);
         if (dirp == INVALID_HANDLE_VALUE)
