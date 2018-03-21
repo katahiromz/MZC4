@@ -10,7 +10,6 @@ The Concept
 * Providing the powerful framework for daily use
 * A Win32API-friendly design
 * Just copy the headers
-* Absolutely copyright-free, license-free
 
 Pull Requests are welcome! Please improve it!
 
