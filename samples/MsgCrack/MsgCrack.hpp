@@ -18,6 +18,7 @@
 #include "MString.hpp"          // MZC4 MString
 
 #include <map>                  // for std::map
+#include <fstream>              // for std::ifstream
 
 //////////////////////////////////////////////////////////////////////////////
 

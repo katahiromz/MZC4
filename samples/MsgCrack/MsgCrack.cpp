@@ -168,17 +168,17 @@ public:
             }
         }
 
-        using namespace std;
-        FILE *fp = _tfopen(Path, "r");
-        if (fp == NULL)
-            return FALSE;
-
-        static char buf[1024];
-        while (fgets(buf, 1024, fp) != NULL)
         {
-            ParseLine(buf);
+            std::ifstream ifs(Path);
+            if (ifs.fail())
+                return FALSE;
+
+            std::string str;
+            while (getline(ifs, str))
+            {
+                ParseLine(&str[0]);
+            }
         }
-        fclose(fp);
 
         return TRUE;
     }
