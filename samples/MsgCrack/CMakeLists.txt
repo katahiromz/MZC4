@@ -85,7 +85,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     endforeach()
 endif()
 
-
 # install the program
 install(TARGETS MsgCrack DESTINATION bin)
 
