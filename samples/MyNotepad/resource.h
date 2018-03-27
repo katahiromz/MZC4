@@ -18,6 +18,7 @@
 #define IDM_UNDO        112
 #define IDM_DATETIME    113
 #define IDM_DOTEST      114
+#define IDM_DOTEST2     115
 
 #define IDD_ABOUTBOX    1
 

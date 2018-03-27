@@ -96,6 +96,7 @@ BEGIN
     POPUP "&Test"
     BEGIN
         MENUITEM "Do Test!",                IDM_DOTEST
+        MENUITEM "Do Test! 2",              IDM_DOTEST2
     END
     POPUP "&Help"
     BEGIN

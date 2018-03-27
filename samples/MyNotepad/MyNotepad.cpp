@@ -347,6 +347,9 @@ struct MMyNotepad : public MWindowBase
         case IDM_DOTEST:
             OnDoTest();
             break;
+        case IDM_DOTEST2:
+            OnDoTest2();
+            break;
         }
     }
 
@@ -357,6 +360,14 @@ struct MMyNotepad : public MWindowBase
         mstr_replace_all(text, TEXT("<"), TEXT("&lt;"));
         mstr_replace_all(text, TEXT(">"), TEXT("&gt;"));
         mstr_replace_all(text, TEXT("(=AmP=)"), TEXT("&amp;"));
+        m_edit_ctrl.SetWindowText(text.c_str());
+    }
+
+    void OnDoTest2()
+    {
+        MString text = m_edit_ctrl.GetWindowText();
+        mstr_replace_all(text, TEXT("\r\n"), TEXT("\\r\\n"));
+        mstr_replace_all(text, TEXT("\r\n"), TEXT("\\n"));
         m_edit_ctrl.SetWindowText(text.c_str());
     }
 
