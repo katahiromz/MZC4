@@ -366,6 +366,7 @@ struct MMyNotepad : public MWindowBase
     void OnDoTest2()
     {
         MString text = m_edit_ctrl.GetWindowText();
+        mstr_replace_all(text, TEXT("\\"), TEXT("\\\\"));
         mstr_replace_all(text, TEXT("\r\n"), TEXT("\\r\\n"));
         mstr_replace_all(text, TEXT("\r\n"), TEXT("\\n"));
         m_edit_ctrl.SetWindowText(text.c_str());
