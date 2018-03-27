@@ -125,8 +125,12 @@ public:
         mstr_trim(str2);
         mstr_trim(str3);
 
+        mstr_replace_all(str3, "\\\\", "<<>>");
+
         mstr_replace_all(str3, "\\r\\n", "\r\n");
         mstr_replace_all(str3, "\\n", "\r\n");
+
+        mstr_replace_all(str3, "<<>>", "\\");
 
         m_map1[str1] = str3;
         m_map2[str2] = str3;
