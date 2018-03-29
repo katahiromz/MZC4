@@ -10,7 +10,7 @@ MsgCrack
 動作環境
 --------
 
-Windows 98/Me/2000/XP/2003/Vista/7/8/10
+Windows XP/2003/Vista/7/8/10
 
 
 説明
