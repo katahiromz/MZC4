@@ -1,4 +1,4 @@
-// MAccel.hpp -- Win32API header control wrapper                -*- C++ -*-
+// MHeaderCtrl.hpp -- Win32API header control wrapper                -*- C++ -*-
 // This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
 ////////////////////////////////////////////////////////////////////////////
 

@@ -7,7 +7,6 @@
 
 #include <windows.h>
 #include <commctrl.h>
-#include <dlgs.h>
 
 #ifndef IDC_STATIC
     #define IDC_STATIC  -1

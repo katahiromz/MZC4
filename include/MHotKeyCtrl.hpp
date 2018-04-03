@@ -1,4 +1,4 @@
-// MAccel.hpp -- Win32API hot-key control wrapper               -*- C++ -*-
+// MHotKeyCtrl.hpp -- Win32API hot-key control wrapper               -*- C++ -*-
 // This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
 ////////////////////////////////////////////////////////////////////////////
 
