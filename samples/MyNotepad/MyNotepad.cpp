@@ -304,6 +304,45 @@ struct MMyNotepad : public MWindowBase
         m_edit_ctrl.ReplaceSel(str.c_str(), TRUE);
     }
 
+    void OnPaste(HWND hwnd)
+    {
+        // NOTE: WM_PASTE won't paste big text.
+
+        if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
+            return;
+
+        if (!OpenClipboard(hwnd))
+            return;
+
+        if (HGLOBAL hGlobal = GetClipboardData(CF_UNICODETEXT))
+        {
+            SIZE_T siz = GlobalSize(hGlobal);
+            if (LPVOID pv = GlobalLock(hGlobal))
+            {
+                MStringW str1;
+                str1.resize(siz / sizeof(WCHAR));
+                CopyMemory(&str1[0], pv, siz);
+
+                MString str2 = m_edit_ctrl.GetWindowText();
+                DWORD dw = Edit_GetSel(m_edit_ctrl);
+                UINT i0 = LOWORD(dw);
+                UINT i1 = HIWORD(dw);
+                MStringW s1 = MTextToWide(CP_ACP, str2.substr(0, i0)).c_str();
+                MStringW s2 = MTextToWide(CP_ACP, str2.substr(i1)).c_str();
+
+                MStringW str3 = s1 + str1;
+                MStringW str4 = str3 + s2;
+                SetWindowTextW(m_edit_ctrl, str4.c_str());
+                SendMessageW(m_edit_ctrl, EM_SETSEL, WPARAM(str3.size()), LPARAM(str3.size()));
+                SendMessage(m_edit_ctrl, EM_SCROLLCARET, 0, 0);
+
+                GlobalUnlock(hGlobal);
+            }
+        }
+
+        CloseClipboard();
+    }
+
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     {
         switch (id)
@@ -330,7 +369,7 @@ struct MMyNotepad : public MWindowBase
             m_edit_ctrl.Copy();
             break;
         case IDM_PASTE:
-            m_edit_ctrl.Paste();
+            OnPaste(hwnd);
             break;
         case IDM_DELETE:
             m_edit_ctrl.Clear();

@@ -17,6 +17,7 @@
 #include "MFileDialog.hpp"      // MZC4 MFileDialog
 #include "MFontDialog.hpp"      // MZC4 MFontDialog
 #include "MColorDialog.hpp"     // MZC4 MColorDialog
+#include "MString.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
 
