@@ -74,8 +74,7 @@ struct MMyBrowser : public MWindowBase
         if (!m_static.CreateAsChildDx(hwnd, TEXT("Address:"), style, exstyle, stc1))
             return FALSE;
 
-        style = ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | ES_MULTILINE | ES_AUTOVSCROLL |
-                WS_BORDER | WS_TABSTOP | WS_VISIBLE;
+        style = ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | WS_BORDER | WS_TABSTOP | WS_VISIBLE;
         exstyle = WS_EX_CLIENTEDGE;
         if (!m_address_box.CreateAsChildDx(hwnd, m_url.c_str(), style, exstyle, edt1))
             return FALSE;
@@ -205,7 +204,7 @@ struct MMyBrowser : public MWindowBase
         ::MoveWindow(m_static,
             rc.left, rc.top, sizAddress.cx, sizGo.cy, TRUE);
         ::MoveWindow(m_address_box, rc.left + sizAddress.cx, rc.top,
-                     siz.cx - sizGo.cx - sizAddress.cx, rc.top + sizGo.cy, TRUE);
+                     siz.cx - sizGo.cx - sizAddress.cx, rc.top, TRUE);
         ::MoveWindow(m_go_button, rc.left + siz.cx - sizGo.cx,
                      rc.top, sizGo.cx, sizGo.cy, TRUE);
 
