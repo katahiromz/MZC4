@@ -174,7 +174,6 @@ struct MMyBrowser : public MWindowBase
         ::GetClientRect(hwnd, &rc);
         SIZE siz = SizeFromRectDx(&rc);
 
-
         SIZE sizTB;
         if (IsWindowVisible(m_toolbar))
         {
