@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MOLECTRL_HPP_
-#define MZC4_MOLECTRL_HPP_      25      /* Version 25 */
+#define MZC4_MOLECTRL_HPP_      26      /* Version 26 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -120,13 +120,13 @@ struct MVariant : VARIANT
 
     operator BYTE *()
     {
-        assert(vt == VT_ARRAY | VT_UI1);
+        assert(vt == (VT_ARRAY | VT_UI1));
         return reinterpret_cast<BYTE *>(parray->pvData);
     }
 
     operator const BYTE *() const
     {
-        assert(vt == VT_ARRAY | VT_UI1);
+        assert(vt == (VT_ARRAY | VT_UI1));
         return reinterpret_cast<const BYTE *>(parray->pvData);
     }
 
@@ -307,10 +307,10 @@ protected:
     RECT            m_rc;
     CLSID           m_clsid;
 
-    BOOL CreateInstanceByString(const OLECHAR *str);
-    BOOL CreateInstanceByProgID(const OLECHAR *progid);
+    BOOL CreateInstanceByString(OLECHAR *str);
+    BOOL CreateInstanceByProgID(OLECHAR *progid);
     BOOL CreateInstanceByCLSID(const CLSID& clsid);
-    BOOL CreateInstanceByURL(const OLECHAR *url);
+    BOOL CreateInstanceByURL(OLECHAR *url);
     VOID DestroyInstance();
 
     BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct);
@@ -467,14 +467,14 @@ inline MOleCtrl::~MOleCtrl()
 {
 }
 
-inline BOOL MOleCtrl::CreateInstanceByString(const OLECHAR *str)
+inline BOOL MOleCtrl::CreateInstanceByString(OLECHAR *str)
 {
     CLSID clsid;
     ::CLSIDFromString(str, &clsid);
     return CreateInstanceByCLSID(clsid);
 }
 
-inline BOOL MOleCtrl::CreateInstanceByProgID(const OLECHAR *progid)
+inline BOOL MOleCtrl::CreateInstanceByProgID(OLECHAR *progid)
 {
     CLSID clsid;
     ::CLSIDFromProgID(progid, &clsid);
@@ -682,7 +682,7 @@ inline HRESULT MOleCtrl::get_LocationURL(BSTR *LocationURL)
     return hr;
 }
 
-inline BOOL MOleCtrl::CreateInstanceByURL(const OLECHAR *url)
+inline BOOL MOleCtrl::CreateInstanceByURL(OLECHAR *url)
 {
     if (!CreateInstanceByCLSID(CLSID_WebBrowser))
         return FALSE;

@@ -6,6 +6,9 @@
 # CMake minimum version
 cmake_minimum_required(VERSION 2.4)
 
+# set new policy
+cmake_policy(SET CMP0054 NEW)
+
 # project name and language
 #project(MsgCrack C)
 project(MsgCrack CXX)
@@ -84,8 +87,5 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         string(REPLACE "/MD" "/MT" ${CompilerFlags} "${${CompilerFlags}}")
     endforeach()
 endif()
-
-# install the program
-install(TARGETS MsgCrack DESTINATION bin)
 
 ##############################################################################

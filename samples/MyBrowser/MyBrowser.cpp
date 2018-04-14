@@ -16,12 +16,13 @@ struct MMyBrowser : public MWindowBase
     HICON       m_hIconSm;      // the small icon handle
     HACCEL      m_hAccel;       // the accelerator handle
     HFONT       m_hFont;        // the UI font
-    MWebBrowser m_browser;      // the web browser
+    MOleCtrl    m_browser;      // the web browser
     MStaticCtrl m_static;       // the label
     MEditCtrl   m_address_box;  // the address box
     MButton     m_go_button;    // the "Go!" button
     MStatusBar  m_status_bar;   // the status bar
     MString     m_url;          // the URL
+    MToolBarCtrl    m_toolbar;
 
     // constructors
     MMyBrowser(int argc, TCHAR **targv, HINSTANCE hInst) :
@@ -89,12 +90,31 @@ struct MMyBrowser : public MWindowBase
         if (!m_status_bar.CreateAsChildDx(hwnd, NULL, style, exstyle, ctl1))
             return FALSE;
 
-        if (!m_browser.Create(hwnd, m_url.c_str()))
+        if (!m_browser.CreateAsChildDx(hwnd, m_url.c_str()))
             return FALSE;
 
         SetWindowFont(m_static, m_hFont, TRUE);
         SetWindowFont(m_address_box, m_hFont, TRUE);
         SetWindowFont(m_go_button, m_hFont, TRUE);
+
+        style = WS_CHILD | WS_VISIBLE | CCS_TOP | TBSTYLE_TOOLTIPS;
+        if (!m_toolbar.CreateAsChildDx(hwnd, NULL, style))
+            return FALSE;
+        
+        m_toolbar.SetButtonStructSize(sizeof(TBBUTTON));
+        SIZE siz = { 0, 0 };
+        m_toolbar.SetBitmapSize(siz);
+
+        INT iBack = m_toolbar.AddString(IDS_BACK);
+        INT iForward = m_toolbar.AddString(IDS_FORWARD);
+
+        TBBUTTON buttons[] =
+        {
+            { -1, IDM_BACK, TBSTATE_ENABLED, BTNS_BUTTON | BTNS_AUTOSIZE, {0}, 0, iBack },
+            { -1, IDM_FORWARD, TBSTATE_ENABLED, BTNS_BUTTON | BTNS_AUTOSIZE, {0}, 0, iForward },
+        };
+        BOOL b = m_toolbar.AddButtons(_countof(buttons), buttons);
+        assert(b);
 
         PostMessageDx(WM_COMMAND);
 
@@ -134,9 +154,6 @@ struct MMyBrowser : public MWindowBase
                 }
             }
 
-            if (m_browser.TranslateAccelerator(&msg))
-                continue;
-
             if (::TranslateAccelerator(m_hwnd, m_hAccel, &msg))
                 continue;
 
@@ -148,7 +165,6 @@ struct MMyBrowser : public MWindowBase
 
     void OnDestroy(HWND hwnd)
     {
-        m_browser.Destroy();
         ::PostQuitMessage(0);
     }
 
@@ -157,7 +173,22 @@ struct MMyBrowser : public MWindowBase
         RECT rc;
         ::GetClientRect(hwnd, &rc);
         SIZE siz = SizeFromRectDx(&rc);
-        
+
+
+        SIZE sizTB;
+        if (IsWindowVisible(m_toolbar))
+        {
+            m_toolbar.AutoSize();
+            RECT rcTB;
+            GetWindowRect(m_toolbar, &rcTB);
+            sizTB = SizeFromRectDx(&rcTB);
+        }
+        else
+        {
+            sizTB.cy = 0;
+        }
+        rc.top += sizTB.cy;
+
         SIZE sizGo, sizAddress;
         HDC hDC = ::GetDC(m_go_button);
         ::GetTextExtentPoint32(hDC, TEXT("Go!"), 3, &sizGo);
@@ -178,24 +209,22 @@ struct MMyBrowser : public MWindowBase
                      siz.cx - sizGo.cx - sizAddress.cx, rc.top + sizGo.cy, TRUE);
         ::MoveWindow(m_go_button, rc.left + siz.cx - sizGo.cx,
                      rc.top, sizGo.cx, sizGo.cy, TRUE);
-        m_browser.MoveWindow(rc.left, rc.top + sizGo.cy,
-            siz.cx, siz.cy - sizGo.cy - sizStatus.cy);
+
+        ::MoveWindow(m_browser, rc.left, rc.top + sizGo.cy,
+            siz.cx, siz.cy - sizGo.cy - sizStatus.cy - sizTB.cy, TRUE);
     }
 
-    void Navigate(LPCTSTR pszURL)
+    void Navigate(LPCWSTR pszURL)
     {
-        HWND hwnd;
-        if (m_browser.GetActXCtrl())
+        HWND hwnd = NULL;
+        m_browser.GetWindow(&hwnd);
+        if (hwnd)
         {
-            m_browser.GetActXCtrl()->GetWindow(&hwnd);
-            if (hwnd)
-            {
-                ::SetFocus(hwnd);
-            }
+            ::SetFocus(hwnd);
         }
         m_url = pszURL;
         m_address_box.SetWindowText(pszURL);
-        m_browser.Navigate(pszURL);
+        m_browser.NavigateDx(pszURL);
     }
 
     // IDM_EXIT
@@ -206,17 +235,17 @@ struct MMyBrowser : public MWindowBase
 
     void OnGoogle()
     {
-        Navigate(TEXT("https://google.com"));
+        Navigate(L"https://google.com");
     }
 
     void OnYahoo()
     {
-        Navigate(TEXT("https://yahoo.com"));
+        Navigate(L"https://yahoo.com");
     }
 
     void OnBlank()
     {
-        Navigate(TEXT("about:blank"));
+        Navigate(L"about:blank");
     }
 
     void OnRefresh()
@@ -234,7 +263,7 @@ struct MMyBrowser : public MWindowBase
     void OnGo()
     {
         MString url = m_address_box.GetWindowText();
-        Navigate(url.c_str());
+        Navigate(MTextToWide(CP_ACP, url).c_str());
     }
 
     void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -268,6 +297,12 @@ struct MMyBrowser : public MWindowBase
             break;
         case IDM_REFRESH:
             OnRefresh();
+            break;
+        case IDM_BACK:
+            m_browser.GoBack();
+            break;
+        case IDM_FORWARD:
+            m_browser.GoForward();
             break;
         }
         m_status_bar.SetText(TEXT("Ready"));
@@ -325,10 +360,10 @@ void MMyBrowser::OnAbout()
 // Win32 App main function
 
 extern "C"
-INT APIENTRY _tWinMain(
+INT APIENTRY WinMain(
     HINSTANCE   hInstance,
     HINSTANCE   hPrevInstance,
-    LPTSTR      lpCmdLine,
+    LPSTR       lpCmdLine,
     INT         nCmdShow)
 {
     int ret;
@@ -337,7 +372,7 @@ INT APIENTRY _tWinMain(
         MMyBrowser app(__argc, __targv, hInstance);
 
         ::InitCommonControls();
-        HRESULT hres = ::CoInitialize(NULL);
+        HRESULT hres = ::OleInitialize(NULL);
 
         if (app.StartDx(nCmdShow))
         {
@@ -350,7 +385,7 @@ INT APIENTRY _tWinMain(
 
         if (hres == S_OK)
         {
-            ::CoUninitialize();
+            ::OleUninitialize();
         }
     }
 

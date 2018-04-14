@@ -9,7 +9,7 @@
 #include "resource.h"           // local resource IDs
 #include "targetver.h"          // target version
 
-#include "MDialogBase.hpp"      // MZC4 MDialogBase
+#include "MWindowBase.hpp"      // MZC4 MDialogBase
 #include "MResizable.hpp"       // MZC4 MResizable
 #include "MMinMaxInfo.hpp"      // MZC4 MMinMaxInfo
 

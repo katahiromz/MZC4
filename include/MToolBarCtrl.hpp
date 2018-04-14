@@ -553,7 +553,7 @@ inline VOID MToolBarCtrl::Customize()
 
 inline INT MToolBarCtrl::AddString(UINT nStringID)
 {
-    return (INT)SendMessageDx(TB_ADDSTRING, (WPARAM)::GetModuleHandle(NULL), (LPARAM)nStringID);
+    return (INT)SendMessageDx(TB_ADDSTRING, 0, (LPARAM)LoadStringDx(nStringID));
 }
 
 inline INT MToolBarCtrl::AddStrings(LPCTSTR pszzStrings)

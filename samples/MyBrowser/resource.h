@@ -13,6 +13,8 @@
 #define IDM_ADDRESS     106
 #define IDM_GO          107
 #define IDM_REFRESH     108
+#define IDM_BACK        109
+#define IDM_FORWARD     110
 
 #define IDD_ABOUTBOX 1
 
@@ -25,6 +27,8 @@
 #define IDS_CANNOTOPEN  4
 #define IDS_CANNOTSAVE  5
 #define IDS_QUERYSAVE   6
+#define IDS_BACK        7
+#define IDS_FORWARD     8
 
 //////////////////////////////////////////////////////////////////////////////
 // Next default values for new objects

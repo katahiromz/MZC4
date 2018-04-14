@@ -17,8 +17,8 @@
 // Version Info
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     0, 2, 0, 0
-PRODUCTVERSION  0, 2, 0, 0
+FILEVERSION     0, 3, 0, 0
+PRODUCTVERSION  0, 3, 0, 0
 FILEOS          VOS_NT_WINDOWS32
 FILETYPE        VFT_APP
 BEGIN
@@ -29,10 +29,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "@PROGRAM_AUTHORS\0"
             VALUE "FileDescription", "MyBrowser\0"
-            VALUE "FileVersion", "0.2.0\0"
-            VALUE "LegalCopyright", "Copyright (C) 2015-2017 Katayama Hirofumi MZ\0"
+            VALUE "FileVersion", "0.3.0\0"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2018 Katayama Hirofumi MZ\0"
             VALUE "ProductName", "MyBrowser\0"
-            VALUE "ProductVersion", "0.2.0\0"
+            VALUE "ProductVersion", "0.3.0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -108,6 +108,8 @@ BEGIN
     IDS_CANNOTOPEN, "Cannot open."
     IDS_CANNOTSAVE, "Cannot save."
     IDS_QUERYSAVE,  "You modified. Save now?"
+    IDS_BACK,       "Back"
+    IDS_FORWARD,    "Forward"
 END
 
 /////////////////////////////////////////////////////////////////////////////

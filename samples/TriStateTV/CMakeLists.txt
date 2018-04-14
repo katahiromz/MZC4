@@ -6,6 +6,9 @@
 # CMake minimum version
 cmake_minimum_required(VERSION 2.4)
 
+# set new policy
+cmake_policy(SET CMP0054 NEW)
+
 # project name and language
 #project(TriStateTV C)
 project(TriStateTV CXX)

@@ -3,7 +3,7 @@
  */
 
 #ifndef MZC4_MFILEAPI_H_
-#define MZC4_MFILEAPI_H_        32  /* Version 32 */
+#define MZC4_MFILEAPI_H_        33  /* Version 33 */
 
 /*
  * mpath_... functions
@@ -669,8 +669,8 @@ MZC_INLINE MChar *mpath_FindTitle(const MChar *pathname)
     USING_NAMESPACE_STD;
 #ifdef _WIN32
     const MChar *ret;
-    MChar *pch1 = _tcsrchr(pathname, _T('\\'));
-    MChar *pch2 = _tcsrchr(pathname, _T('/'));
+    const MChar *pch1 = _tcsrchr(pathname, _T('\\'));
+    const MChar *pch2 = _tcsrchr(pathname, _T('/'));
     if (!pch1 && !pch2)
         ret = pathname;
     else if (!pch1)
@@ -735,7 +735,7 @@ MZC_INLINE bool mdir_Remove(const MChar *pathname)
         #else
             lstrcpyn(spec, pathname, _countof(spec));
             mpath_AddSep(spec);
-            lstrcat(spec, _countof(spec), TEXT("*"));
+            lstrcat(spec, TEXT("*"));
         #endif
 
         dirp = FindFirstFile(spec, info);

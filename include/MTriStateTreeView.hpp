@@ -209,6 +209,7 @@ MTriStateTreeView::OnTriStateTreeViewClick(HWND hwnd, WPARAM wParam, LPARAM lPar
     nState = GetNextCheckState(hItem, nState);
     assert(IsValidCheckState(nState));
     ChangeItemState(hItem, nState);
+	return 0;
 }
 
 inline LRESULT

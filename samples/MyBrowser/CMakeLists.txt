@@ -6,6 +6,9 @@
 # CMake minimum version
 cmake_minimum_required(VERSION 2.4)
 
+# set new policy
+cmake_policy(SET CMP0054 NEW)
+
 # project name and language
 #project(MyBrowser C)
 project(MyBrowser CXX)
@@ -85,7 +88,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     endforeach()
 endif()
 
-# install the program
-install(TARGETS MyBrowser DESTINATION bin)
+add_definitions(-DUNICODE -D_UNICODE)
 
 ##############################################################################
