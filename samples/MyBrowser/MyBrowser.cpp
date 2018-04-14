@@ -144,6 +144,12 @@ struct MMyBrowser : public MWindowBase
         MSG msg;
         while (::GetMessage(&msg, NULL, 0, 0))
         {
+            if (::TranslateAccelerator(m_hwnd, m_hAccel, &msg))
+                continue;
+
+            if (m_browser.TranslateAccelerator(&msg))
+                continue;
+
             if (msg.hwnd == m_address_box.m_hwnd)
             {
                 if (msg.message == WM_KEYDOWN &&
@@ -152,9 +158,6 @@ struct MMyBrowser : public MWindowBase
                     PostMessageDx(WM_COMMAND, IDM_GO, 0);
                 }
             }
-
-            if (::TranslateAccelerator(m_hwnd, m_hAccel, &msg))
-                continue;
 
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);

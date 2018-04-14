@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MOLECTRL_HPP_
-#define MZC4_MOLECTRL_HPP_      26      /* Version 26 */
+#define MZC4_MOLECTRL_HPP_      27      /* Version 27 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -770,9 +770,8 @@ inline BOOL MOleCtrl::TranslateAccelerator(LPMSG pMsg)
     {
         hr = pao->TranslateAccelerator(pMsg);
         pao->Release();
-        return TRUE;
     }
-    return FALSE;
+    return FAILED(hr);
 }
 
 inline IDispatch *MOleCtrl::GetDispatch()
