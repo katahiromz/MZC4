@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    67     /* Version 67 */
+#define MZC4_MWINDOWBASE_HPP_    72     /* Version 72 */
 
 class MWindowBase;
 class MDialogBase;
@@ -155,17 +155,23 @@ PopupMenuDx(HWND hwnd, HWND hContext, UINT nMenuID, INT iSubMenu, INT x, INT y);
 class MWindowBase
 {
 protected:
-    MSG m_msg;
+    DWORD           m_dwWindowBaseMagic;
+    MSG             m_msg;
 public:
-    HWND m_hwnd;
-    WNDPROC m_fnOldProc;
-    bool m_bDynamicCreated;
+    HWND            m_hwnd;
+    WNDPROC         m_fnOldProc;
+    MWindowBase *   m_pwndSub;
+    bool            m_bDynamicCreated;
 
-    MWindowBase() : m_hwnd(NULL), m_fnOldProc(NULL), m_bDynamicCreated(false)
+    MWindowBase() :
+        m_dwWindowBaseMagic(0xFEEDFEED), m_hwnd(NULL), m_fnOldProc(NULL),
+        m_pwndSub(NULL), m_bDynamicCreated(false)
     {
     }
 
-    MWindowBase(HWND hwnd) : m_hwnd(hwnd), m_fnOldProc(NULL), m_bDynamicCreated(false)
+    MWindowBase(HWND hwnd) :
+        m_dwWindowBaseMagic(0xFEEDFEED), m_hwnd(hwnd), m_fnOldProc(NULL),
+        m_pwndSub(NULL), m_bDynamicCreated(false)
     {
     }
 
@@ -204,7 +210,7 @@ public:
     {
         if (ptr)
         {
-            GetHandleMap().insert(std::make_pair(hwnd, ptr));
+            GetHandleMap()[hwnd] = ptr;
         }
         else
         {
@@ -245,6 +251,11 @@ public:
     virtual LRESULT MZCAPI
     DefaultProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
+        if (m_pwndSub)
+        {
+            assert(this != m_pwndSub);
+            return m_pwndSub->WindowProcDx(hwnd, uMsg, wParam, lParam);
+        }
         if (m_fnOldProc)
         {
             return ::CallWindowProc(m_fnOldProc, hwnd, uMsg, wParam, lParam);
@@ -292,16 +303,19 @@ public:
 
     BOOL Attach(HWND hwnd)
     {
+        MWindowBase *pwndSub = GetUserData(hwnd);
         m_hwnd = hwnd;
         SetUserData(m_hwnd, this);
+        m_pwndSub = pwndSub;
         return m_hwnd != NULL;
     }
 
     HWND Detach()
     {
         HWND hwnd = m_hwnd;
-        SetUserData(hwnd, NULL);
+        SetUserData(hwnd, m_pwndSub);
         m_hwnd = NULL;
+        m_pwndSub = NULL;
         return hwnd;
     }
 
@@ -312,18 +326,18 @@ public:
     BOOL SubclassDx(HWND hwnd)
     {
         Attach(hwnd);
-        m_fnOldProc = SubclassWindow(hwnd, MWindowBase::WindowProc);
-        if (m_fnOldProc)
+        if (!m_pwndSub)
         {
-            PostSubclassDx(hwnd);
+            m_fnOldProc = SubclassWindow(hwnd, MWindowBase::WindowProc);
         }
-        return m_fnOldProc != NULL;
+        PostSubclassDx(hwnd);
+        return m_pwndSub || m_fnOldProc;
     }
 
     VOID UnsubclassDx()
     {
         SubclassWindow(m_hwnd, m_fnOldProc);
-        Detach();
+        SetUserData(m_hwnd, m_pwndSub);
         m_fnOldProc = NULL;
     }
 
@@ -370,51 +384,102 @@ public:
         CenterWindowDx(m_hwnd);
     }
 
-    static INT GetWindowTextLength(HWND hwnd)
+    // Ansi
+    static INT GetWindowTextLengthA(HWND hwnd)
     {
         assert(::IsWindow(hwnd));
-        return ::GetWindowTextLength(hwnd);
+        return ::GetWindowTextLengthA(hwnd);
     }
-    INT GetWindowTextLength() const
+    INT GetWindowTextLengthA() const
     {
         assert(::IsWindow(Handle()));
-        return ::GetWindowTextLength(Handle());
+        return ::GetWindowTextLengthA(Handle());
+    }
+    static MStringA GetWindowTextA(HWND hwnd);
+    static INT GetWindowTextA(HWND hwnd, LPSTR pszText, INT cchMax)
+    {
+        assert(::IsWindow(hwnd));
+        return ::GetWindowTextA(hwnd, pszText, cchMax);
+    }
+    MStringA GetWindowTextA() const
+    {
+        return GetWindowTextA(m_hwnd);
     }
 
-    static MString GetWindowText(HWND hwnd);
-    static INT GetWindowText(HWND hwnd, LPTSTR pszText, INT cchMax)
+    // Wide
+    static INT GetWindowTextLengthW(HWND hwnd)
     {
         assert(::IsWindow(hwnd));
-        return ::GetWindowText(hwnd, pszText, cchMax);
+        return ::GetWindowTextLengthW(hwnd);
     }
-    MString GetWindowText() const
+    INT GetWindowTextLengthW() const
     {
-        return GetWindowText(m_hwnd);
+        assert(::IsWindow(Handle()));
+        return ::GetWindowTextLengthW(Handle());
+    }
+    static MStringW GetWindowTextW(HWND hwnd);
+    static INT GetWindowTextW(HWND hwnd, LPWSTR pszText, INT cchMax)
+    {
+        assert(::IsWindow(hwnd));
+        return ::GetWindowTextW(hwnd, pszText, cchMax);
+    }
+    MStringW GetWindowTextW() const
+    {
+        return GetWindowTextW(m_hwnd);
     }
 
-    static UINT GetDlgItemText(HWND hwnd, INT nCtrlID, LPTSTR psz, INT cchMax)
+    // Ansi
+    static UINT GetDlgItemTextA(HWND hwnd, INT nCtrlID, LPSTR psz, INT cchMax)
     {
         assert(::IsWindow(hwnd));
-        return ::GetDlgItemText(hwnd, nCtrlID, psz, cchMax);
+        return ::GetDlgItemTextA(hwnd, nCtrlID, psz, cchMax);
     }
-    static MString GetDlgItemText(HWND hwnd, INT nCtrlID)
+    static MStringA GetDlgItemTextA(HWND hwnd, INT nCtrlID)
     {
         assert(::IsWindow(hwnd));
-        return GetWindowText(::GetDlgItem(hwnd, nCtrlID));
+        return GetWindowTextA(::GetDlgItem(hwnd, nCtrlID));
     }
-    MString GetDlgItemText(INT nCtrlID) const
+    MStringA GetDlgItemTextA(INT nCtrlID) const
     {
-        return GetWindowText(::GetDlgItem(m_hwnd, nCtrlID));
+        return GetWindowTextA(::GetDlgItem(m_hwnd, nCtrlID));
     }
 
-    static BOOL SetWindowText(HWND hwnd, LPCTSTR pszText = NULL)
+    // Wide
+    static UINT GetDlgItemTextW(HWND hwnd, INT nCtrlID, LPWSTR psz, INT cchMax)
     {
         assert(::IsWindow(hwnd));
-        return ::SetWindowText(hwnd, pszText);
+        return ::GetDlgItemTextW(hwnd, nCtrlID, psz, cchMax);
     }
-    BOOL SetWindowText(LPCTSTR pszText = NULL)
+    static MStringW GetDlgItemTextW(HWND hwnd, INT nCtrlID)
     {
-        return SetWindowText(Handle(), pszText);
+        assert(::IsWindow(hwnd));
+        return GetWindowTextW(::GetDlgItem(hwnd, nCtrlID));
+    }
+    MStringW GetDlgItemTextW(INT nCtrlID) const
+    {
+        return GetWindowTextW(::GetDlgItem(m_hwnd, nCtrlID));
+    }
+
+    // Ansi
+    static BOOL SetWindowTextA(HWND hwnd, LPCSTR pszText = NULL)
+    {
+        assert(::IsWindow(hwnd));
+        return ::SetWindowTextA(hwnd, pszText);
+    }
+    BOOL SetWindowTextA(LPCSTR pszText = NULL)
+    {
+        return SetWindowTextA(Handle(), pszText);
+    }
+
+    // Wide
+    static BOOL SetWindowTextW(HWND hwnd, LPCWSTR pszText = NULL)
+    {
+        assert(::IsWindow(hwnd));
+        return ::SetWindowTextW(hwnd, pszText);
+    }
+    BOOL SetWindowTextW(LPCWSTR pszText = NULL)
+    {
+        return SetWindowTextW(Handle(), pszText);
     }
 
     static VOID CenterWindowDx(HWND hwnd);
@@ -1113,21 +1178,24 @@ MWindowBase::SaveMessageDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 inline /*static*/ LRESULT CALLBACK
 MWindowBase::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
+ {
     MWindowBase *base;
     if (uMsg == WM_CREATE)
     {
+        TCHAR szClass[128];
+        GetClassName(hwnd, szClass, _countof(szClass));
+
         LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
-        if (pcs->lpCreateParams)
+        if (pcs->lpCreateParams &&
+            !IsBadReadPtr(pcs->lpCreateParams, sizeof(MWindowBase)) &&
+            ((MWindowBase*)(pcs->lpCreateParams))->m_dwWindowBaseMagic == 0xFEEDFEED)
         {
             base = reinterpret_cast<MWindowBase *>(pcs->lpCreateParams);
+            base->m_hwnd = hwnd;
         }
         else
         {
             // for DECLARE_DYNAMIC/IMPLEMENT_DYNAMIC
-            TCHAR szClass[128];
-            GetClassName(hwnd, szClass, _countof(szClass));
-
             class_to_create_map_t::const_iterator it;
             it = MWindowBase::ClassToCreateMap().find(szClass);
             if (it == MWindowBase::ClassToCreateMap().end())
@@ -1138,8 +1206,8 @@ MWindowBase::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             base = (*it->second)();
             base->m_bDynamicCreated = true;
+            base->Attach(hwnd);
         }
-        base->m_hwnd = hwnd;
     }
     else
     {
@@ -1149,6 +1217,10 @@ MWindowBase::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     LRESULT ret = 0;
     if (base)
     {
+#ifndef NDEBUG
+        TCHAR szClass[128];
+        GetClassName(hwnd, szClass, _countof(szClass));
+#endif
         base->SaveMessageDx(hwnd, uMsg, wParam, lParam);
         ret = base->WindowProcDx(hwnd, uMsg, wParam, lParam);
 
@@ -1261,12 +1333,22 @@ MWindowBase::MsgBoxDx(LPCTSTR pszString, LPCTSTR pszTitle,
     return nID;
 }
 
-inline /*static*/ MString MWindowBase::GetWindowText(HWND hwnd)
+inline /*static*/ MStringA MWindowBase::GetWindowTextA(HWND hwnd)
 {
-    INT cch = ::GetWindowTextLength(hwnd);
-    MString ret;
+    INT cch = ::GetWindowTextLengthA(hwnd);
+    MStringA ret;
     ret.resize(cch);
-    if (!::GetWindowText(hwnd, &ret[0], cch + 1))
+    if (!::GetWindowTextA(hwnd, &ret[0], cch + 1))
+        ret.clear();
+    return ret;
+}
+
+inline /*static*/ MStringW MWindowBase::GetWindowTextW(HWND hwnd)
+{
+    INT cch = ::GetWindowTextLengthW(hwnd);
+    MStringW ret;
+    ret.resize(cch);
+    if (!::GetWindowTextW(hwnd, &ret[0], cch + 1))
         ret.clear();
     return ret;
 }
