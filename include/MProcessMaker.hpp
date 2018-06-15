@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSMAKER_HPP_
-#define MZC4_MPROCESSMAKER_HPP_     10   /* Version 10 */
+#define MZC4_MPROCESSMAKER_HPP_     12   /* Version 12 */
 
 #include "MFile.hpp"
 #include <tchar.h>
@@ -79,6 +79,7 @@ public:
     const STARTUPINFO& StartupInfo() const;
 
     void ReadAll(std::string& strOutput, MFile& hOutputRead);
+    void ReadAll(std::string& strOutput, MFile& hOutputRead, DWORD dwTimeout);
 
 protected:
     PROCESS_INFORMATION     m_pi;
@@ -230,8 +231,8 @@ inline DWORD MProcessMaker::WaitForSingleObjectEx(
 
 inline BOOL MProcessMaker::IsRunning() const
 {
-    return (GetProcessHandle() &&
-            ::WaitForSingleObject(m_pi.hProcess, 0) == WAIT_TIMEOUT);
+	DWORD dwWait = ::WaitForSingleObject(m_pi.hProcess, 0);
+    return dwWait == WAIT_TIMEOUT && GetExitCode() == STILL_ACTIVE;
 }
 
 inline bool MProcessMaker::operator!() const
@@ -512,6 +513,41 @@ MProcessMaker::ReadAll(std::string& strOutput, MFile& hOutputRead)
     CHAR szBuf[1024];
     while (hOutputRead.PeekNamedPipe(NULL, 0, NULL, &cbAvail))
     {
+        if (cbAvail == 0)
+        {
+            if (!IsRunning())
+                break;
+
+            continue;
+        }
+
+        if (cbAvail > sizeof(szBuf))
+            cbAvail = sizeof(szBuf);
+        else if (cbAvail == 0)
+            continue;
+
+        if (hOutputRead.ReadFile(szBuf, cbAvail, &cbRead))
+        {
+            if (cbRead == 0)
+                continue;
+
+            strOutput.append(szBuf, cbRead);
+        }
+    }
+}
+
+inline void
+MProcessMaker::ReadAll(std::string& strOutput, MFile& hOutputRead, DWORD dwTimeout)
+{
+    DWORD dwTick = GetTickCount();
+
+    DWORD cbAvail, cbRead;
+    CHAR szBuf[1024];
+    while (hOutputRead.PeekNamedPipe(NULL, 0, NULL, &cbAvail))
+    {
+        if (GetTickCount() - dwTick >= dwTimeout)
+            break;
+
         if (cbAvail == 0)
         {
             if (!IsRunning())
