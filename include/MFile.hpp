@@ -3,12 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MFILE_HPP_
-#define MZC4_MFILE_HPP_     14      /* Version 14 */
+#define MZC4_MFILE_HPP_     15      /* Version 15 */
 
 #ifndef _INC_WINDOWS
     #include <windows.h>
 #endif
 #include <tchar.h>
+#include <string>
 #include <cassert>
 #ifndef NO_STRSAFE
     #include <strsafe.h>
@@ -17,6 +18,18 @@
 class MFile;
 
 ////////////////////////////////////////////////////////////////////////////
+
+// MString
+#ifndef MString
+    #include <string>       // std::string and std::wstring
+    typedef std::string     MStringA;
+    typedef std::wstring    MStringW;
+    #ifdef UNICODE
+        #define MString     MStringW
+    #else
+        #define MString     MStringA
+    #endif
+#endif
 
 #ifndef LOLONG
     #define LOLONG(dwl) static_cast<DWORD>(dwl)
@@ -164,6 +177,9 @@ public:
                     LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
     BOOL WriteFileEx(LPCVOID pBuffer, DWORD cbToWrite, LPOVERLAPPED pOverlapped,
                      LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+
+    BOOL ReadAll(MStringA& data);
+    BOOL ReadAll(MStringA& data, DWORD dwTimeout);
 
     static HANDLE CloneHandleDx(HANDLE hFile);
 };
@@ -697,6 +713,41 @@ inline BOOL MFile::WriteBinary(LPCVOID pv, DWORD cb)
             break;
     }
     return (cb == 0);
+}
+
+inline BOOL MFile::ReadAll(MStringA& data)
+{
+    DWORD cbRead;
+    CHAR szBuf[1024];
+
+    while (ReadFile(szBuf, sizeof(szBuf), &cbRead))
+    {
+        if (cbRead == 0)
+            continue;
+
+        data.append(szBuf, cbRead);
+    }
+
+    return TRUE;
+}
+
+inline BOOL MFile::ReadAll(MStringA& data, DWORD dwTimeout)
+{
+    DWORD cbRead, dwTick = GetTickCount();
+    CHAR szBuf[1024];
+
+    while (ReadFile(szBuf, sizeof(szBuf), &cbRead))
+    {
+        if (GetTickCount() - dwTick >= dwTimeout)
+            return FALSE;
+
+        if (cbRead == 0)
+            continue;
+
+        data.append(szBuf, cbRead);
+    }
+
+    return TRUE;
 }
 
 inline /*static*/ HANDLE MFile::CloneHandleDx(HANDLE hFile)
