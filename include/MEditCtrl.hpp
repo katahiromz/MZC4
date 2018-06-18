@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MEDITCTRL_HPP_
-#define MZC4_MEDITCTRL_HPP_     3   /* Version 3 */
+#define MZC4_MEDITCTRL_HPP_     4   /* Version 4 */
 
 class MEditCtrl;
 
@@ -77,6 +77,7 @@ public:
     INT GetFirstVisibleLine() const;
 
     static void SetCtrlAHookDx(BOOL bHook);
+    static BOOL DoMsgCtrlA(MSG *pMsg);
 
 protected:
     static HHOOK& OldHookProc();
@@ -147,8 +148,8 @@ inline VOID MEditCtrl::SetHandle(HLOCAL hBuffer)
 
 inline VOID MEditCtrl::SetMargins(UINT nLeft, UINT nRight)
 {
-    SendMessageDx(EM_SETMARGINS,
-        EC_LEFTMARGIN | EC_RIGHTMARGIN | EC_USEFONTINFO,
+    SendMessageDx(EM_SETMARGINS, 
+        EC_LEFTMARGIN | EC_RIGHTMARGIN | EC_USEFONTINFO, 
         MAKELPARAM(nLeft, nRight));
 }
 
@@ -340,18 +341,18 @@ MEditCtrl::CtrlAMsgProcDx(INT nCode, WPARAM wParam, LPARAM lParam)
     if (pMsg->message == WM_KEYDOWN)
     {
         if ((INT) pMsg->wParam == 'A' &&
-            ::GetAsyncKeyState(VK_CONTROL) < 0 &&
-            ::GetAsyncKeyState(VK_SHIFT) >= 0 &&
-            ::GetAsyncKeyState(VK_MENU) >= 0)
+            GetAsyncKeyState(VK_CONTROL) < 0 &&
+            GetAsyncKeyState(VK_SHIFT) >= 0 &&
+            GetAsyncKeyState(VK_MENU) >= 0)
         {
             // Ctrl+A is pressed
             hWnd = ::GetFocus();
             if (hWnd != NULL)
             {
-                ::GetClassName(hWnd, szClassName, _countof(szClassName));
+                GetClassName(hWnd, szClassName, _countof(szClassName));
                 if (lstrcmpi(szClassName, TEXT("EDIT")) == 0)
                 {
-                    ::SendMessage(hWnd, EM_SETSEL, 0, -1);
+                    SendMessage(hWnd, EM_SETSEL, 0, -1);
                     return 1;
                 }
             }
@@ -366,15 +367,39 @@ inline /*static*/ void MEditCtrl::SetCtrlAHookDx(BOOL bHook)
     {
         assert(OldHookProc() == NULL);
         OldHookProc() = ::SetWindowsHookEx(
-            WH_MSGFILTER, MEditCtrl::CtrlAMsgProcDx, NULL,
-            ::GetCurrentThreadId());
+            WH_MSGFILTER, MEditCtrl::CtrlAMsgProcDx, NULL, 
+            GetCurrentThreadId());
     }
     else
     {
         assert(OldHookProc() != NULL);
-        ::UnhookWindowsHookEx(OldHookProc());
+        UnhookWindowsHookEx(OldHookProc());
         OldHookProc() = NULL;
     }
+}
+
+inline /*static*/ BOOL MEditCtrl::DoMsgCtrlA(MSG *pMsg)
+{
+    WCHAR szClass[8] = L"";
+    GetClassNameW(pMsg->hwnd, szClass, _countof(szClass));
+
+    if (lstrcmpiW(szClass, L"EDIT") == 0)
+    {
+        if (pMsg->message == WM_KEYDOWN)
+        {
+            if (pMsg->wParam == 'A' &&
+                GetAsyncKeyState(VK_CONTROL) < 0 &&
+                GetAsyncKeyState(VK_SHIFT) >= 0 &&
+                GetAsyncKeyState(VK_MENU) >= 0)
+            {
+                PeekMessage(pMsg, pMsg->hwnd, WM_KEYDOWN, WM_KEYDOWN, PM_REMOVE);
+                PostMessage(pMsg->hwnd, EM_SETSEL, 0, -1);
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////
