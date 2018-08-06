@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWBASE_HPP_
-#define MZC4_MWINDOWBASE_HPP_    72     /* Version 72 */
+#define MZC4_MWINDOWBASE_HPP_    73     /* Version 73 */
 
 class MWindowBase;
 class MDialogBase;
@@ -1187,7 +1187,6 @@ MWindowBase::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
         if (pcs->lpCreateParams &&
-            !IsBadReadPtr(pcs->lpCreateParams, sizeof(MWindowBase)) &&
             ((MWindowBase*)(pcs->lpCreateParams))->m_dwWindowBaseMagic == 0xFEEDFEED)
         {
             base = reinterpret_cast<MWindowBase *>(pcs->lpCreateParams);
