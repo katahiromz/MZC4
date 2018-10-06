@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MOLECTRL_HPP_
-#define MZC4_MOLECTRL_HPP_      28      /* Version 28 */
+#define MZC4_MOLECTRL_HPP_      29      /* Version 29 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -175,13 +175,13 @@ struct MDispException
 
 ////////////////////////////////////////////////////////////////////////////
 // MOleCtrl --- MZC4 OLE control class
-// NOTE: IMPLEMENT_DYNAMIC(MOleCtrl) is required in a *.cpp source file.
 
 class MOleCtrl :
     public MWindowBase, public IOleClientSite, public IOleInPlaceSite,
     public IOleInPlaceFrame, public IOleControlSite, public IDispatch
 {
 public:
+    // NOTE: IMPLEMENT_DYNAMIC(MOleCtrl) is required in a *.cpp source file.
     DECLARE_DYNAMIC(MOleCtrl)
 
     MOleCtrl();
