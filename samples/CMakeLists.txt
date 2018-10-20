@@ -1,4 +1,5 @@
 subdirs(MsgCrack
+        MWavTest
         MyBrowser
         MyNotepad
         MySplitter
