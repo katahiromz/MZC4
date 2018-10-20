@@ -1,4 +1,6 @@
 // MWavFile --- Linear PCM sound reader/writer
+// Copyright (C) 2018 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>.
+// This file is public domain software.
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWAVFILE_HPP_
