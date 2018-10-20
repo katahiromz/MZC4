@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWAVFILE_HPP_
-#define MZC4_MWAVFILE_HPP_      2   // Version 2
+#define MZC4_MWAVFILE_HPP_      3   // Version 3
 
 #ifdef _WIN32
     #ifndef _INC_WINDOWS
@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
+#include <cassert>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,6 +53,8 @@ public:
     size_t size() const;
     size_t info_size() const;
     size_t data_size() const;
+          uint8_t *ptr(size_t index = 0);
+    const uint8_t *ptr(size_t index = 0) const;
 
     bool get_info(void *info, size_t siz) const;
     bool get_data(void *data, size_t siz) const;
@@ -60,6 +63,7 @@ public:
     void add_data(const void *data, size_t siz);
 
     void dump_info() const;
+    void dump_data() const;
 
 #ifdef _WIN32
     void play(DWORD dwFlags = SND_MEMORY | SND_SYNC | SND_NODEFAULT) const;
@@ -114,7 +118,24 @@ inline size_t MWavFile::info_size() const
 
 inline size_t MWavFile::data_size() const
 {
+    assert(size() >= info_size());
     return size() - info_size();
+}
+
+inline uint8_t *MWavFile::ptr(size_t index)
+{
+    if (index > size())
+        return NULL;
+    uint8_t *ret = &m_contents[0];
+    return &ret[index];
+}
+
+inline const uint8_t *MWavFile::ptr(size_t index) const
+{
+    if (index >= size())
+        return NULL;
+    const uint8_t *ret = &m_contents[0];
+    return &ret[index];
 }
 
 inline bool MWavFile::get_info(void *info, size_t siz) const
@@ -122,7 +143,7 @@ inline bool MWavFile::get_info(void *info, size_t siz) const
     if (siz < info_size())
         return false;
 
-    memcpy(info, &m_contents[0], info_size());
+    memcpy(info, ptr(), info_size());
     return true;
 }
 
@@ -131,7 +152,7 @@ inline bool MWavFile::get_data(void *data, size_t siz) const
     if (siz < data_size())
         return false;
 
-    memcpy(data, &m_contents[info_size()], data_size());
+    memcpy(data, ptr(info_size()), data_size());
     return true;
 }
 
@@ -147,7 +168,7 @@ inline void MWavFile::add_data(const void *data, size_t siz)
 
     size_t old_size = size();
     m_contents.resize(old_size + siz);
-    memcpy(&m_contents[old_size], data, siz);
+    memcpy(ptr(old_size), data, siz);
 }
 
 inline MWavFile::MWavFile()
@@ -183,6 +204,10 @@ inline bool MWavFile::load(const char *filename)
         ret = read(fp);
         fclose(fp);
     }
+    if (!ret)
+    {
+        printf("ERROR: Cannot read.\n");
+    }
     m_loaded = ret;
     return ret;
 }
@@ -205,45 +230,37 @@ inline bool MWavFile::save(const char *filename) const
 inline bool MWavFile::read(FILE *fp)
 {
     if (fseek(fp, 0, SEEK_END) != 0)
-    {
-        printf("ERROR: Cannot seek.\n");
         return false;
-    }
+
     long real_file_size = ftell(fp);
     if (fseek(fp, 0, SEEK_SET) != 0)
-    {
-        printf("ERROR: Cannot seek.\n");
         return false;
-    }
 
     if (real_file_size < info_size())
         return false;
 
     m_contents.resize(real_file_size);
-    if (!fread(&m_contents[0], real_file_size, 1, fp))
-    {
-        printf("ERROR: Cannot read.\n");
-        return false;
-    }
-
-    if (memcmp(&m_contents[0], "RIFF", 4) != 0)
+    if (!fread(ptr(), real_file_size, 1, fp))
         return false;
 
-    m_file_size = get_u32(&m_contents[4]) + 8;
-    if (memcmp(&m_contents[8], "WAVEfmt ", 8) != 0)
+    if (memcmp(ptr(), "RIFF", 4) != 0)
         return false;
 
-    m_fmt_size = get_u32(&m_contents[16]);
-    m_audio_format = get_u16(&m_contents[20]);
-    m_num_channels = get_u16(&m_contents[22]);
-    m_samples_per_second = get_u32(&m_contents[24]);
-    m_bytes_per_second = get_u32(&m_contents[28]);
-    m_block_size = get_u16(&m_contents[32]);
-    m_bits_per_sample = get_u16(&m_contents[34]);
-    if (memcmp(&m_contents[36], "data", 4) != 0)
+    m_file_size = get_u32(ptr(4)) + 8;
+    if (memcmp(ptr(8), "WAVEfmt ", 8) != 0)
         return false;
 
-    uint32_t data_size = get_u32(&m_contents[40]);
+    m_fmt_size = get_u32(ptr(16));
+    m_audio_format = get_u16(ptr(20));
+    m_num_channels = get_u16(ptr(22));
+    m_samples_per_second = get_u32(ptr(24));
+    m_bytes_per_second = get_u32(ptr(28));
+    m_block_size = get_u16(ptr(32));
+    m_bits_per_sample = get_u16(ptr(34));
+    if (memcmp(ptr(36), "data", 4) != 0)
+        return false;
+
+    uint32_t data_size = get_u32(ptr(40));
 
     if (m_file_size > real_file_size ||
         m_fmt_size != 16 ||
@@ -251,8 +268,7 @@ inline bool MWavFile::read(FILE *fp)
         m_file_size < info_size() + data_size)
     {
         m_contents.clear();
-        printf("ERROR: Not supported format.\n");
-        return false;   // not linear PCM
+        return false;
     }
 
     return true;
@@ -260,10 +276,10 @@ inline bool MWavFile::read(FILE *fp)
 
 inline bool MWavFile::write(FILE *fp) const
 {
-    if (m_contents.empty())
+    if (empty())
         return false;
 
-    if (!fwrite(&m_contents[0], m_contents.size(), 1, fp))
+    if (!fwrite(ptr(), m_contents.size(), 1, fp))
         return false;
 
     return true;
@@ -335,13 +351,28 @@ inline void MWavFile::dump_info() const
 #undef PA_DUMP
 }
 
+inline void MWavFile::dump_data() const
+{
+    size_t siz = data_size();
+    if (empty() || siz == 0)
+        return;
+
+    const uint8_t *pb = ptr(info_size());
+    for (size_t i = 0; i < siz; ++i)
+    {
+        printf("0x%02X, ", (int)pb[i]);
+        if (i % 8 == 7)
+            puts("");
+    }
+}
+
 #ifdef _WIN32
     inline void MWavFile::play(DWORD dwFlags) const
     {
-        if (m_contents.empty())
+        if (empty())
             return;
 
-        PlaySound((LPCTSTR)&m_contents[0], NULL, dwFlags);
+        PlaySound((LPCTSTR)ptr(), NULL, dwFlags);
     }
 #endif
 

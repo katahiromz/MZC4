@@ -8,7 +8,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    MWavFile file(argb[1]);
+    MWavFile file(argv[1]);
     file.dump_info();
     file.play();
     return 0;
