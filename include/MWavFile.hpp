@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWAVFILE_HPP_
-#define MZC4_MWAVFILE_HPP_      0   // Version 0
+#define MZC4_MWAVFILE_HPP_      1   // Version 1
 
 #ifdef _WIN32
     #ifndef _INC_WINDOWS
@@ -200,6 +200,7 @@ inline bool MWavFile::read(FILE *fp)
         m_format_id != 1 ||
         m_file_size < info_size() + data_size)
     {
+        m_contents.clear();
         printf("ERROR: Not supported format.\n");
         return false;   // not linear PCM
     }
@@ -212,6 +213,9 @@ inline bool MWavFile::read(FILE *fp)
 
 inline bool MWavFile::write(FILE *fp) const
 {
+    if (m_contents.empty())
+        return false;
+
     if (!fwrite(&m_contents[0], m_contents.size(), 1, fp))
         return false;
 
@@ -288,6 +292,8 @@ inline void MWavFile::dump_info() const
 #ifdef _WIN32
     inline void MWavFile::play(DWORD dwFlags) const
     {
+        if (m_contents.empty())
+            return;
         PlaySound((LPCTSTR)&m_contents[0], NULL, dwFlags);
     }
 #endif
