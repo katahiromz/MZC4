@@ -76,9 +76,8 @@ public:
     void set_u32(void *data, uint32_t value) const;
 
 protected:
-    bool        m_loaded;
+    bool m_loaded;
     bool read(FILE *fp);
-
     bool write(FILE *fp) const;
 };
 
