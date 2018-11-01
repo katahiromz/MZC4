@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MSTRING_HPP_
-#define MZC4_MSTRING_HPP_       19  /* Version 19 */
+#define MZC4_MSTRING_HPP_       20  /* Version 20 */
 
 // class MString;
 // class MStringA;
@@ -101,7 +101,7 @@ enum MTextEncoding
     MTENC_UNICODE_LE,
     MTENC_UNICODE_BE,
     MTENC_UTF8,
-    MTENC_UNICODE = MTENC_UNICODE_LE,
+    MTENC_UNICODE = MTENC_UNICODE_LE
 };
 
 enum MTextNewLineType
