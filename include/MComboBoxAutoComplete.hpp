@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MCOMBOBOXAUTOCOMP_HPP_
-#define MZC4_MCOMBOBOXAUTOCOMP_HPP_     0   /* Version 0 */
+#define MZC4_MCOMBOBOXAUTOCOMP_HPP_     1   /* Version 1 */
 
 class MComboBoxAutoComplete;
 
@@ -54,7 +54,9 @@ public:
 class MComboBoxAutoComplete : public MComboBox
 {
 public:
-    MComboBoxAutoComplete()
+    BOOL m_bAcceptSpace;
+
+    MComboBoxAutoComplete() : m_bAcceptSpace(FALSE)
     {
     }
 
@@ -81,13 +83,18 @@ public:
 
         dwPos = GetEditSel();
         MString strRight = strInput.substr(HIWORD(dwPos));
-        mstr_trim(strRight);
+
+        if (!m_bAcceptSpace)
+            mstr_trim(strRight);
+
         if (!strRight.empty())
             return;
 
-        mstr_trim(strInput);
+        if (!m_bAcceptSpace)
+            mstr_trim(strInput);
+
         MString strInputUpper = strInput;
-        _wcsupr(&strInputUpper[0]);
+        CharUpperW(&strInputUpper[0]);
 
         INT iItem = FindString(-1, strInput.c_str());
         if (iItem == CB_ERR)
@@ -102,7 +109,7 @@ public:
         {
             GetLBText(i, szText);
             MString strText = szText;
-            _wcsupr(&strText[0]);
+            CharUpperW(&strText[0]);
             if (strText.find(strInputUpper) == 0)
             {
                 return;
