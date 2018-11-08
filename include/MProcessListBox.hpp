@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      6   /* Version 6 */
+#define MZC4_MPROCESSLISTBOX_HPP_      7   /* Version 7 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,7 @@ struct MProcessInfo : PROCESSENTRY32
     virtual MString get_text() const;
     MString get_full_path() const;
     HWND get_window() const;
-    MString get_window_text(INT cchMax = 32) const;
+    MString get_window_text() const;
     bool is_wow64() const;
     HICON get_icon(UINT uType = ICON_BIG) const;
 };
@@ -166,27 +166,10 @@ inline HWND MProcessInfo::get_window() const
     return details::WindowFromProcessID(th32ProcessID);
 }
 
-inline MString MProcessInfo::get_window_text(INT cchMax) const
+inline MString MProcessInfo::get_window_text() const
 {
-    MString str;
-    if (cchMax < 3 + 1)
-        return str;     // too short
-
-    str.resize(cchMax - (3 + 1));
-    if (INT cch = GetWindowText(get_window(), &str[0], cchMax - 3))
-    {
-        str.resize(cch);
-        if (cch == cchMax - (3 + 1))
-        {
-            // ellipsis
-            str += TEXT("...");
-        }
-    }
-    else
-    {
-        str.clear();
-    }
-    return str;
+    HWND hwnd = get_window();
+    return MWindowBase::GetWindowText(hwnd);
 }
 
 inline HICON MProcessInfo::get_icon(UINT uType) const
