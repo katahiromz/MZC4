@@ -367,7 +367,7 @@ inline bool MProcessListBox::refresh()
                 t_info_type info;
                 info.from_entry(entries()[i]);
                 MString text = info.get_text();
-                printf("%s\n", text.c_str());
+                //printf("%s\n", text.c_str());
                 AddString(text.c_str());
             }
         }
