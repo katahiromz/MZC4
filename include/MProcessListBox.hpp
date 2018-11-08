@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      5   /* Version 5 */
+#define MZC4_MPROCESSLISTBOX_HPP_      6   /* Version 6 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -169,17 +169,17 @@ inline HWND MProcessInfo::get_window() const
 inline MString MProcessInfo::get_window_text(INT cchMax) const
 {
     MString str;
-    str.resize(cchMax);
-    if (INT cch = GetWindowText(get_window(), &str[0], cchMax))
+    if (cchMax < 3 + 1)
+        return str;     // too short
+
+    str.resize(cchMax - (3 + 1));
+    if (INT cch = GetWindowText(get_window(), &str[0], cchMax - 3))
     {
-        if (cch + 3 >= cchMax - 1)
+        str.resize(cch);
+        if (cch == cchMax - (3 + 1))
         {
-            str.resize(cchMax - 1 - 3);
+            // ellipsis
             str += TEXT("...");
-        }
-        else
-        {
-            str.resize(cch);
         }
     }
     else
