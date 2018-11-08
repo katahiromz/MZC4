@@ -172,9 +172,15 @@ inline MString MProcessInfo::get_window_text(INT cchMax) const
     str.resize(cchMax);
     if (INT cch = GetWindowText(get_window(), &str[0], cchMax))
     {
-        str.resize(cch);
         if (cch + 3 >= cchMax - 1)
+        {
+            str.resize(cchMax - 1 - 3);
             str += TEXT("...");
+        }
+        else
+        {
+            str.resize(cch);
+        }
     }
     else
     {
