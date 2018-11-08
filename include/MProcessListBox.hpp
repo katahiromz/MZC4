@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      1   /* Version 1 */
+#define MZC4_MPROCESSLISTBOX_HPP_      2   /* Version 2 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -238,7 +238,8 @@ inline bool MProcessList::get_list()
 {
     clear();
 
-    HANDLE hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    const DWORD dwFlags = TH32CS_SNAPPROCESS | TH32CS_SNAPMODULE32;
+    HANDLE hSnapshot = ::CreateToolhelp32Snapshot(dwFlags, 0);
     if (hSnapshot == INVALID_HANDLE_VALUE)
         return false;
 
