@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      0   /* Version 0 */
+#define MZC4_MPROCESSLISTBOX_HPP_      1   /* Version 1 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -302,7 +302,7 @@ inline bool MProcessListBox::refresh()
 {
     clear();
 
-    if (!m_list.get_list())
+    if (!m_list.get_list<t_info_type>())
         return false;
 
     if (size())
