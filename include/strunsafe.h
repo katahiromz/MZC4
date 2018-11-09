@@ -4,7 +4,7 @@
 /* NO WARRANTY ABSOLUTELY. */
 
 #ifndef _STRUNSAFE_H_INCLUDED_
-#define _STRUNSAFE_H_INCLUDED_      1   /* Version 1 */
+#define _STRUNSAFE_H_INCLUDED_      2   /* Version 2 */
 
 #ifdef _STRSAFE_H_INCLUDED_
     #error Please #include "strunsafe.h" before #include <strsafe.h>.
@@ -24,7 +24,7 @@
     #include <assert.h>
 #endif
 
-#if defined(_WIN32) || (!defined(WONVER) && !defined(_WONVER))
+#if defined(_WIN32) && !defined(WONVER) && !defined(_WONVER)
     #ifndef _INC_WINDOWS
         #include <windows.h>
     #endif
@@ -89,7 +89,7 @@ StringCchCopyA(
     if (!cchDest)
         return S_OK;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(WONVER) && !defined(_WONVER)
     if (lstrcpynA(pszDest, pszSrc, cchDest) != NULL)
         return S_OK;
 
@@ -122,7 +122,7 @@ StringCchCopyW(
     if (!cchDest)
         return S_OK;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(WONVER) && !defined(_WONVER)
     if (lstrcpynW(pszDest, pszSrc, cchDest) != NULL)
         return S_OK;
 

@@ -41,6 +41,7 @@ typedef int32_t INT, BOOL;
 typedef uint32_t UINT;
 typedef int64_t LONGLONG;
 typedef uint64_t ULONGLONG, DWORDLONG;
+typedef void *HANDLE;
 
 /* NOTE: Please think the case of sizeof(wchar_t) != 2. */
 typedef wchar_t WCHAR;
