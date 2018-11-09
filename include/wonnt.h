@@ -2,9 +2,10 @@
 /**************************************************************************/
 
 #ifndef WONNT_H
-#define WONNT_H     14  /* Version 14 */
+#define WONNT_H     13  /* Version 13 */
 
-#if defined(_WIN32) && !defined(WONVER)
+#ifndef _INC_WINDOWS
+#if defined(_WIN32) && !defined(_WONVER) && !defined(WONVER)
     #include <windows.h>
 #else
 
@@ -41,21 +42,10 @@ typedef uint32_t UINT;
 typedef int64_t LONGLONG;
 typedef uint64_t ULONGLONG, DWORDLONG;
 
-/* WCHAR */
-#ifndef __WCHAR_DEFINED
-    #define __WCHAR_DEFINED
-    #ifdef _WIN32
-        typedef wchar_t WCHAR;
-    #else
-        #if __cplusplus >= 201103L
-            typedef char16_t WCHAR;
-        #else
-            typedef uint16_t WCHAR;
-        #endif
-    #endif
-#endif
+/* NOTE: Please think the case of sizeof(wchar_t) != 2. */
+typedef wchar_t WCHAR;
 
-#if defined(_WIN64) || defined(__LP64__) || defined(_LP64)
+#ifdef _WIN64
     typedef int64_t LONG_PTR;
     typedef uint64_t ULONG_PTR, DWORD_PTR;
 #else
@@ -71,8 +61,12 @@ typedef BYTE BOOLEAN;
     typedef char TCHAR;
 #endif
 
-typedef void *HANDLE;
 typedef INT HFILE;
+
+#ifndef _HRESULT_DEFINED
+    #define _HRESULT_DEFINED
+    typedef LONG HRESULT;
+#endif
 
 #define C_ASSERT(x)  typedef char WONNT_STATIC_ASSERT_##__LINE__[(x) ? 1 : -1]
 
@@ -101,13 +95,9 @@ C_ASSERT(sizeof(BOOLEAN) == 1);
 
 C_ASSERT(sizeof(HANDLE) == sizeof(void *));
 
-C_ASSERT(sizeof(WCHAR) == 2);
+C_ASSERT(sizeof(WCHAR) == sizeof(wchar_t));
 
-typedef WORD LANGID;
-
-#define MAKELANGID(p, s)       ((((WORD)(s)) << 10) | (WORD)(p))
-#define PRIMARYLANGID(lgid)    ((WORD)(lgid) & 0x3ff)
-#define SUBLANGID(lgid)        ((WORD)(lgid) >> 10)
+C_ASSERT(sizeof(HRESULT) == 4);
 
 /**************************************************************************/
 
@@ -365,5 +355,6 @@ typedef struct {
 
 /**************************************************************************/
 
-#endif  /* !(defined(_WIN32) && !defined(_WONVER)) */
+#endif  /* !(defined(_WIN32) && !defined(_WONVER) && !defined(WONVER)) */
+#endif  /* ndef _INC_WINDOWS */
 #endif  /* ndef WONNT_H */
