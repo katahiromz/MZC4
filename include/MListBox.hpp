@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MLISTBOX_HPP_
-#define MZC4_MLISTBOX_HPP_      4   /* Version 4 */
+#define MZC4_MLISTBOX_HPP_      5   /* Version 5 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -77,6 +77,9 @@ public:
     INT SelItemRange(BOOL bSelect, INT nFirstItem, INT nLastItem);
     VOID SelectAll();
     VOID SelectNone();
+
+    virtual LRESULT CALLBACK
+    WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -327,6 +330,24 @@ inline BOOL MListBox::GetText(INT nIndex, MString& rString) const
         rString.clear();
 
     return cch != LB_ERR;
+}
+
+inline LRESULT CALLBACK
+MListBox::WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    DWORD style = GetStyleDx();
+    if (style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE))
+    {
+        if (uMsg == WM_MOUSEWHEEL)
+        {
+            SHORT zDelta = (SHORT)HIWORD(wParam);
+            if (zDelta < 0)
+                return PostMessageDx(WM_VSCROLL, SB_LINEDOWN);
+            else
+                return PostMessageDx(WM_VSCROLL, SB_LINEUP);
+        }
+    }
+    return MWindowBase::WindowProcDx(hwnd, uMsg, wParam, lParam);
 }
 
 ////////////////////////////////////////////////////////////////////////////
