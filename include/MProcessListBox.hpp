@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      9   /* Version 9 */
+#define MZC4_MPROCESSLISTBOX_HPP_      10   /* Version 10 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -284,7 +284,6 @@ MProcessListBox::WindowFromProcess(DWORD pid)
 inline HICON MProcessListBox::GetIconOfWindow(HWND hwnd, UINT uType)
 {
     HICON hIcon;
-
     if (uType == ICON_SMALL)
     {
         hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
@@ -296,13 +295,24 @@ inline HICON MProcessListBox::GetIconOfWindow(HWND hwnd, UINT uType)
     if (hIcon)
         return hIcon;
 
-    DWORD_PTR dwResult;
-    SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG, 100, &dwResult);
+    DWORD_PTR dwResult = 0;
+    UINT uTimeout = 100;
+    SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG,
+                       uTimeout, &dwResult);
 
     hIcon = (HICON)dwResult;
     if (hIcon == NULL)
     {
-        hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        if (uType == ICON_SMALL)
+        {
+            INT cx = GetSystemMetrics(SM_CXSMICON);
+            INT cy = GetSystemMetrics(SM_CYSMICON);
+            hIcon = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, cx, cy, 0);
+        }
+        else
+        {
+            hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        }
     }
     return hIcon;
 }
