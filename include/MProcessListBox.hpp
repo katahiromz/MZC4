@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      7   /* Version 7 */
+#define MZC4_MPROCESSLISTBOX_HPP_      9   /* Version 9 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -12,21 +12,6 @@
 #include <psapi.h>      // for GetModuleFileNameEx
 #include <strsafe.h>    // for StringC...
 #include <vector>       // for std::vector
-
-////////////////////////////////////////////////////////////////////////////
-// MProcessInfo
-
-struct MProcessInfo : PROCESSENTRY32
-{
-    MProcessInfo();
-    virtual void from_entry(const PROCESSENTRY32& entry);
-    virtual MString get_text() const;
-    MString get_full_path() const;
-    HWND get_window() const;
-    MString get_window_text() const;
-    bool is_wow64() const;
-    HICON get_icon(UINT uType = ICON_BIG) const;
-};
 
 ////////////////////////////////////////////////////////////////////////////
 // MProcessList
@@ -39,7 +24,6 @@ public:
 
     MProcessList();
 
-    template <typename t_info_type = MProcessInfo>
     bool get_list();
 
     bool empty() const;
@@ -66,9 +50,6 @@ public:
         return entries()[index];
     }
 
-    template <typename t_info_type = MProcessInfo>
-    bool find_text(size_t& index, const MString& text) const;
-
 protected:
     entry_list_type m_entries;
 };
@@ -84,8 +65,10 @@ public:
 
     MProcessListBox();
 
-    template <typename t_info_type = MProcessInfo>
     bool refresh();
+
+    virtual MString text_from_entry(const entry_type& entry) const;
+    virtual INT AddProcessItem(const entry_type& entry);
 
     bool empty() const;
     size_t size() const;
@@ -113,144 +96,25 @@ public:
         return entries()[index];
     }
 
-    template <typename t_info_type = MProcessInfo>
     bool find_text(size_t& index, const MString& text) const;
+
+    static HWND WindowFromProcess(DWORD pid);
+    static HICON GetIconOfWindow(HWND hwnd, UINT uType = ICON_BIG);
+    static BOOL IsProcessWow64(DWORD pid);
+    static BOOL IsProcessWow64(HANDLE hProcess);
+    static MString GetProcessFullPath(DWORD pid);
+    static MString GetProcessFullPath(HANDLE hProcess);
 
 protected:
     MProcessList m_list;
-};
 
-////////////////////////////////////////////////////////////////////////////
-// details
-
-namespace details
-{
     struct PROCESS_AND_WINDOW
     {
         DWORD pid;
         HWND hwnd;
     };
-
-    BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
-    {
-        PROCESS_AND_WINDOW *paw = (PROCESS_AND_WINDOW *)lParam;
-        DWORD pid = 0;
-        GetWindowThreadProcessId(hwnd, &pid);
-        if (paw->pid == pid)
-        {
-            paw->hwnd = hwnd;
-            return FALSE;
-        }
-        return TRUE;
-    }
-
-    HWND WindowFromProcessID(DWORD pid)
-    {
-        PROCESS_AND_WINDOW paw;
-        paw.pid = pid;
-        paw.hwnd = NULL;
-        ::EnumWindows(EnumWindowsProc, (LPARAM)&paw);
-        return paw.hwnd;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////
-// MProcessInfo inlines
-
-inline MProcessInfo::MProcessInfo()
-{
-}
-
-inline HWND MProcessInfo::get_window() const
-{
-    return details::WindowFromProcessID(th32ProcessID);
-}
-
-inline MString MProcessInfo::get_window_text() const
-{
-    HWND hwnd = get_window();
-    return MWindowBase::GetWindowText(hwnd);
-}
-
-inline HICON MProcessInfo::get_icon(UINT uType) const
-{
-    HWND hwnd = get_window();
-    HICON hIcon;
-
-    if (uType == ICON_SMALL)
-    {
-        hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
-    }
-    else
-    {
-        hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICON);
-    }
-    if (hIcon)
-        return hIcon;
-
-    DWORD_PTR dwResult;
-    SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG, 100, &dwResult);
-
-    hIcon = (HICON)dwResult;
-    return hIcon;
-}
-
-inline bool MProcessInfo::is_wow64() const
-{
-    typedef BOOL (WINAPI *ISWOW64PROCESS)(HANDLE, PBOOL);
-    HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32"));
-    ISWOW64PROCESS pIsWow64Process =
-        (ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
-
-    BOOL bIsWow64 = FALSE;
-    if (pIsWow64Process)
-    {
-        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-        if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, th32ProcessID))
-        {
-            (*pIsWow64Process)(hProcess, &bIsWow64);
-            ::CloseHandle(hProcess);
-        }
-    }
-
-    return bIsWow64;
-}
-
-inline MString MProcessInfo::get_full_path() const
-{
-    // get full path
-    TCHAR szFullPath[MAX_PATH] = { };
-    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, th32ProcessID))
-    {
-#if 0
-        DWORD cchMax = ARRAYSIZE(szFullPath);
-        ::QueryFullProcessImageName(hProcess, 0, szFullPath, &cchMax);
-#else
-        ::GetModuleFileNameEx(hProcess, NULL, szFullPath, ARRAYSIZE(szFullPath));
-#endif
-        ::CloseHandle(hProcess);
-    }
-    return szFullPath;
-}
-
-inline void MProcessInfo::from_entry(const PROCESSENTRY32& entry)
-{
-    *(PROCESSENTRY32 *)this = entry;
-}
-
-inline MString MProcessInfo::get_text() const
-{
-    // get text
-    TCHAR szText[MAX_PATH * 2];
-    StringCbPrintf(szText, sizeof(szText),
-                   TEXT("ProcessID:%08lX%s, Text:\"%s\", HWND:%p, FullPath:%s"),
-                   th32ProcessID,
-                   (is_wow64() ? " (WOW64)" : ""),
-                   get_window_text().c_str(),
-                   (void *)get_window(), get_full_path().c_str());
-    return MString(szText);
-}
+    static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
+};
 
 ////////////////////////////////////////////////////////////////////////////
 // MProcessList inlines
@@ -274,7 +138,6 @@ inline void MProcessList::clear()
     m_entries.clear();
 }
 
-template <typename t_info_type>
 inline bool MProcessList::get_list()
 {
     clear();
@@ -298,26 +161,29 @@ inline bool MProcessList::get_list()
     return !empty();
 }
 
-template <typename t_info_type>
-inline bool MProcessList::find_text(size_t& index, const MString& text) const
-{
-    index = size_t(-1);
-
-    for (size_t i = 0; i < size(); ++i)
-    {
-        t_info_type info;
-        info.from_entry(m_entries[i]);
-        if (info.get_text().find(text) != MString::npos)
-        {
-            index = i;
-            return true;
-        }
-    }
-    return false;
-}
-
 ////////////////////////////////////////////////////////////////////////////
 // MProcessListBox inlines
+
+inline MString MProcessListBox::text_from_entry(const entry_type& entry) const
+{
+    HWND hwnd = WindowFromProcess(entry.th32ProcessID);
+    MString strFullPath = GetProcessFullPath(entry.th32ProcessID);
+    MString strWindowText = MWindowBase::GetWindowText(m_hwnd);
+
+    const size_t MAX_WINDOW_TEXT = 20;
+    if (strWindowText.size() >= MAX_WINDOW_TEXT)
+    {
+        strWindowText.resize(MAX_WINDOW_TEXT);
+        strWindowText += TEXT("...");
+    }
+
+    TCHAR szText[MAX_PATH * 2];
+    StringCbPrintf(szText, sizeof(szText), TEXT("PID %08X hwnd %p %s %s %s"),
+        entry.th32ProcessID, hwnd, entry.szExeFile, strWindowText.c_str(),
+        strFullPath.c_str());
+
+    return szText;
+}
 
 inline MProcessListBox::MProcessListBox()
 {
@@ -339,12 +205,11 @@ inline void MProcessListBox::clear()
     m_list.clear();
 }
 
-template <typename t_info_type>
 inline bool MProcessListBox::refresh()
 {
     clear();
 
-    if (!m_list.get_list<t_info_type>())
+    if (!m_list.get_list())
         return false;
 
     if (size())
@@ -353,11 +218,7 @@ inline bool MProcessListBox::refresh()
         {
             for (size_t i = 0; i < size(); ++i)
             {
-                t_info_type info;
-                info.from_entry(entries()[i]);
-                MString text = info.get_text();
-                //printf("%s\n", text.c_str());
-                AddString(text.c_str());
+                AddProcessItem(entries()[i]);
             }
         }
         SendMessageDx(WM_SETREDRAW, TRUE);
@@ -379,10 +240,143 @@ inline bool MProcessListBox::get_selected_pid(DWORD& pid) const
     return TRUE;
 }
 
-template <typename t_info_type>
 inline bool MProcessListBox::find_text(size_t& index, const MString& text) const
 {
-    return m_list.find_text(index, text);
+    for (size_t i = 0; i < size(); ++i)
+    {
+        MString info_text = text_from_entry(entries()[i]);
+        if (info_text.find(text) != MString::npos)
+        {
+            index = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+inline BOOL CALLBACK
+MProcessListBox::EnumWindowsProc(HWND hwnd, LPARAM lParam)
+{
+    PROCESS_AND_WINDOW *paw = (PROCESS_AND_WINDOW *)lParam;
+    DWORD pid = 0;
+    ::GetWindowThreadProcessId(hwnd, &pid);
+    if (paw->pid == pid)
+    {
+        if (GetWindow(hwnd, GW_OWNER) == NULL)
+        {
+            paw->hwnd = hwnd;
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+inline HWND
+MProcessListBox::WindowFromProcess(DWORD pid)
+{
+    PROCESS_AND_WINDOW paw;
+    paw.pid = pid;
+    paw.hwnd = NULL;
+    ::EnumWindows(MProcessListBox::EnumWindowsProc, (LPARAM)&paw);
+    return paw.hwnd;
+}
+
+inline HICON MProcessListBox::GetIconOfWindow(HWND hwnd, UINT uType)
+{
+    HICON hIcon;
+
+    if (uType == ICON_SMALL)
+    {
+        hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
+    }
+    else
+    {
+        hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICON);
+    }
+    if (hIcon)
+        return hIcon;
+
+    DWORD_PTR dwResult;
+    SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG, 100, &dwResult);
+
+    hIcon = (HICON)dwResult;
+    if (hIcon == NULL)
+    {
+        hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    }
+    return hIcon;
+}
+
+inline BOOL MProcessListBox::IsProcessWow64(DWORD pid)
+{
+    BOOL bIsWow64 = FALSE;
+    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
+    {
+        bIsWow64 = IsProcessWow64(hProcess);
+        ::CloseHandle(hProcess);
+    }
+    return bIsWow64;
+}
+
+inline BOOL MProcessListBox::IsProcessWow64(HANDLE hProcess)
+{
+    typedef BOOL (WINAPI *ISWOW64PROCESS)(HANDLE, PBOOL);
+    HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32"));
+    ISWOW64PROCESS pIsWow64Process =
+        (ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+
+    BOOL bIsWow64 = FALSE;
+    if (pIsWow64Process)
+    {
+        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+        (*pIsWow64Process)(hProcess, &bIsWow64);
+    }
+
+    return bIsWow64;
+}
+
+inline MString MProcessListBox::GetProcessFullPath(DWORD pid)
+{
+    MString strFullPath;
+    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
+    {
+        strFullPath = GetProcessFullPath(hProcess);
+        ::CloseHandle(hProcess);
+    }
+    return strFullPath;
+}
+
+inline MString MProcessListBox::GetProcessFullPath(HANDLE hProcess)
+{
+    TCHAR szFullPath[MAX_PATH];
+#if 0
+    DWORD cchMax = ARRAYSIZE(szFullPath);
+    ::QueryFullProcessImageName(hProcess, 0, szFullPath, &cchMax);
+#else
+    ::GetModuleFileNameEx(hProcess, NULL, szFullPath, ARRAYSIZE(szFullPath));
+#endif
+    return szFullPath;
+}
+
+inline INT MProcessListBox::AddProcessItem(const entry_type& entry)
+{
+    INT iItem;
+    if (GetStyleDx() & LBS_HASSTRINGS)
+    {
+        MString text = text_from_entry(entry);
+        iItem = AddString(text.c_str());
+        if (iItem >= 0)
+        {
+            SetItemDataPtr(iItem, (LPVOID)&entry);
+        }
+    }
+    else
+    {
+        iItem = AddString((LPTSTR)&entry);
+    }
+    return iItem;
 }
 
 ////////////////////////////////////////////////////////////////////////////
