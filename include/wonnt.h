@@ -2,7 +2,7 @@
 /**************************************************************************/
 
 #ifndef WONNT_H
-#define WONNT_H     13  /* Version 13 */
+#define WONNT_H     14  /* Version 14 */
 
 #ifndef _INC_WINDOWS
 #if defined(_WIN32) && !defined(_WONVER) && !defined(WONVER)
@@ -98,6 +98,14 @@ C_ASSERT(sizeof(HANDLE) == sizeof(void *));
 C_ASSERT(sizeof(WCHAR) == sizeof(wchar_t));
 
 C_ASSERT(sizeof(HRESULT) == 4);
+
+/**************************************************************************/
+
+#ifndef S_OK
+    #define S_OK ((HRESULT)0x00000000)
+    #define S_FALSE ((HRESULT)0x00000001)
+    #define E_FAIL ((HRESULT)0x80004005)
+#endif
 
 /**************************************************************************/
 
