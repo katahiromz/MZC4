@@ -3,7 +3,7 @@
 /****************************************************************************/
 
 #ifndef MZC4_MTESTER_H_
-#define MZC4_MTESTER_H_     10   /* Version 10 */
+#define MZC4_MTESTER_H_     13   /* Version 13 */
 
 /****************************************************************************/
 
@@ -11,6 +11,7 @@
     #include <cstdio>
     #include <cstring>
     #include <cstdarg>
+    #include <string>   // for std::string and std::wstring
 #else
     #include <stdio.h>
     #include <string.h>
@@ -235,14 +236,20 @@ MTester_do_test(const char *file, int line, int cond, const char *fmt, ...)
     g_executed++;
 }
 
+static MZC_INLINE char *MTester_get_next_buffer(void)
+{
+    char *buffer = g_test_buffer.buffer[g_test_buffer.index];
+    g_test_buffer.index = (g_test_buffer.index + 1) % MTESTER_MAX_BUFFER_COUNT;
+    return buffer;
+}
+
 static MZC_INLINE char *MTester_sprintf(const char *fmt, ...)
 {
     USING_NAMESPACE_STD;
-    char *buffer = g_test_buffer.buffer[g_test_buffer.index];
+    char *buffer = MTester_get_next_buffer();
     va_list va;
     va_start(va, fmt);
     vsnprintf(buffer, MTESTER_MAX_BUFFER_SIZE, fmt, va);
-    g_test_buffer.index = (g_test_buffer.index + 1) % MTESTER_MAX_BUFFER_COUNT;
     va_end(va);
     return buffer;
 }
@@ -314,6 +321,37 @@ static MZC_INLINE char *MTester_sprintf(const char *fmt, ...)
     #define mtest_str_ne(expr, value) \
         MTester_do_test(__FILE__, __LINE__, std::string(expr) != std::string(value), \
                         "%s expected not '%s'.\n", #expr, std::string(value).c_str())
+#endif
+
+#ifdef _WIN32   // Unicode support for Win32
+    static MZC_INLINE const char *MTester_W2A(const WCHAR *pwsz)
+    {
+        char *buffer;
+        if (pwsz == NULL)
+            return "(null)";
+        buffer = MTester_get_next_buffer();
+        WideCharToMultiByte(CP_ACP, 0, pwsz, -1, buffer, MTESTER_MAX_BUFFER_SIZE, NULL, NULL);
+        return buffer;
+    }
+
+    #define mtest_pwsz_eq(expr, value) \
+        MTester_do_test(__FILE__, __LINE__, wcscmp((expr), (value)) == 0, \
+                        "%s expected '%s', got '%s'.\n", #expr, MTester_W2A(value), MTester_W2A(expr))
+    #define mtest_pwsz_ne(expr, value) \
+        MTester_do_test(__FILE__, __LINE__, wcscmp((expr), (value)) != 0, \
+                        "%s expected not '%s'.\n", #expr, MTester_W2A(value))
+
+    #ifdef __cplusplus
+        #define mtest_wstr_eq(expr, value) \
+            MTester_do_test(__FILE__, __LINE__, std::wstring(expr) == std::wstring(value), \
+                            "%s expected '%s', got '%s'.\n", #expr, \
+                            MTester_W2A(std::wstring(value).c_str()), \
+                            MTester_W2A(std::wstring(expr).c_str()))
+        #define mtest_wstr_ne(expr, value) \
+            MTester_do_test(__FILE__, __LINE__, std::wstring(expr) != std::wstring(value), \
+                            "%s expected not '%s'.\n", #expr, \
+                            MTester_W2A(std::wstring(value).c_str()))
+    #endif
 #endif
 
 /****************************************************************************/
