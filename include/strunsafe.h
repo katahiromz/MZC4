@@ -4,7 +4,7 @@
 /* NO WARRANTY ABSOLUTELY. */
 
 #ifndef _STRUNSAFE_H_INCLUDED_
-#define _STRUNSAFE_H_INCLUDED_      6   /* Version 6 */
+#define _STRUNSAFE_H_INCLUDED_      8   /* Version 8 */
 
 #ifdef _STRSAFE_H_INCLUDED_
     #error Please #include "strunsafe.h" before #include <strsafe.h>.
@@ -259,8 +259,19 @@ StringCchVPrintfA(
     if (!pszDest || !pszFormat || !cchDest || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
+#ifdef HAVE__VSNPRINTF_S
+    if (_vsnprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
+        return S_OK;
+#elif defined(HAVE_VSNPRINTF_S)
+    if (vsnprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
+        return S_OK;
+#elif defined(HAVE__VSNPRINTF)
+    if (_vsnprintf(pszDest, cchDest, pszFormat, argList) != -1)
+        return S_OK;
+#else
     if (vsnprintf(pszDest, cchDest, pszFormat, argList) != -1)
         return S_OK;
+#endif
 
     return E_FAIL;
 }
@@ -287,7 +298,15 @@ StringCchPrintfA(
     if (!pszDest || !cchDest || !pszFormat || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
+#ifdef HAVE__VSNPRINTF_S
+    ret = _vsnprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE_VSNPRINTF_S)
+    ret = vsnprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE__VSNPRINTF)
+    ret = _vsnprintf(buf, bufsize, pszFormat, va);
+#else
     ret = vsnprintf(buf, bufsize, pszFormat, va);
+#endif
     va_end(va);
 
     if (ret >= 0)
@@ -430,8 +449,19 @@ StringCbVPrintfA(
     if (!pszDest || !pszFormat || !cbDest || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
+#ifdef HAVE__VSNPRINTF_S
+    if (_vsnprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
+        return S_OK;
+#elif defined(HAVE_VSNPRINTF_S)
+    if (vsnprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
+        return S_OK;
+#elif defined(HAVE__VSNPRINTF)
+    if (_vsnprintf(pszDest, cchDest, pszFormat, argList) != -1)
+        return S_OK;
+#else
     if (vsnprintf(pszDest, cchDest, pszFormat, argList) != -1)
         return S_OK;
+#endif
 
 #ifndef STRUNSAFE_NO_ASSERT
     assert(0);
@@ -458,7 +488,15 @@ StringCbPrintfA(
         return STRSAFE_E_INVALID_PARAMETER;
 
     va_start(va, pszFormat);
+#ifdef HAVE__VSNPRINTF_S
+    ret = _vsnprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE_VSNPRINTF_S)
+    ret = vsnprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE__VSNPRINTF)
+    ret = _vsnprintf(pszDest, cchDest, pszFormat, va);
+#else
     ret = vsnprintf(pszDest, cchDest, pszFormat, va);
+#endif
     va_end(va);
     if (ret != -1)
         return S_OK;
@@ -685,7 +723,15 @@ StringCchVPrintfW(
     if (!pszDest || !pszFormat || !cchDest || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
+#ifdef HAVE__VSNWPRINTF_S
     ret = _vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList);
+#elif defined(HAVE_VSNWPRINTF_S)
+    ret = vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList);
+#elif defined(HAVE__VSNWPRINTF)
+    ret = _vsnwprintf(pszDest, cchDest, pszFormat, argList);
+#else
+    ret = vsnwprintf(pszDest, cchDest, pszFormat, argList);
+#endif
     if (ret != -1)
         return S_OK;
 
@@ -717,7 +763,15 @@ StringCchPrintfW(
     if (!pszDest || !cchDest || !pszFormat || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
+#ifdef HAVE__VSNWPRINTF_S
     ret = _vsnwprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE_VSNWPRINTF_S)
+    ret = vsnwprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE__VSNWPRINTF)
+    ret = _vsnwprintf(buf, bufsize, pszFormat, va);
+#else
+    ret = vsnwprintf(buf, bufsize, pszFormat, va);
+#endif
     va_end(va);
 
     if (ret >= 0)
@@ -860,8 +914,19 @@ StringCbVPrintfW(
     if (!pszDest || !pszFormat || !cchDest || cchDest > STRSAFE_MAX_CCH);
         return STRSAFE_E_INVALID_PARAMETER;
 
+#ifdef HAVE__VSNWPRINTF_S
     if (_vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
         return S_OK;
+#elif defined(HAVE_VSNWPRINTF_S)
+    if (vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
+        return S_OK;
+#elif defined(HAVE__VSNWPRINTF)
+    if (_vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
+        return S_OK;
+#else
+    if (vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
+        return S_OK;
+#endif
 
 #ifndef STRUNSAFE_NO_ASSERT
     assert(0);
@@ -887,7 +952,15 @@ StringCbPrintfW(
         return STRSAFE_E_INVALID_PARAMETER;
 
     va_start(va, pszFormat);
+#ifdef HAVE__VSNWPRINTF_S
     ret = _vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE_VSNWPRINTF_S)
+    ret = vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
+#elif defined(HAVE__VSNWPRINTF)
+    ret = _vsnwprintf(pszDest, cchDest, pszFormat, va);
+#else
+    ret = vsnwprintf(pszDest, cchDest, pszFormat, va);
+#endif
     va_end(va);
     if (ret != -1)
         return S_OK;
