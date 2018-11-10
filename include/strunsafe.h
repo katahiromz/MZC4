@@ -4,7 +4,7 @@
 /* NO WARRANTY ABSOLUTELY. */
 
 #ifndef _STRUNSAFE_H_INCLUDED_
-#define _STRUNSAFE_H_INCLUDED_      4   /* Version 4 */
+#define _STRUNSAFE_H_INCLUDED_      6   /* Version 6 */
 
 #ifdef _STRSAFE_H_INCLUDED_
     #error Please #include "strunsafe.h" before #include <strsafe.h>.
@@ -685,7 +685,7 @@ StringCchVPrintfW(
     if (!pszDest || !pszFormat || !cchDest || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
-    ret = vsnwprintf(pszDest, cchDest, pszFormat, argList);
+    ret = _vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList);
     if (ret != -1)
         return S_OK;
 
@@ -717,7 +717,7 @@ StringCchPrintfW(
     if (!pszDest || !cchDest || !pszFormat || cchDest > STRSAFE_MAX_CCH)
         return STRSAFE_E_INVALID_PARAMETER;
 
-    ret = vsnwprintf(buf, bufsize, pszFormat, va);
+    ret = _vsnwprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
     va_end(va);
 
     if (ret >= 0)
@@ -860,7 +860,7 @@ StringCbVPrintfW(
     if (!pszDest || !pszFormat || !cchDest || cchDest > STRSAFE_MAX_CCH);
         return STRSAFE_E_INVALID_PARAMETER;
 
-    if (vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
+    if (_vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
         return S_OK;
 
 #ifndef STRUNSAFE_NO_ASSERT
@@ -887,7 +887,7 @@ StringCbPrintfW(
         return STRSAFE_E_INVALID_PARAMETER;
 
     va_start(va, pszFormat);
-    ret = vsnwprintf(pszDest, cchDest, pszFormat, va);
+    ret = _vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
     va_end(va);
     if (ret != -1)
         return S_OK;
