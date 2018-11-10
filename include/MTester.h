@@ -3,7 +3,7 @@
 /****************************************************************************/
 
 #ifndef MZC4_MTESTER_H_
-#define MZC4_MTESTER_H_     9   /* Version 9 */
+#define MZC4_MTESTER_H_     10   /* Version 10 */
 
 /****************************************************************************/
 
@@ -283,6 +283,14 @@ static MZC_INLINE char *MTester_sprintf(const char *fmt, ...)
     MTester_do_test(__FILE__, __LINE__, (expr) != (value), \
                     "%s expected not %d (0x%X).\n", #expr, (value), (value))
 
+#define mtest_long_eq(expr, value) \
+    MTester_do_test(__FILE__, __LINE__, (expr) == (value), \
+                    "%s expected %ld (0x%lX), got %ld (0x%lX).\n", \
+                    #expr, (value), (value), (expr), (expr))
+#define mtest_long_ne(expr, value) \
+    MTester_do_test(__FILE__, __LINE__, (expr) != (value), \
+                    "%s expected not %ld (0x%lX).\n", #expr, (value), (value))
+
 #define mtest_ptr_eq(expr, value) \
     MTester_do_test(__FILE__, __LINE__, (expr) == (value), \
                     "%s expected %p, got %p.\n", #expr, \
@@ -293,19 +301,19 @@ static MZC_INLINE char *MTester_sprintf(const char *fmt, ...)
 
 #define mtest_psz_eq(expr, value) \
     MTester_do_test(__FILE__, __LINE__, strcmp((expr), (value)) == 0, \
-                    "%s expected %s, got %s.\n", #expr, (value), (expr))
+                    "%s expected '%s', got '%s'.\n", #expr, (value), (expr))
 #define mtest_psz_ne(expr, value) \
     MTester_do_test(__FILE__, __LINE__, strcmp((expr), (value)) != 0, \
-                    "%s expected not %s.\n", #expr, (value))
+                    "%s expected not '%s'.\n", #expr, (value))
 
 #ifdef __cplusplus
     #define mtest_str_eq(expr, value) \
         MTester_do_test(__FILE__, __LINE__, std::string(expr) == std::string(value), \
-                        "%s expected %s, got %s.\n", #expr, \
+                        "%s expected '%s', got '%s'.\n", #expr, \
                         std::string(value).c_str(), std::string(expr).c_str())
     #define mtest_str_ne(expr, value) \
         MTester_do_test(__FILE__, __LINE__, std::string(expr) != std::string(value), \
-                        "%s expected not %s.\n", #expr, std::string(value).c_str())
+                        "%s expected not '%s'.\n", #expr, std::string(value).c_str())
 #endif
 
 /****************************************************************************/
