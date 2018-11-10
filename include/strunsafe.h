@@ -4,7 +4,7 @@
 /* NO WARRANTY ABSOLUTELY. */
 
 #ifndef _STRUNSAFE_H_INCLUDED_
-#define _STRUNSAFE_H_INCLUDED_      8   /* Version 8 */
+#define _STRUNSAFE_H_INCLUDED_      9   /* Version 9 */
 
 #ifdef _STRSAFE_H_INCLUDED_
     #error Please #include "strunsafe.h" before #include <strsafe.h>.
@@ -727,10 +727,10 @@ StringCchVPrintfW(
     ret = _vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList);
 #elif defined(HAVE_VSNWPRINTF_S)
     ret = vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList);
-#elif defined(HAVE__VSNWPRINTF)
-    ret = _vsnwprintf(pszDest, cchDest, pszFormat, argList);
-#else
+#elif defined(HAVE_VSNWPRINTF)
     ret = vsnwprintf(pszDest, cchDest, pszFormat, argList);
+#else
+    ret = _vsnwprintf(pszDest, cchDest, pszFormat, argList);
 #endif
     if (ret != -1)
         return S_OK;
@@ -767,10 +767,10 @@ StringCchPrintfW(
     ret = _vsnwprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
 #elif defined(HAVE_VSNWPRINTF_S)
     ret = vsnwprintf_s(buf, bufsize, _TRUNCATE, pszFormat, va);
-#elif defined(HAVE__VSNWPRINTF)
-    ret = _vsnwprintf(buf, bufsize, pszFormat, va);
-#else
+#elif defined(HAVE_VSNWPRINTF)
     ret = vsnwprintf(buf, bufsize, pszFormat, va);
+#else
+    ret = _vsnwprintf(buf, bufsize, pszFormat, va);
 #endif
     va_end(va);
 
@@ -920,11 +920,11 @@ StringCbVPrintfW(
 #elif defined(HAVE_VSNWPRINTF_S)
     if (vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, argList) != -1)
         return S_OK;
-#elif defined(HAVE__VSNWPRINTF)
-    if (_vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
+#elif defined(HAVE_VSNWPRINTF)
+    if (vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
         return S_OK;
 #else
-    if (vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
+    if (_vsnwprintf(pszDest, cchDest, pszFormat, argList) != -1)
         return S_OK;
 #endif
 
@@ -956,10 +956,10 @@ StringCbPrintfW(
     ret = _vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
 #elif defined(HAVE_VSNWPRINTF_S)
     ret = vsnwprintf_s(pszDest, cchDest, _TRUNCATE, pszFormat, va);
-#elif defined(HAVE__VSNWPRINTF)
-    ret = _vsnwprintf(pszDest, cchDest, pszFormat, va);
-#else
+#elif defined(HAVE_VSNWPRINTF)
     ret = vsnwprintf(pszDest, cchDest, pszFormat, va);
+#else
+    ret = _vsnwprintf(pszDest, cchDest, pszFormat, va);
 #endif
     va_end(va);
     if (ret != -1)
