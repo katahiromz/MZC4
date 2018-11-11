@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     2       /* Version 2 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     3       /* Version 3 */
 
 #include "MTreeView.hpp"
 #include <psapi.h>      // for GetModuleFileNameEx
@@ -306,7 +306,7 @@ inline void MWindowTreeView::ReCreateTreeImageList()
     }
     INT cx = GetSystemMetrics(SM_CXSMICON);
     INT cy = GetSystemMetrics(SM_CYSMICON);
-    m_himl = ImageList_Create(cx, cy, ILC_COLOR24 | ILC_MASK, 128, 16);
+    m_himl = ImageList_Create(cx, cy, ILC_COLOR32 | ILC_MASK, 128, 16);
     SetImageList(m_himl, TVSIL_NORMAL);
 }
 
