@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     1       /* Version 1 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     2       /* Version 2 */
 
 #include "MTreeView.hpp"
 #include <psapi.h>      // for GetModuleFileNameEx
@@ -93,9 +93,10 @@ public:
     void clear();
 
     bool get_selected_hwnd(HWND& hwnd) const;
+    bool select_hwnd(HWND hwnd);
 
     bool find_text(HTREEITEM& hItem, const MString& text, HTREEITEM hParent = TVI_ROOT) const;
-    static HICON GetIconOfWindow(HWND hwnd, BOOL& bExtracted, UINT uType = ICON_BIG);
+    static HICON GetIconOfWindow(HWND hwnd, UINT uType = ICON_BIG);
 
     HTREEITEM ItemFromWindow(HWND hwnd) const;
     HTREEITEM ItemFromNode(const node_type *node,
@@ -234,19 +235,24 @@ inline BOOL CALLBACK MWindowTree::EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 inline bool MWindowTree::insert_by_relation(const RELATION& relation)
 {
+    HWND hwndTarget = relation.m_hwnd;
+    if (hwndTarget == GetDesktopWindow() || !::IsWindow(hwndTarget))
+        return false;
+
     if (relation.m_hwndParent)
     {
         if (MWindowTreeNode *parent = m_root->find(relation.m_hwndParent))
         {
-            parent->insert(relation.m_hwnd);
+            parent->insert(hwndTarget);
             return true;
         }
     }
     else
     {
-        m_root->insert(relation.m_hwnd);
+        m_root->insert(hwndTarget);
         return true;
     }
+
     return false;
 }
 
@@ -260,7 +266,7 @@ inline bool MWindowTree::get_relations(relations_type& relations)
 
 bool MWindowTree::empty() const
 {
-    return m_root == NULL;
+    return m_root == NULL || m_root->m_children.empty();
 }
 
 inline bool MWindowTree::get_tree()
@@ -274,7 +280,7 @@ inline bool MWindowTree::get_tree()
     std::sort(relations.begin(), relations.end());
     relations.erase(std::unique(relations.begin(), relations.end()), relations.end());
 
-    m_root = new MWindowTreeNode();
+    m_root = new MWindowTreeNode(::GetDesktopWindow());
 
     for (size_t i = 0; i < relations.size(); ++i)
     {
@@ -315,10 +321,17 @@ inline bool MWindowTreeView::refresh()
     clear();
     if (m_tree.get_tree())
     {
-        MWindowTreeNode *the_root = root();
-        for (size_t i = 0; i < the_root->m_children.size(); ++i)
+        if (1)
         {
-            InsertNodeTree(the_root->m_children[i]);
+            InsertNodeTree(root());
+        }
+        else
+        {
+            MWindowTreeNode *the_root = root();
+            for (size_t i = 0; i < the_root->m_children.size(); ++i)
+            {
+                InsertNodeTree(the_root->m_children[i]);
+            }
         }
     }
     SendMessageDx(WM_SETREDRAW, TRUE);
@@ -384,8 +397,7 @@ inline HTREEITEM
 MWindowTreeView::InsertNodeItem(const node_type *node, HTREEITEM hParent)
 {
     MString text = text_from_node(node);
-    BOOL bExtracted = FALSE;
-    HICON hIcon = MWindowTreeView::GetIconOfWindow(node->m_hwnd, bExtracted);
+    HICON hIcon = MWindowTreeView::GetIconOfWindow(node->m_hwnd);
     INT iImage = ImageList_AddIcon(m_himl, hIcon);
     UINT mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT |
                 TVIF_STATE | TVIF_PARAM;
@@ -393,8 +405,7 @@ MWindowTreeView::InsertNodeItem(const node_type *node, HTREEITEM hParent)
     LPARAM lParam = (LPARAM)node;
     HTREEITEM hItem = InsertItem(mask, text.c_str(), iImage, iImage, 
                                  state, state, lParam, hParent);
-    if (bExtracted)
-        DestroyIcon(hIcon);
+    DestroyIcon(hIcon);
     return hItem;
 }
 
@@ -424,10 +435,9 @@ MWindowTreeView::find_text(HTREEITEM& hItem, const MString& text, HTREEITEM hPar
     return false;
 }
 
-inline HICON MWindowTreeView::GetIconOfWindow(HWND hwnd, BOOL& bExtracted, UINT uType)
+inline HICON MWindowTreeView::GetIconOfWindow(HWND hwnd, UINT uType)
 {
     HICON hIcon = NULL;
-    bExtracted = FALSE;
 
     if (!hIcon)
     {
@@ -435,21 +445,26 @@ inline HICON MWindowTreeView::GetIconOfWindow(HWND hwnd, BOOL& bExtracted, UINT 
         UINT uTimeout = 100;
         SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG,
                            uTimeout, &dwResult);
-
         hIcon = (HICON)dwResult;
     }
 
     if (!hIcon)
     {
-        if (uType == ICON_SMALL)
+        switch (uType)
         {
+        case ICON_SMALL:
             hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
-        }
-        else
-        {
+            if (hIcon)
+                break;
+            // FALL THROUGH
+        case ICON_BIG:
             hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICON);
+            break;
         }
     }
+
+    if (hIcon)
+        return CopyIcon(hIcon);
 
     if (!hIcon && !GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
     {
@@ -462,14 +477,21 @@ inline HICON MWindowTreeView::GetIconOfWindow(HWND hwnd, BOOL& bExtracted, UINT 
             TCHAR szPath[MAX_PATH];
             if (GetModuleFileNameEx(hProcess, hMod, szPath, ARRAYSIZE(szPath)))
             {
-                if (uType == ICON_SMALL)
-                    ExtractIconEx(szPath, 0, NULL, &hIcon, 1);
-                else
-                    ExtractIconEx(szPath, 0, &hIcon, NULL, 1);
-                if (hIcon)
+                SHFILEINFO shfi;
+                ZeroMemory(&shfi, sizeof(shfi));
+                UINT uFlags = 0;
+                switch (uType)
                 {
-                    bExtracted = TRUE;
+                case ICON_SMALL:
+                    uFlags = SHGFI_ICON | SHGFI_SMALLICON;
+                    break;
+
+                case ICON_BIG:
+                    uFlags = SHGFI_ICON | SHGFI_LARGEICON;
+                    break;
                 }
+                SHGetFileInfo(szPath, 0, &shfi, sizeof(shfi), uFlags);
+                hIcon = shfi.hIcon;
             }
             ::CloseHandle(hProcess);
         }
@@ -477,35 +499,30 @@ inline HICON MWindowTreeView::GetIconOfWindow(HWND hwnd, BOOL& bExtracted, UINT 
 
     if (!hIcon)
     {
-        if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
+        INT cx, cy;
+        switch (uType)
         {
-            if (uType == ICON_SMALL)
+        case ICON_SMALL:
+            cx = GetSystemMetrics(SM_CXSMICON);
+            cy = GetSystemMetrics(SM_CYSMICON);
+            if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
             {
-                INT cx = GetSystemMetrics(SM_CXSMICON);
-                INT cy = GetSystemMetrics(SM_CYSMICON);
-                hIcon = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, cx, cy, 0);
+                hIcon = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON,
+                                         cx, cy, 0);
             }
             else
             {
+                hIcon = (HICON)LoadImage(NULL, IDI_INFORMATION, IMAGE_ICON,
+                                         cx, cy, 0);
+            }
+            break;
+
+        case ICON_BIG:
+            if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
                 hIcon = LoadIcon(NULL, IDI_APPLICATION);
-            }
-        }
-        else
-        {
-            if (uType == ICON_SMALL)
-            {
-                INT cx = GetSystemMetrics(SM_CXSMICON);
-                INT cy = GetSystemMetrics(SM_CYSMICON);
-                hIcon = (HICON)LoadImage(NULL, IDI_INFORMATION, IMAGE_ICON, cx, cy, 0);
-            }
             else
-            {
                 hIcon = LoadIcon(NULL, IDI_INFORMATION);
-            }
-        }
-        if (hIcon)
-        {
-            bExtracted = TRUE;
+            break;
         }
     }
 
@@ -551,6 +568,16 @@ inline HWND MWindowTreeView::WindowFromItem(HTREEITEM hItem) const
         return node->m_hwnd;
     }
     return NULL;
+}
+
+inline bool MWindowTreeView::select_hwnd(HWND hwnd)
+{
+    if (node_type *node = find_node(hwnd))
+    {
+        if (HTREEITEM hItem = ItemFromNode(node))
+            return !!SelectItem(hItem);
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////
