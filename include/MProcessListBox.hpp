@@ -283,37 +283,95 @@ MProcessListBox::WindowFromProcess(DWORD pid)
 
 inline HICON MProcessListBox::GetIconOfWindow(HWND hwnd, UINT uType)
 {
-    HICON hIcon;
-    if (uType == ICON_SMALL)
+    HICON hIcon = NULL;
+
+    if (!hIcon)
     {
-        hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
+        DWORD_PTR dwResult = 0;
+        UINT uTimeout = 100;
+        SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG,
+                           uTimeout, &dwResult);
+        hIcon = (HICON)dwResult;
     }
-    else
+
+    if (!hIcon)
     {
-        hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICON);
+        switch (uType)
+        {
+        case ICON_SMALL:
+            hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
+            if (hIcon)
+                break;
+            // FALL THROUGH
+        case ICON_BIG:
+            hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICON);
+            break;
+        }
     }
+
     if (hIcon)
-        return hIcon;
+        return CopyIcon(hIcon);
 
-    DWORD_PTR dwResult = 0;
-    UINT uTimeout = 100;
-    SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG,
-                       uTimeout, &dwResult);
-
-    hIcon = (HICON)dwResult;
-    if (hIcon == NULL)
+    if (!hIcon && !GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
     {
-        if (uType == ICON_SMALL)
+        DWORD pid;
+        GetWindowThreadProcessId(hwnd, &pid);
+        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+        if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
         {
-            INT cx = GetSystemMetrics(SM_CXSMICON);
-            INT cy = GetSystemMetrics(SM_CYSMICON);
-            hIcon = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON, cx, cy, 0);
-        }
-        else
-        {
-            hIcon = LoadIcon(NULL, IDI_APPLICATION);
+            HMODULE hMod = (HMODULE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
+            TCHAR szPath[MAX_PATH];
+            if (GetModuleFileNameEx(hProcess, hMod, szPath, ARRAYSIZE(szPath)))
+            {
+                SHFILEINFO shfi;
+                ZeroMemory(&shfi, sizeof(shfi));
+                UINT uFlags = 0;
+                switch (uType)
+                {
+                case ICON_SMALL:
+                    uFlags = SHGFI_ICON | SHGFI_SMALLICON;
+                    break;
+
+                case ICON_BIG:
+                    uFlags = SHGFI_ICON | SHGFI_LARGEICON;
+                    break;
+                }
+                SHGetFileInfo(szPath, 0, &shfi, sizeof(shfi), uFlags);
+                hIcon = shfi.hIcon;
+            }
+            ::CloseHandle(hProcess);
         }
     }
+
+    if (!hIcon)
+    {
+        INT cx, cy;
+        switch (uType)
+        {
+        case ICON_SMALL:
+            cx = GetSystemMetrics(SM_CXSMICON);
+            cy = GetSystemMetrics(SM_CYSMICON);
+            if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
+            {
+                hIcon = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON,
+                                         cx, cy, 0);
+            }
+            else
+            {
+                hIcon = (HICON)LoadImage(NULL, IDI_INFORMATION, IMAGE_ICON,
+                                         cx, cy, 0);
+            }
+            break;
+
+        case ICON_BIG:
+            if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
+                hIcon = LoadIcon(NULL, IDI_APPLICATION);
+            else
+                hIcon = LoadIcon(NULL, IDI_INFORMATION);
+            break;
+        }
+    }
+
     return hIcon;
 }
 
