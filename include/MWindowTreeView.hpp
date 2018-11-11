@@ -1,9 +1,9 @@
-// MTreeView.hpp -- Win32API treeview wrapper                   -*- C++ -*-
+// MWindowTreeView.hpp -- MZC4 window tree view             -*- C++ -*-
 // This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     3       /* Version 3 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     4       /* Version 4 */
 
 #include "MTreeView.hpp"
 #include <psapi.h>      // for GetModuleFileNameEx
