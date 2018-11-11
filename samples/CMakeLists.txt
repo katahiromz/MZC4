@@ -7,4 +7,5 @@ subdirs(MsgCrack
         ProcessLister
         TriStateTV
         TypicalDialogApp
-        TypicalWindowsApp)
+        TypicalWindowsApp
+        WindowTreeViewer)
