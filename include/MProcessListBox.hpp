@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      12   /* Version 12 */
+#define MZC4_MPROCESSLISTBOX_HPP_      13   /* Version 13 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -169,6 +169,7 @@ inline size_t MProcessList::size() const
 inline void MProcessList::clear()
 {
     m_entries.clear();
+    ReCreateImageList(m_nIconType);
 }
 
 inline bool MProcessList::get_list()
