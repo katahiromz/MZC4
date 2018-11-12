@@ -174,10 +174,10 @@ public:
         rc.top += s_nItemHeight / 6;
         rc.bottom = (rc.top + rc.bottom) / 2;
         if (window)
-            StringCbPrintf(szText, sizeof(szText), TEXT("PID:%08lX, HWND:%p"),
+            StringCbPrintf(szText, sizeof(szText), TEXT("PID %lu, HWND %p"),
                            pid, (HWND)window);
         else
-            StringCbPrintf(szText, sizeof(szText), TEXT("PID:%08lX"), pid);
+            StringCbPrintf(szText, sizeof(szText), TEXT("PID %lu"), pid);
         DrawText(hDC, szText, -1, &rc, uFormat);
 
         rc = rcItem;
