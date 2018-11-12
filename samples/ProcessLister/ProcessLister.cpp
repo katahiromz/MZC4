@@ -5,11 +5,34 @@
 #include "targetver.h"
 #include "MProcessListBox.hpp"
 #include "MResizable.hpp"
-#include <map>
 #include "resource.h"
 
 static const INT s_nItemHeight = 48;
 static const INT s_nIconSize = 32;
+
+BOOL EnableProcessPriviledge(LPCTSTR pszSE_)
+{
+    BOOL f;
+    HANDLE hProcess;
+    HANDLE hToken;
+    LUID luid;
+    TOKEN_PRIVILEGES tp;
+    
+    f = FALSE;
+    hProcess = GetCurrentProcess();
+    if (OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES, &hToken))
+    {
+        if (LookupPrivilegeValue(NULL, pszSE_, &luid))
+        {
+            tp.PrivilegeCount = 1;
+            tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+            tp.Privileges[0].Luid = luid;
+            f = AdjustTokenPrivileges(hToken, FALSE, &tp, 0, NULL, NULL);
+        }
+        CloseHandle(hToken);
+    }
+    return f;
+}
 
 class ProcessLister : public MDialogBase
 {
@@ -17,61 +40,33 @@ public:
     HINSTANCE       m_hInst;        // the instance handle
     HICON           m_hIcon;        // the main icon
     HICON           m_hIconSm;      // the small icon
-    HIMAGELIST      m_himl;         // the image list
     MProcessListBox m_lst1;         // the list box
     DWORD           m_pid;          // the process id
     MResizable      m_resizable;    // make the window resizable layout
-    std::map<HWND, INT> m_window_to_image_index;
 
     ProcessLister(INT argc, TCHAR **targv, HINSTANCE hInst)
         : MDialogBase(IDD_MAIN), m_hInst(hInst),
-          m_hIcon(NULL), m_hIconSm(NULL), m_himl(NULL)
+          m_hIcon(NULL), m_hIconSm(NULL)
     {
+        EnableProcessPriviledge(SE_DEBUG_NAME);
         m_hIcon = LoadIconDx(IDI_MAIN);
         m_hIconSm = LoadSmallIconDx(IDI_MAIN);
         m_pid = 0;
-    }
-
-    void ReCreateListImageList()
-    {
-        if (m_himl)
-        {
-            ImageList_Destroy(m_himl);
-            m_himl = NULL;
-        }
-        INT cx = GetSystemMetrics(SM_CXICON);
-        INT cy = GetSystemMetrics(SM_CYICON);
-        m_himl = ImageList_Create(cx, cy, ILC_COLOR32 | ILC_MASK, 128, 16);
     }
 
     virtual ~ProcessLister()
     {
         DestroyIcon(m_hIcon);
         DestroyIcon(m_hIconSm);
-        ImageList_Destroy(m_himl);
     }
 
     void Refresh()
     {
-        ReCreateListImageList();
         m_lst1.refresh();
-        m_window_to_image_index.clear();
-
-        for (size_t i = 0; i < m_lst1.size(); ++i)
-        {
-            DWORD pid = m_lst1[i].th32ProcessID;
-            HWND window = m_lst1.WindowFromProcess(pid);
-            HICON hIcon = m_lst1.GetIconOfWindow(window);
-            INT iImage = ImageList_AddIcon(m_himl, hIcon);
-            m_window_to_image_index[window] = iImage;
-            DestroyIcon(hIcon);
-        }
     }
 
     BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     {
-        ReCreateListImageList();
-
         SendMessageDx(WM_SETICON, ICON_BIG, LPARAM(m_hIcon));
         SendMessageDx(WM_SETICON, ICON_SMALL, LPARAM(m_hIconSm));
 
@@ -146,14 +141,14 @@ public:
         MProcessListBox::entry_type *entry = (MProcessListBox::entry_type *)pData;
 
         DWORD pid = entry->th32ProcessID;
-        HWND window = m_lst1.WindowFromProcess(pid);
-        INT iImage = m_window_to_image_index[window];
-        MString strFullPath = m_lst1.GetProcessFullPath(pid);
+        HWND window = WindowFromProcessDx(pid);
+        INT iImage = entry->iImage;
+        MString strFullPath = GetPathOfProcessDx(pid);
         MString strWindowText = MWindowBase::GetWindowText(window);
 
         INT xyIcon = (s_nItemHeight - s_nIconSize) / 2;
 
-        ImageList_DrawEx(m_himl, iImage, hDC,
+        ImageList_DrawEx(m_lst1.ImageList(), iImage, hDC,
             rcItem.left + xyIcon, rcItem.top + xyIcon,
             s_nIconSize, s_nIconSize,
             CLR_NONE, CLR_NONE, ILD_NORMAL | ILD_TRANSPARENT);
