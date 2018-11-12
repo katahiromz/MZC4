@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef PROCESSWINDOWICON_HPP_
-#define PROCESSWINDOWICON_HPP_      1   // Version 1
+#define PROCESSWINDOWICON_HPP_      3   // Version 3
 
 #include "MWindowBase.hpp"
 
@@ -13,8 +13,39 @@ HICON GetIconOfProcessDx(DWORD pid, UINT uType = ICON_BIG);
 HICON GetIconOfWindowDx(HWND hwnd, UINT uType = ICON_BIG);
 DWORD ProcessFromWindowDx(HWND hwnd);
 HWND WindowFromProcessDx(DWORD pid);
+BOOL IsProcessWow64Dx(DWORD pid);
+BOOL IsProcessWow64Dx(HANDLE hProcess);
 
 ////////////////////////////////////////////////////////////////////////////
+
+inline BOOL IsProcessWow64Dx(DWORD pid)
+{
+    BOOL bIsWow64 = FALSE;
+    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
+    {
+        bIsWow64 = IsProcessWow64Dx(hProcess);
+        ::CloseHandle(hProcess);
+    }
+    return bIsWow64;
+}
+
+inline BOOL IsProcessWow64Dx(HANDLE hProcess)
+{
+    typedef BOOL (WINAPI *ISWOW64PROCESS)(HANDLE, PBOOL);
+    HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32"));
+    ISWOW64PROCESS pIsWow64Process =
+        (ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+
+    BOOL bIsWow64 = FALSE;
+    if (pIsWow64Process)
+    {
+        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+        (*pIsWow64Process)(hProcess, &bIsWow64);
+    }
+
+    return bIsWow64;
+}
 
 inline DWORD ProcessFromWindowDx(HWND hwnd)
 {

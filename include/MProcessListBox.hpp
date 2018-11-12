@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MPROCESSLISTBOX_HPP_
-#define MZC4_MPROCESSLISTBOX_HPP_      10   /* Version 10 */
+#define MZC4_MPROCESSLISTBOX_HPP_      12   /* Version 12 */
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -13,16 +13,26 @@
 #include <strsafe.h>    // for StringC...
 #include <vector>       // for std::vector
 
+#include "ProcessWindowIcon.hpp"
+
+////////////////////////////////////////////////////////////////////////////
+// MProcessEntry
+
+struct MProcessEntry : PROCESSENTRY32
+{
+    INT iImage;
+};
+
 ////////////////////////////////////////////////////////////////////////////
 // MProcessList
 
 class MProcessList
 {
 public:
-    typedef PROCESSENTRY32 entry_type;
+    typedef MProcessEntry entry_type;
     typedef std::vector<entry_type> entry_list_type;
 
-    MProcessList();
+    MProcessList(UINT nIconType = ICON_BIG);
 
     bool get_list();
 
@@ -50,7 +60,12 @@ public:
         return entries()[index];
     }
 
+    HIMAGELIST ImageList();
+    BOOL ReCreateImageList(UINT nIconType = ICON_BIG);
+
 protected:
+    UINT m_nIconType;
+    HIMAGELIST m_himl;
     entry_list_type m_entries;
 };
 
@@ -98,29 +113,47 @@ public:
 
     bool find_text(size_t& index, const MString& text) const;
 
-    static HWND WindowFromProcess(DWORD pid);
-    static HICON GetIconOfWindow(HWND hwnd, UINT uType = ICON_BIG);
-    static BOOL IsProcessWow64(DWORD pid);
-    static BOOL IsProcessWow64(HANDLE hProcess);
-    static MString GetProcessFullPath(DWORD pid);
-    static MString GetProcessFullPath(HANDLE hProcess);
+    HIMAGELIST ImageList();
 
 protected:
     MProcessList m_list;
-
-    struct PROCESS_AND_WINDOW
-    {
-        DWORD pid;
-        HWND hwnd;
-    };
-    static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
 };
 
 ////////////////////////////////////////////////////////////////////////////
 // MProcessList inlines
 
-inline MProcessList::MProcessList()
+inline MProcessList::MProcessList(UINT nIconType)
+    : m_nIconType(nIconType), m_himl(NULL)
 {
+    ReCreateImageList(nIconType);
+}
+
+inline HIMAGELIST MProcessList::ImageList()
+{
+    return m_himl;
+}
+
+inline BOOL MProcessList::ReCreateImageList(UINT nIconType)
+{
+    if (m_himl)
+    {
+        ImageList_Destroy(m_himl);
+        m_himl = NULL;
+    }
+    INT cx, cy;
+    if (nIconType == ICON_BIG)
+    {
+        cx = GetSystemMetrics(SM_CXICON);
+        cy = GetSystemMetrics(SM_CYICON);
+    }
+    else
+    {
+        cx = GetSystemMetrics(SM_CXSMICON);
+        cy = GetSystemMetrics(SM_CYSMICON);
+    }
+    m_himl = ImageList_Create(cx, cy, ILC_COLOR32 | ILC_MASK, 128, 16);
+    m_nIconType = nIconType;
+    return m_himl != NULL;
 }
 
 inline bool MProcessList::empty() const
@@ -153,6 +186,15 @@ inline bool MProcessList::get_list()
     {
         do
         {
+            HICON hIcon = GetIconOfProcessDx(entry.th32ProcessID);
+            if (!hIcon)
+            {
+                hIcon = GetStdIconDx(IDI_APPLICATION, m_nIconType);
+            }
+            assert(hIcon);
+            entry.iImage = ImageList_AddIcon(m_himl, hIcon);
+            DestroyIcon(hIcon);
+
             m_entries.push_back(entry);
         } while (::Process32Next(hSnapshot, &entry));
     }
@@ -166,8 +208,8 @@ inline bool MProcessList::get_list()
 
 inline MString MProcessListBox::text_from_entry(const entry_type& entry) const
 {
-    HWND hwnd = WindowFromProcess(entry.th32ProcessID);
-    MString strFullPath = GetProcessFullPath(entry.th32ProcessID);
+    HWND hwnd = WindowFromProcessDx(entry.th32ProcessID);
+    MString strFullPath = GetPathOfProcessDx(entry.th32ProcessID);
     MString strWindowText = MWindowBase::GetWindowText(m_hwnd);
 
     const size_t MAX_WINDOW_TEXT = 20;
@@ -254,180 +296,6 @@ inline bool MProcessListBox::find_text(size_t& index, const MString& text) const
     return false;
 }
 
-inline BOOL CALLBACK
-MProcessListBox::EnumWindowsProc(HWND hwnd, LPARAM lParam)
-{
-    PROCESS_AND_WINDOW *paw = (PROCESS_AND_WINDOW *)lParam;
-    DWORD pid = 0;
-    ::GetWindowThreadProcessId(hwnd, &pid);
-    if (paw->pid == pid)
-    {
-        if (GetWindow(hwnd, GW_OWNER) == NULL)
-        {
-            paw->hwnd = hwnd;
-            return FALSE;
-        }
-    }
-    return TRUE;
-}
-
-inline HWND
-MProcessListBox::WindowFromProcess(DWORD pid)
-{
-    PROCESS_AND_WINDOW paw;
-    paw.pid = pid;
-    paw.hwnd = NULL;
-    ::EnumWindows(MProcessListBox::EnumWindowsProc, (LPARAM)&paw);
-    return paw.hwnd;
-}
-
-inline HICON MProcessListBox::GetIconOfWindow(HWND hwnd, UINT uType)
-{
-    HICON hIcon = NULL;
-
-    if (!hIcon)
-    {
-        DWORD_PTR dwResult = 0;
-        UINT uTimeout = 100;
-        SendMessageTimeout(hwnd, WM_GETICON, uType, 0, SMTO_ABORTIFHUNG,
-                           uTimeout, &dwResult);
-        hIcon = (HICON)dwResult;
-    }
-
-    if (!hIcon)
-    {
-        switch (uType)
-        {
-        case ICON_SMALL:
-            hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICONSM);
-            if (hIcon)
-                break;
-            // FALL THROUGH
-        case ICON_BIG:
-            hIcon = (HICON)GetClassLongPtr(hwnd, GCL_HICON);
-            break;
-        }
-    }
-
-    if (hIcon)
-        return CopyIcon(hIcon);
-
-    if (!hIcon && !GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
-    {
-        DWORD pid;
-        GetWindowThreadProcessId(hwnd, &pid);
-        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-        if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
-        {
-            HMODULE hMod = (HMODULE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
-            TCHAR szPath[MAX_PATH];
-            if (GetModuleFileNameEx(hProcess, hMod, szPath, ARRAYSIZE(szPath)))
-            {
-                SHFILEINFO shfi;
-                ZeroMemory(&shfi, sizeof(shfi));
-                UINT uFlags = 0;
-                switch (uType)
-                {
-                case ICON_SMALL:
-                    uFlags = SHGFI_ICON | SHGFI_SMALLICON;
-                    break;
-
-                case ICON_BIG:
-                    uFlags = SHGFI_ICON | SHGFI_LARGEICON;
-                    break;
-                }
-                SHGetFileInfo(szPath, 0, &shfi, sizeof(shfi), uFlags);
-                hIcon = shfi.hIcon;
-            }
-            ::CloseHandle(hProcess);
-        }
-    }
-
-    if (!hIcon)
-    {
-        INT cx, cy;
-        switch (uType)
-        {
-        case ICON_SMALL:
-            cx = GetSystemMetrics(SM_CXSMICON);
-            cy = GetSystemMetrics(SM_CYSMICON);
-            if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
-            {
-                hIcon = (HICON)LoadImage(NULL, IDI_APPLICATION, IMAGE_ICON,
-                                         cx, cy, 0);
-            }
-            else
-            {
-                hIcon = (HICON)LoadImage(NULL, IDI_INFORMATION, IMAGE_ICON,
-                                         cx, cy, 0);
-            }
-            break;
-
-        case ICON_BIG:
-            if (!GetWindow(hwnd, GW_OWNER) && !GetParent(hwnd))
-                hIcon = LoadIcon(NULL, IDI_APPLICATION);
-            else
-                hIcon = LoadIcon(NULL, IDI_INFORMATION);
-            break;
-        }
-    }
-
-    return hIcon;
-}
-
-inline BOOL MProcessListBox::IsProcessWow64(DWORD pid)
-{
-    BOOL bIsWow64 = FALSE;
-    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
-    {
-        bIsWow64 = IsProcessWow64(hProcess);
-        ::CloseHandle(hProcess);
-    }
-    return bIsWow64;
-}
-
-inline BOOL MProcessListBox::IsProcessWow64(HANDLE hProcess)
-{
-    typedef BOOL (WINAPI *ISWOW64PROCESS)(HANDLE, PBOOL);
-    HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32"));
-    ISWOW64PROCESS pIsWow64Process =
-        (ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
-
-    BOOL bIsWow64 = FALSE;
-    if (pIsWow64Process)
-    {
-        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-        (*pIsWow64Process)(hProcess, &bIsWow64);
-    }
-
-    return bIsWow64;
-}
-
-inline MString MProcessListBox::GetProcessFullPath(DWORD pid)
-{
-    MString strFullPath;
-    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
-    {
-        strFullPath = GetProcessFullPath(hProcess);
-        ::CloseHandle(hProcess);
-    }
-    return strFullPath;
-}
-
-inline MString MProcessListBox::GetProcessFullPath(HANDLE hProcess)
-{
-    TCHAR szFullPath[MAX_PATH];
-#if 0
-    DWORD cchMax = ARRAYSIZE(szFullPath);
-    ::QueryFullProcessImageName(hProcess, 0, szFullPath, &cchMax);
-#else
-    ::GetModuleFileNameEx(hProcess, NULL, szFullPath, ARRAYSIZE(szFullPath));
-#endif
-    return szFullPath;
-}
-
 inline INT MProcessListBox::AddProcessItem(const entry_type& entry)
 {
     INT iItem;
@@ -445,6 +313,11 @@ inline INT MProcessListBox::AddProcessItem(const entry_type& entry)
         iItem = AddString((LPTSTR)&entry);
     }
     return iItem;
+}
+
+inline HIMAGELIST MProcessListBox::ImageList()
+{
+    return m_list.ImageList();
 }
 
 ////////////////////////////////////////////////////////////////////////////
