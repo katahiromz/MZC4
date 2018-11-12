@@ -7,6 +7,30 @@
 #include "MResizable.hpp"
 #include "resource.h"
 
+BOOL EnableProcessPriviledge(LPCTSTR pszSE_)
+{
+    BOOL f;
+    HANDLE hProcess;
+    HANDLE hToken;
+    LUID luid;
+    TOKEN_PRIVILEGES tp;
+    
+    f = FALSE;
+    hProcess = GetCurrentProcess();
+    if (OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES, &hToken))
+    {
+        if (LookupPrivilegeValue(NULL, pszSE_, &luid))
+        {
+            tp.PrivilegeCount = 1;
+            tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+            tp.Privileges[0].Luid = luid;
+            f = AdjustTokenPrivileges(hToken, FALSE, &tp, 0, NULL, NULL);
+        }
+        CloseHandle(hToken);
+    }
+    return f;
+}
+
 class WindowTreeViewer : public MDialogBase
 {
 public:
@@ -33,7 +57,10 @@ public:
 
     BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     {
+        EnableProcessPriviledge(SE_DEBUG_NAME);
+
         SubclassChildDx(m_ctl1, ctl1);
+        m_ctl1.set_style(MWTVS_PROCESSVIEW);
 
         if (HINSTANCE hinstUXTheme = LoadLibrary(TEXT("UXTHEME")))
         {
