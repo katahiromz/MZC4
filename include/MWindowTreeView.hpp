@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     10       /* Version 10 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     11       /* Version 11 */
 
 #include "MTreeView.hpp"
 #include <shellapi.h>   // for SHGetFileInfo
@@ -61,18 +61,6 @@ public:
     MWindowTree();
     virtual ~MWindowTree();
 
-    struct RELATION
-    {
-        HWND m_hwndParent;
-        HWND m_hwndTarget;
-
-        RELATION();
-        RELATION(HWND hwnd1, HWND hwnd2);
-        bool operator<(const RELATION& other) const;
-        bool operator==(const RELATION& other) const;
-    };
-    typedef std::vector<RELATION> relations_type;
-
     typedef MWindowTreeNode node_type;
 
     bool get_tree(DWORD dwMWTVS_ = MWTVS_PROCESSWINDOW);
@@ -88,9 +76,6 @@ public:
 
 protected:
     MWindowTreeNode *m_root;
-
-    bool insert_by_relation(const RELATION& relation);
-    bool get_relations(relations_type& relations);
 
 private:
     MWindowTree(const MWindowTree&);
@@ -252,80 +237,28 @@ inline MWindowTreeNode *MWindowTree::root() const
     return m_root;
 }
 
-inline MWindowTree::RELATION::RELATION()
-{
-}
-
-inline MWindowTree::RELATION::RELATION(HWND hwnd1, HWND hwnd2)
-    : m_hwndParent(hwnd1), m_hwndTarget(hwnd2)
-{
-}
-
-inline bool MWindowTree::RELATION::operator<(const RELATION& other) const
-{
-    if (m_hwndParent < other.m_hwndParent)
-        return true;
-    if (m_hwndParent > other.m_hwndParent)
-        return false;
-    return (m_hwndTarget < other.m_hwndTarget);
-}
-
-inline bool MWindowTree::RELATION::operator==(const RELATION& other) const
-{
-    return (m_hwndParent == other.m_hwndParent && m_hwndTarget == other.m_hwndTarget);
-}
-
 inline BOOL CALLBACK MWindowTree::EnumChildProc(HWND hwnd, LPARAM lParam)
 {
-    relations_type *relations = (relations_type *)lParam;
+    MWindowTreeNode *parent = (MWindowTreeNode *)lParam;
     HWND hwndOwnerOrParent = ::GetWindow(hwnd, GW_OWNER);
     if (!hwndOwnerOrParent)
         hwndOwnerOrParent = ::GetParent(hwnd);
-    RELATION relation(hwndOwnerOrParent, hwnd);
-    relations->push_back(relation);
-    ::EnumChildWindows(hwnd, MWindowTree::EnumChildProc, lParam);
+    if (parent->m_hwndTarget == hwndOwnerOrParent)
+    {
+        MWindowTreeNode *node = parent->insert_window(hwnd);
+        lParam = (LPARAM)node;
+        ::EnumChildWindows(hwnd, MWindowTree::EnumChildProc, lParam);
+    }
     return TRUE;
 }
 
 inline BOOL CALLBACK MWindowTree::EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
-    relations_type *relations = (relations_type *)lParam;
-    HWND hwndOwner = ::GetWindow(hwnd, GW_OWNER);
-    RELATION relation(hwndOwner, hwnd);
-    relations->push_back(relation);
+    MWindowTreeNode *node = (MWindowTreeNode *)lParam;
+    MWindowTreeNode *new_node = node->insert_window(hwnd);
+    lParam = (LPARAM)new_node;
     ::EnumChildWindows(hwnd, MWindowTree::EnumChildProc, lParam);
     return TRUE;
-}
-
-inline bool MWindowTree::insert_by_relation(const RELATION& relation)
-{
-    HWND hwndTarget = relation.m_hwndTarget;
-    if (hwndTarget == GetDesktopWindow() || !::IsWindow(hwndTarget))
-        return false;
-
-    if (relation.m_hwndParent)
-    {
-        if (MWindowTreeNode *parent = m_root->find(relation.m_hwndParent))
-        {
-            parent->insert_window(hwndTarget);
-            return true;
-        }
-    }
-    else
-    {
-        m_root->insert_window(hwndTarget);
-        return true;
-    }
-
-    return false;
-}
-
-inline bool MWindowTree::get_relations(relations_type& relations)
-{
-    if (!::EnumWindows(MWindowTree::EnumWindowsProc, (LPARAM)&relations))
-        return false;
-
-    return !relations.empty();
 }
 
 bool MWindowTree::empty() const
@@ -382,19 +315,10 @@ inline bool MWindowTree::get_tree(DWORD dwMWTVS_)
     }
     else
     {
-        relations_type relations;
-        if (!get_relations(relations))
-            return false;
-
-        std::sort(relations.begin(), relations.end());
-        relations.erase(std::unique(relations.begin(), relations.end()), relations.end());
-
         m_root = new MWindowTreeNode(::GetDesktopWindow());
 
-        for (size_t i = 0; i < relations.size(); ++i)
-        {
-            insert_by_relation(relations[i]);
-        }
+        if (!::EnumWindows(MWindowTree::EnumWindowsProc, (LPARAM)m_root))
+            return false;
 
         if ((dwMWTVS_ & MWTVS_TYPEMASK) == MWTVS_PROCESSWINDOW)
         {
