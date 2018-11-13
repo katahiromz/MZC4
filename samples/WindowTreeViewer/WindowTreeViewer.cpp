@@ -60,7 +60,10 @@ public:
         EnableProcessPriviledge(SE_DEBUG_NAME);
 
         SubclassChildDx(m_ctl1, ctl1);
+
         m_ctl1.set_style(MWTVS_PROCESSWINDOW);
+        //m_ctl1.set_style(MWTVS_PROCESSTHREAD);
+        //m_ctl1.set_style(MWTVS_DESKTOPTREE);
 
         if (HINSTANCE hinstUXTheme = LoadLibrary(TEXT("UXTHEME")))
         {

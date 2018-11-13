@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     7       /* Version 7 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     10       /* Version 10 */
 
 #include "MTreeView.hpp"
 #include <shellapi.h>   // for SHGetFileInfo
@@ -42,8 +42,8 @@ struct MWindowTreeNode
 
     MWindowTreeNode *find(HWND hwnd);
     MWindowTreeNode *insert_window(HWND hwnd);
-    MWindowTreeNode *insert_pid(DWORD pid);
-    MWindowTreeNode *insert_tid(DWORD tid);
+    MWindowTreeNode *insert_process(const PROCESSENTRY32& pe);
+    MWindowTreeNode *insert_thread(const THREADENTRY32& te);
 
     static bool id_less(const MWindowTreeNode *a, const MWindowTreeNode *b);
 
@@ -207,18 +207,21 @@ inline MWindowTreeNode *MWindowTreeNode::insert_window(HWND hwnd)
     return node;
 }
 
-inline MWindowTreeNode *MWindowTreeNode::insert_pid(DWORD pid)
+inline MWindowTreeNode *
+MWindowTreeNode::insert_process(const PROCESSENTRY32& pe)
 {
     MWindowTreeNode *node = new MWindowTreeNode(PROCESS);
-    node->m_id = pid;
+    node->m_id = pe.th32ProcessID;
     m_children.push_back(node);
+    lstrcpyn(node->m_szExeFile, pe.szExeFile, MAX_PATH);
     return node;
 }
 
-inline MWindowTreeNode *MWindowTreeNode::insert_tid(DWORD tid)
+inline MWindowTreeNode *
+MWindowTreeNode::insert_thread(const THREADENTRY32& te)
 {
     MWindowTreeNode *node = new MWindowTreeNode(THREAD);
-    node->m_id = tid;
+    node->m_id = te.th32ThreadID;
     m_children.push_back(node);
     return node;
 }
@@ -347,8 +350,7 @@ inline bool MWindowTree::get_tree(DWORD dwMWTVS_)
         {
             do
             {
-                MWindowTreeNode *node = m_root->insert_pid(process.th32ProcessID);
-                lstrcpyn(node->m_szExeFile, process.szExeFile, MAX_PATH);
+                m_root->insert_process(process);
             } while (Process32Next(hSnapshot, &process));
         }
 
@@ -365,7 +367,7 @@ inline bool MWindowTree::get_tree(DWORD dwMWTVS_)
                     MWindowTreeNode *child = m_root->m_children[k];
                     if (child->m_id == thread.th32OwnerProcessID)
                     {
-                        child->insert_tid(thread.th32ThreadID);
+                        child->insert_thread(thread);
                         break;
                     }
                 }
@@ -418,10 +420,11 @@ inline bool MWindowTree::distribute(HANDLE hSnapshot)
     {
         do
         {
-            MWindowTreeNode *node = new_root->insert_pid(process.th32ProcessID);
-            lstrcpyn(node->m_szExeFile, process.szExeFile, MAX_PATH);
+            new_root->insert_process(process);
         } while (Process32Next(hSnapshot, &process));
     }
+
+    std::sort(new_root->m_children.begin(), new_root->m_children.end(), MWindowTreeNode::id_less);
 
     for (size_t i = 0; i < old_root->m_children.size(); ++i)
     {
