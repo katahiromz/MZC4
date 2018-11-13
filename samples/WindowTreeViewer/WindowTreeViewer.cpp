@@ -3,6 +3,7 @@
 // This file is public domain software.
 
 #include "targetver.h"
+#define MWINDOWTREE_ADJUST_OWNER
 #include "MWindowTreeView.hpp"
 #include "MResizable.hpp"
 #include "resource.h"
@@ -61,9 +62,9 @@ public:
 
         SubclassChildDx(m_ctl1, ctl1);
 
-        m_ctl1.set_style(MWTVS_PROCESSWINDOW);
+        //m_ctl1.set_style(MWTVS_PROCESSWINDOW);
         //m_ctl1.set_style(MWTVS_PROCESSTHREAD);
-        //m_ctl1.set_style(MWTVS_DESKTOPTREE);
+        m_ctl1.set_style(MWTVS_DESKTOPTREE);
 
         if (HINSTANCE hinstUXTheme = LoadLibrary(TEXT("UXTHEME")))
         {

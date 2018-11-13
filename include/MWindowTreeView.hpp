@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     11       /* Version 11 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     12       /* Version 12 */
 
 #include "MTreeView.hpp"
 #include <shellapi.h>   // for SHGetFileInfo
@@ -66,8 +66,6 @@ public:
     bool get_tree(DWORD dwMWTVS_ = MWTVS_PROCESSWINDOW);
     MWindowTreeNode *root() const;
 
-    bool distribute(HANDLE hSnapshot);
-
     bool empty() const;
     void clear();
 
@@ -76,6 +74,8 @@ public:
 
 protected:
     MWindowTreeNode *m_root;
+    bool distribute(HANDLE hSnapshot);
+    bool adjust_owner();
 
 private:
     MWindowTree(const MWindowTree&);
@@ -240,10 +240,10 @@ inline MWindowTreeNode *MWindowTree::root() const
 inline BOOL CALLBACK MWindowTree::EnumChildProc(HWND hwnd, LPARAM lParam)
 {
     MWindowTreeNode *parent = (MWindowTreeNode *)lParam;
-    HWND hwndOwnerOrParent = ::GetWindow(hwnd, GW_OWNER);
-    if (!hwndOwnerOrParent)
-        hwndOwnerOrParent = ::GetParent(hwnd);
-    if (parent->m_hwndTarget == hwndOwnerOrParent)
+    HWND hwndOwner = ::GetWindow(hwnd, GW_OWNER);
+    if (!hwndOwner)
+        hwndOwner = ::GetParent(hwnd);
+    if (parent->m_hwndTarget == hwndOwner)
     {
         MWindowTreeNode *node = parent->insert_window(hwnd);
         lParam = (LPARAM)node;
@@ -255,6 +255,17 @@ inline BOOL CALLBACK MWindowTree::EnumChildProc(HWND hwnd, LPARAM lParam)
 inline BOOL CALLBACK MWindowTree::EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
     MWindowTreeNode *node = (MWindowTreeNode *)lParam;
+#ifdef MWINDOWTREE_ADJUST_OWNER
+    HWND hwndOwner = ::GetWindow(hwnd, GW_OWNER);
+    if (!hwndOwner)
+        hwndOwner = ::GetParent(hwnd);
+    if (hwndOwner)
+    {
+        MWindowTreeNode *parent = node->find(hwndOwner);
+        if (parent)
+            node = parent;
+    }
+#endif
     MWindowTreeNode *new_node = node->insert_window(hwnd);
     lParam = (LPARAM)new_node;
     ::EnumChildWindows(hwnd, MWindowTree::EnumChildProc, lParam);
@@ -324,11 +335,45 @@ inline bool MWindowTree::get_tree(DWORD dwMWTVS_)
         {
             distribute(hSnapshot);
         }
+#ifdef MWINDOWTREE_ADJUST_OWNER
+        else
+        {
+            adjust_owner();
+        }
+#endif
     }
 
     CloseHandle(hSnapshot);
 
     return !empty();
+}
+
+inline bool MWindowTree::adjust_owner()
+{
+    if (!m_root)
+        return false;
+
+    for (size_t i = 0; i < m_root->m_children.size(); ++i)
+    {
+        MWindowTreeNode *child = m_root->m_children[i];
+        HWND hwndTarget = child->m_hwndTarget;
+
+        HWND hwndOwner = GetParent(hwndTarget);
+        if (!hwndOwner)
+            hwndOwner = GetWindow(hwndTarget, GW_OWNER);
+
+        if (hwndOwner)
+        {
+            if (MWindowTreeNode *owner = m_root->find(hwndOwner))
+            {
+                m_root->m_children.erase(m_root->m_children.begin() + i);
+                owner->m_children.push_back(child);
+                --i;
+            }
+        }
+    }
+
+    return true;
 }
 
 inline bool MWindowTree::distribute(HANDLE hSnapshot)
@@ -358,9 +403,16 @@ inline bool MWindowTree::distribute(HANDLE hSnapshot)
         size_t k;
         for (k = 0; k < new_root->m_children.size(); ++k)
         {
-            if (new_root->m_children[k]->m_id == pid)
+            MWindowTreeNode *new_child = new_root->m_children[k];
+            if (new_child->m_id == pid)
             {
-                new_root->m_children[k]->m_children.push_back(child);
+                HWND hwndOwner = GetParent(child->m_hwndTarget);
+                if (!hwndOwner)
+                    hwndOwner = GetWindow(child->m_hwndTarget, GW_OWNER);
+                if (MWindowTreeNode *owner = new_child->find(hwndOwner))
+                    owner->m_children.push_back(child);
+                else
+                    new_child->m_children.push_back(child);
                 break;
             }
         }
