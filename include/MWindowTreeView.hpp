@@ -3,30 +3,49 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWINDOWTREEVIEW_HPP_
-#define MZC4_MWINDOWTREEVIEW_HPP_     6       /* Version 6 */
+#define MZC4_MWINDOWTREEVIEW_HPP_     7       /* Version 7 */
 
 #include "MTreeView.hpp"
 #include <shellapi.h>   // for SHGetFileInfo
 #include <psapi.h>      // for GetModuleFileNameEx
+#include <tlhelp32.h>   // for CreateToolhelp32Snapshot
 #include <vector>       // for std::vector
 #include <algorithm>    // for std::sort and std::unique
 
 #include "ProcessWindowIcon.hpp"
+
+// The styles of MWindowTree and MWindowTreeView
+#define MWTVS_PROCESSWINDOW 0x0000
+#define MWTVS_PROCESSTHREAD 0x0001
+#define MWTVS_DESKTOPTREE 0x0002
+#define MWTVS_TYPEMASK 0x0003
+#define MWTVS_EXPANDED 0x0004
 
 ////////////////////////////////////////////////////////////////////////////
 // MWindowTree
 
 struct MWindowTreeNode
 {
-    HWND m_hwnd;
-    DWORD m_pid;
+    enum Type
+    {
+        PROCESS, THREAD, WINDOW, ROOT
+    };
+    Type m_type;
+    HWND m_hwndTarget;
+    DWORD m_id;
     std::vector<MWindowTreeNode *> m_children;
+    TCHAR m_szExeFile[MAX_PATH];
 
-    MWindowTreeNode(HWND hwnd = NULL);
+    MWindowTreeNode(Type type);
+    MWindowTreeNode(HWND hwnd);
     ~MWindowTreeNode();
 
     MWindowTreeNode *find(HWND hwnd);
-    void insert(HWND hwnd);
+    MWindowTreeNode *insert_window(HWND hwnd);
+    MWindowTreeNode *insert_pid(DWORD pid);
+    MWindowTreeNode *insert_tid(DWORD tid);
+
+    static bool id_less(const MWindowTreeNode *a, const MWindowTreeNode *b);
 
 private:
     MWindowTreeNode(const MWindowTreeNode&);
@@ -45,7 +64,7 @@ public:
     struct RELATION
     {
         HWND m_hwndParent;
-        HWND m_hwnd;
+        HWND m_hwndTarget;
 
         RELATION();
         RELATION(HWND hwnd1, HWND hwnd2);
@@ -56,10 +75,10 @@ public:
 
     typedef MWindowTreeNode node_type;
 
-    bool get_tree(bool do_distribute = true);
+    bool get_tree(DWORD dwMWTVS_ = MWTVS_PROCESSWINDOW);
     MWindowTreeNode *root() const;
 
-    bool distribute();
+    bool distribute(HANDLE hSnapshot);
 
     bool empty() const;
     void clear();
@@ -80,13 +99,6 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////
 // MWindowTreeView
-
-enum MWindowTreeViewStyle
-{
-    MWTVS_PROCESSVIEW = 0x0001,
-    MWTVS_DESKTOPVIEW = 0x0002,
-    MWTVS_EXPANDED = 0x0004,
-};
 
 class MWindowTreeView : public MTreeView
 {
@@ -139,7 +151,7 @@ public:
 protected:
     MWindowTree m_tree;
     HIMAGELIST m_himl;
-    DWORD m_style;  // See MWindowTreeViewStyle.
+    DWORD m_MWTVS_;
 
     void ReCreateTreeImageList();
 };
@@ -147,8 +159,23 @@ protected:
 ////////////////////////////////////////////////////////////////////////////
 // MWindowTreeNode inlines
 
-inline MWindowTreeNode::MWindowTreeNode(HWND hwnd) : m_hwnd(hwnd), m_pid(0)
+inline bool
+MWindowTreeNode::id_less(const MWindowTreeNode *a, const MWindowTreeNode *b)
 {
+    return (a->m_id < b->m_id);
+}
+
+inline
+MWindowTreeNode::MWindowTreeNode(Type type)
+    : m_type(type), m_hwndTarget(NULL), m_id(0)
+{
+    m_szExeFile[0] = 0;
+}
+
+inline MWindowTreeNode::MWindowTreeNode(HWND hwnd)
+    : m_type(WINDOW), m_hwndTarget(hwnd), m_id(0)
+{
+    m_szExeFile[0] = 0;
 }
 
 inline MWindowTreeNode::~MWindowTreeNode()
@@ -161,7 +188,7 @@ inline MWindowTreeNode::~MWindowTreeNode()
 
 inline MWindowTreeNode *MWindowTreeNode::find(HWND hwnd)
 {
-    if (m_hwnd == hwnd)
+    if (m_hwndTarget == hwnd)
         return this;
 
     for (size_t i = 0; i < m_children.size(); ++i)
@@ -172,10 +199,28 @@ inline MWindowTreeNode *MWindowTreeNode::find(HWND hwnd)
     return NULL;
 }
 
-inline void MWindowTreeNode::insert(HWND hwnd)
+inline MWindowTreeNode *MWindowTreeNode::insert_window(HWND hwnd)
 {
-    MWindowTreeNode *node = new MWindowTreeNode(hwnd);
+    MWindowTreeNode *node = new MWindowTreeNode(WINDOW);
+    node->m_hwndTarget = hwnd;
     m_children.push_back(node);
+    return node;
+}
+
+inline MWindowTreeNode *MWindowTreeNode::insert_pid(DWORD pid)
+{
+    MWindowTreeNode *node = new MWindowTreeNode(PROCESS);
+    node->m_id = pid;
+    m_children.push_back(node);
+    return node;
+}
+
+inline MWindowTreeNode *MWindowTreeNode::insert_tid(DWORD tid)
+{
+    MWindowTreeNode *node = new MWindowTreeNode(THREAD);
+    node->m_id = tid;
+    m_children.push_back(node);
+    return node;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -209,7 +254,7 @@ inline MWindowTree::RELATION::RELATION()
 }
 
 inline MWindowTree::RELATION::RELATION(HWND hwnd1, HWND hwnd2)
-    : m_hwndParent(hwnd1), m_hwnd(hwnd2)
+    : m_hwndParent(hwnd1), m_hwndTarget(hwnd2)
 {
 }
 
@@ -219,12 +264,12 @@ inline bool MWindowTree::RELATION::operator<(const RELATION& other) const
         return true;
     if (m_hwndParent > other.m_hwndParent)
         return false;
-    return (m_hwnd < other.m_hwnd);
+    return (m_hwndTarget < other.m_hwndTarget);
 }
 
 inline bool MWindowTree::RELATION::operator==(const RELATION& other) const
 {
-    return (m_hwndParent == other.m_hwndParent && m_hwnd == other.m_hwnd);
+    return (m_hwndParent == other.m_hwndParent && m_hwndTarget == other.m_hwndTarget);
 }
 
 inline BOOL CALLBACK MWindowTree::EnumChildProc(HWND hwnd, LPARAM lParam)
@@ -251,7 +296,7 @@ inline BOOL CALLBACK MWindowTree::EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 inline bool MWindowTree::insert_by_relation(const RELATION& relation)
 {
-    HWND hwndTarget = relation.m_hwnd;
+    HWND hwndTarget = relation.m_hwndTarget;
     if (hwndTarget == GetDesktopWindow() || !::IsWindow(hwndTarget))
         return false;
 
@@ -259,13 +304,13 @@ inline bool MWindowTree::insert_by_relation(const RELATION& relation)
     {
         if (MWindowTreeNode *parent = m_root->find(relation.m_hwndParent))
         {
-            parent->insert(hwndTarget);
+            parent->insert_window(hwndTarget);
             return true;
         }
     }
     else
     {
-        m_root->insert(hwndTarget);
+        m_root->insert_window(hwndTarget);
         return true;
     }
 
@@ -285,47 +330,108 @@ bool MWindowTree::empty() const
     return m_root == NULL || m_root->m_children.empty();
 }
 
-inline bool MWindowTree::get_tree(bool do_distribute)
+inline bool MWindowTree::get_tree(DWORD dwMWTVS_)
 {
     clear();
 
-    relations_type relations;
-    if (!get_relations(relations))
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD | TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE)
         return false;
 
-    std::sort(relations.begin(), relations.end());
-    relations.erase(std::unique(relations.begin(), relations.end()), relations.end());
-
-    m_root = new MWindowTreeNode(::GetDesktopWindow());
-
-    for (size_t i = 0; i < relations.size(); ++i)
+    if ((dwMWTVS_ & MWTVS_TYPEMASK) == MWTVS_PROCESSTHREAD)
     {
-        insert_by_relation(relations[i]);
+        m_root = new MWindowTreeNode(MWindowTreeNode::ROOT);
+
+        PROCESSENTRY32 process = { sizeof(process) };
+        if (Process32First(hSnapshot, &process))
+        {
+            do
+            {
+                MWindowTreeNode *node = m_root->insert_pid(process.th32ProcessID);
+                lstrcpyn(node->m_szExeFile, process.szExeFile, MAX_PATH);
+            } while (Process32Next(hSnapshot, &process));
+        }
+
+        std::sort(m_root->m_children.begin(), m_root->m_children.end(), MWindowTreeNode::id_less);
+
+        THREADENTRY32 thread = { sizeof(thread) };
+        if (Thread32First(hSnapshot, &thread))
+        {
+            do
+            {
+                size_t k;
+                for (k = 0; k < m_root->m_children.size(); ++k)
+                {
+                    MWindowTreeNode *child = m_root->m_children[k];
+                    if (child->m_id == thread.th32OwnerProcessID)
+                    {
+                        child->insert_tid(thread.th32ThreadID);
+                        break;
+                    }
+                }
+            } while (Thread32Next(hSnapshot, &thread));
+        }
+
+        for (size_t k = 0; k < m_root->m_children.size(); ++k)
+        {
+            MWindowTreeNode *child = m_root->m_children[k];
+            std::sort(child->m_children.begin(), child->m_children.end(), MWindowTreeNode::id_less);
+        }
+    }
+    else
+    {
+        relations_type relations;
+        if (!get_relations(relations))
+            return false;
+
+        std::sort(relations.begin(), relations.end());
+        relations.erase(std::unique(relations.begin(), relations.end()), relations.end());
+
+        m_root = new MWindowTreeNode(::GetDesktopWindow());
+
+        for (size_t i = 0; i < relations.size(); ++i)
+        {
+            insert_by_relation(relations[i]);
+        }
+
+        if ((dwMWTVS_ & MWTVS_TYPEMASK) == MWTVS_PROCESSWINDOW)
+        {
+            distribute(hSnapshot);
+        }
     }
 
-    if (do_distribute)
-        distribute();
+    CloseHandle(hSnapshot);
 
     return !empty();
 }
 
-inline bool MWindowTree::distribute()
+inline bool MWindowTree::distribute(HANDLE hSnapshot)
 {
     if (!m_root)
         return false;
 
-    MWindowTreeNode *new_root = new MWindowTreeNode();
+    MWindowTreeNode *new_root = new MWindowTreeNode(GetDesktopWindow());
     MWindowTreeNode *old_root = m_root;
+
+    PROCESSENTRY32 process = { sizeof(process) };
+    if (Process32First(hSnapshot, &process))
+    {
+        do
+        {
+            MWindowTreeNode *node = new_root->insert_pid(process.th32ProcessID);
+            lstrcpyn(node->m_szExeFile, process.szExeFile, MAX_PATH);
+        } while (Process32Next(hSnapshot, &process));
+    }
 
     for (size_t i = 0; i < old_root->m_children.size(); ++i)
     {
         MWindowTreeNode *child = old_root->m_children[i];
-        DWORD pid = ProcessFromWindowDx(child->m_hwnd);
+        DWORD pid = ProcessFromWindowDx(child->m_hwndTarget);
 
         size_t k;
         for (k = 0; k < new_root->m_children.size(); ++k)
         {
-            if (new_root->m_children[k]->m_pid == pid)
+            if (new_root->m_children[k]->m_id == pid)
             {
                 new_root->m_children[k]->m_children.push_back(child);
                 break;
@@ -333,8 +439,8 @@ inline bool MWindowTree::distribute()
         }
         if (k == new_root->m_children.size())
         {
-            MWindowTreeNode *new_child = new MWindowTreeNode();
-            new_child->m_pid = pid;
+            MWindowTreeNode *new_child = new MWindowTreeNode(MWindowTreeNode::PROCESS);
+            new_child->m_id = pid;
             new_child->m_children.push_back(child);
             new_root->m_children.push_back(new_child);
         }
@@ -376,20 +482,22 @@ inline bool MWindowTreeView::refresh()
 {
     SendMessageDx(WM_SETREDRAW, FALSE);
     clear();
-    bool do_distribute = !!(get_style() & MWTVS_PROCESSVIEW);
-    if (m_tree.get_tree(do_distribute))
+    if (m_tree.get_tree(get_style()))
     {
-        if (do_distribute)
+        MWindowTreeNode *node;
+        switch (get_style() & MWTVS_TYPEMASK)
         {
-            MWindowTreeNode *the_root = root();
-            for (size_t i = 0; i < the_root->m_children.size(); ++i)
+        case MWTVS_PROCESSWINDOW:
+        case MWTVS_PROCESSTHREAD:
+            node = root();
+            for (size_t i = 0; i < node->m_children.size(); ++i)
             {
-                InsertNodeTree(the_root->m_children[i]);
+                InsertNodeTree(node->m_children[i]);
             }
-        }
-        else
-        {
+            break;
+        case MWTVS_DESKTOPTREE:
             InsertNodeTree(root());
+            break;
         }
     }
     SendMessageDx(WM_SETREDRAW, TRUE);
@@ -398,9 +506,16 @@ inline bool MWindowTreeView::refresh()
 
 inline MString MWindowTreeView::text_from_node(const node_type *node) const
 {
-    if (node->m_pid)
+    if (node->m_type == MWindowTreeNode::THREAD)
     {
-        DWORD pid = node->m_pid;
+        TCHAR szText[64];
+        StringCbPrintf(szText, sizeof(szText), TEXT("TID %lu "), node->m_id);
+        MString strText = szText;
+        return strText;
+    }
+    else if (node->m_type == MWindowTreeNode::PROCESS)
+    {
+        DWORD pid = node->m_id;
 
         TCHAR szText[64];
         StringCbPrintf(szText, sizeof(szText), TEXT("PID %lu "), pid);
@@ -414,14 +529,20 @@ inline MString MWindowTreeView::text_from_node(const node_type *node) const
             strText += TEXT("[");
             strText += szText;
             strText += TEXT("] ");
+            strText += strPath;
+        }
+        else
+        {
+            strText += TEXT("[");
+            strText += node->m_szExeFile;
+            strText += TEXT("]");
         }
 
-        strText += strPath;
         return strText;
     }
     else
     {
-        HWND hwndTarget = node->m_hwnd;
+        HWND hwndTarget = node->m_hwndTarget;
 
         TCHAR szText[64];
         StringCbPrintf(szText, sizeof(szText), TEXT("%08lX "),
@@ -479,9 +600,28 @@ MWindowTreeView::InsertNodeItem(const node_type *node, HTREEITEM hParent)
 {
     HTREEITEM hItem;
     MString text = text_from_node(node);
-    if (node->m_pid)
+    if (node->m_type == MWindowTreeNode::THREAD)
     {
-        HICON hIcon = GetIconOfProcessDx(node->m_pid, ICON_SMALL);
+        HICON hIcon = GetIconOfThreadDx(node->m_id, ICON_SMALL);
+        if (!hIcon)
+            hIcon = GetStdIconDx(IDI_APPLICATION, ICON_SMALL);
+        assert(hIcon);
+        INT iImage = ImageList_AddIcon(m_himl, hIcon);
+        UINT mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT |
+                    TVIF_STATE | TVIF_PARAM;
+        UINT state = 0;
+        if (get_style() & MWTVS_EXPANDED)
+        {
+            state = TVIS_EXPANDED;
+        }
+        LPARAM lParam = (LPARAM)node;
+        hItem = InsertItem(mask, text.c_str(), iImage, iImage,
+                           state, state, lParam, hParent);
+        DestroyIcon(hIcon);
+    }
+    else if (node->m_type == MWindowTreeNode::PROCESS)
+    {
+        HICON hIcon = GetIconOfProcessDx(node->m_id, ICON_SMALL);
         if (!hIcon)
             hIcon = GetStdIconDx(IDI_APPLICATION, ICON_SMALL);
         assert(hIcon);
@@ -500,7 +640,7 @@ MWindowTreeView::InsertNodeItem(const node_type *node, HTREEITEM hParent)
     }
     else
     {
-        HWND hwndTarget = node->m_hwnd;
+        HWND hwndTarget = node->m_hwndTarget;
         HICON hIcon = GetIconOfWindowDx(hwndTarget);
         if (!hIcon)
         {
@@ -514,7 +654,7 @@ MWindowTreeView::InsertNodeItem(const node_type *node, HTREEITEM hParent)
         UINT mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT |
                     TVIF_STATE | TVIF_PARAM;
         UINT state = 0;
-        if (get_style() & MWTVS_EXPANDED)
+        if ((get_style() & MWTVS_EXPANDED) || node == root())
         {
             state = TVIS_EXPANDED;
         }
@@ -588,7 +728,7 @@ inline HWND MWindowTreeView::WindowFromItem(HTREEITEM hItem) const
 {
     if (node_type *node = NodeFromItem(hItem))
     {
-        return node->m_hwnd;
+        return node->m_hwndTarget;
     }
     return NULL;
 }
@@ -605,12 +745,12 @@ inline bool MWindowTreeView::select_hwnd(HWND hwnd)
 
 inline DWORD MWindowTreeView::get_style() const
 {
-    return m_style;
+    return m_MWTVS_;
 }
 
 inline void MWindowTreeView::set_style(DWORD style)
 {
-    m_style = style;
+    m_MWTVS_ = style;
 }
 
 ////////////////////////////////////////////////////////////////////////////

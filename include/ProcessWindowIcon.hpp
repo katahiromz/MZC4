@@ -3,14 +3,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef PROCESSWINDOWICON_HPP_
-#define PROCESSWINDOWICON_HPP_      3   // Version 3
+#define PROCESSWINDOWICON_HPP_      4   // Version 4
 
 #include "MWindowBase.hpp"
 
 MString GetPathOfProcessDx(DWORD pid);
+HICON LoadIconDx(HINSTANCE hInst, LPCTSTR pszIcon, UINT uType = ICON_BIG);
+HICON LoadIconDx(HINSTANCE hInst, UINT nIconID, UINT uType = ICON_BIG);
 HICON GetStdIconDx(LPCTSTR pszIcon, UINT uType = ICON_BIG);
 HICON GetIconOfProcessDx(DWORD pid, UINT uType = ICON_BIG);
 HICON GetIconOfWindowDx(HWND hwnd, UINT uType = ICON_BIG);
+HICON GetIconOfThreadDx(DWORD tid, UINT uType = ICON_BIG);
 DWORD ProcessFromWindowDx(HWND hwnd);
 HWND WindowFromProcessDx(DWORD pid);
 BOOL IsProcessWow64Dx(DWORD pid);
@@ -18,44 +21,52 @@ BOOL IsProcessWow64Dx(HANDLE hProcess);
 
 ////////////////////////////////////////////////////////////////////////////
 
-inline BOOL IsProcessWow64Dx(DWORD pid)
+HICON GetIconOfThreadDx(DWORD tid, UINT uType)
 {
-    BOOL bIsWow64 = FALSE;
-    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
-    {
-        bIsWow64 = IsProcessWow64Dx(hProcess);
-        ::CloseHandle(hProcess);
-    }
-    return bIsWow64;
+#ifdef IDI_THREAD
+    return LoadIconDx(GetModuleHandle(NULL), IDI_THREAD, uType);
+#else
+    return LoadIcon(NULL, IDI_INFORMATION);
+#endif
 }
 
-inline BOOL IsProcessWow64Dx(HANDLE hProcess)
+inline HICON GetIconOfProcessDx(DWORD pid, UINT uType)
 {
-    typedef BOOL (WINAPI *ISWOW64PROCESS)(HANDLE, PBOOL);
-    HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32"));
-    ISWOW64PROCESS pIsWow64Process =
-        (ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
-
-    BOOL bIsWow64 = FALSE;
-    if (pIsWow64Process)
+#ifdef IDI_PROCESS
+    return LoadIconDx(GetModuleHandle(NULL), IDI_PROCESS, uType);
+#else
+    HICON hIcon = NULL;
+    MString strPath = GetPathOfProcessDx(pid);
+    if (strPath.size())
     {
-        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
-        (*pIsWow64Process)(hProcess, &bIsWow64);
+        SHFILEINFO shfi;
+        ZeroMemory(&shfi, sizeof(shfi));
+        UINT uFlags = 0;
+        switch (uType)
+        {
+        case ICON_SMALL:
+            uFlags = SHGFI_ICON | SHGFI_SMALLICON;
+            break;
+
+        case ICON_BIG:
+            uFlags = SHGFI_ICON | SHGFI_LARGEICON;
+            break;
+
+        default:
+            return NULL;
+        }
+        SHGetFileInfo(strPath.c_str(), 0, &shfi, sizeof(shfi), uFlags);
+        hIcon = shfi.hIcon;
     }
-
-    return bIsWow64;
-}
-
-inline DWORD ProcessFromWindowDx(HWND hwnd)
-{
-    DWORD pid = 0;
-    ::GetWindowThreadProcessId(hwnd, &pid);
-    return pid;
+    return hIcon;
+#endif
 }
 
 inline HICON GetIconOfWindowDx(HWND hwnd, UINT uType)
 {
+#ifdef IDI_WINDOW
+    return LoadIconDx(GetModuleHandle(NULL), IDI_WINDOW, uType);
+#else
     HICON hIcon = NULL;
 
     if (hwnd == GetDesktopWindow() || hwnd == NULL)
@@ -115,6 +126,43 @@ inline HICON GetIconOfWindowDx(HWND hwnd, UINT uType)
     }
 
     return hIcon;
+#endif
+}
+
+inline BOOL IsProcessWow64Dx(DWORD pid)
+{
+    BOOL bIsWow64 = FALSE;
+    const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+    if (HANDLE hProcess = ::OpenProcess(dwAccess, FALSE, pid))
+    {
+        bIsWow64 = IsProcessWow64Dx(hProcess);
+        ::CloseHandle(hProcess);
+    }
+    return bIsWow64;
+}
+
+inline BOOL IsProcessWow64Dx(HANDLE hProcess)
+{
+    typedef BOOL (WINAPI *ISWOW64PROCESS)(HANDLE, PBOOL);
+    HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32"));
+    ISWOW64PROCESS pIsWow64Process =
+        (ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+
+    BOOL bIsWow64 = FALSE;
+    if (pIsWow64Process)
+    {
+        const DWORD dwAccess = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+        (*pIsWow64Process)(hProcess, &bIsWow64);
+    }
+
+    return bIsWow64;
+}
+
+inline DWORD ProcessFromWindowDx(HWND hwnd)
+{
+    DWORD pid = 0;
+    ::GetWindowThreadProcessId(hwnd, &pid);
+    return pid;
 }
 
 inline MString GetPathOfProcessDx(DWORD pid)
@@ -142,32 +190,29 @@ inline MString GetPathOfProcessDx(DWORD pid)
     return ret;
 }
 
-inline HICON GetIconOfProcessDx(DWORD pid, UINT uType)
+inline HICON LoadIconDx(HINSTANCE hInst, LPCTSTR pszIcon, UINT uType)
 {
     HICON hIcon = NULL;
-    MString strPath = GetPathOfProcessDx(pid);
-    if (strPath.size())
+    INT cx, cy;
+    switch (uType)
     {
-        SHFILEINFO shfi;
-        ZeroMemory(&shfi, sizeof(shfi));
-        UINT uFlags = 0;
-        switch (uType)
-        {
-        case ICON_SMALL:
-            uFlags = SHGFI_ICON | SHGFI_SMALLICON;
+    case ICON_SMALL:
+        cx = GetSystemMetrics(SM_CXSMICON);
+        cy = GetSystemMetrics(SM_CYSMICON);
+        hIcon = (HICON)LoadImage(hInst, pszIcon, IMAGE_ICON, cx, cy, 0);
+        if (hIcon)
             break;
 
-        case ICON_BIG:
-            uFlags = SHGFI_ICON | SHGFI_LARGEICON;
-            break;
-
-        default:
-            return NULL;
-        }
-        SHGetFileInfo(strPath.c_str(), 0, &shfi, sizeof(shfi), uFlags);
-        hIcon = shfi.hIcon;
+    case ICON_BIG:
+        hIcon = LoadIcon(hInst, pszIcon);
+        break;
     }
     return hIcon;
+}
+
+inline HICON LoadIconDx(HINSTANCE hInst, UINT nIconID, UINT uType)
+{
+    return LoadIconDx(hInst, MAKEINTRESOURCE(nIconID), uType);
 }
 
 inline HICON GetStdIconDx(LPCTSTR pszIcon, UINT uType)
