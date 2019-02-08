@@ -3,7 +3,7 @@
 // This file is public domain software.
 
 #ifndef MPRINT_HELPER_HPP_
-#define MPRINT_HELPER_HPP_      3   // Version 3
+#define MPRINT_HELPER_HPP_      4   // Version 4
 
 #include <windows.h>
 #include <commdlg.h>
@@ -43,6 +43,11 @@ public:
 
     LONG Inch1000FromMM100(LONG mm100) const;
     LONG MM100FromInch1000(LONG inch1000) const;
+
+    float InchesFromPixelsX(HDC hDC, float pixels) const;
+    float InchesFromPixelsY(HDC hDC, float pixels) const;
+    float PixelsFromInchesX(HDC hDC, float inches) const;
+    float PixelsFromInchesY(HDC hDC, float inches) const;
 
     BOOL AllPages() const;
     BOOL PageNums() const;
@@ -303,6 +308,26 @@ inline WORD MPrintHelper::ToPage() const
 inline BOOL MPrintHelper::Selection() const
 {
     return !!(Flags() & PD_SELECTION);
+}
+
+inline float MPrintHelper::InchesFromPixelsX(HDC hDC, float pixels) const
+{
+    return pixels / ::GetDeviceCaps(hDC, LOGPIXELSX);
+}
+
+inline float MPrintHelper::InchesFromPixelsY(HDC hDC, float pixels) const
+{
+    return pixels / ::GetDeviceCaps(hDC, LOGPIXELSY);
+}
+
+inline float MPrintHelper::PixelsFromInchesX(HDC hDC, float inches) const
+{
+    return inches * ::GetDeviceCaps(hDC, LOGPIXELSX);
+}
+
+inline float MPrintHelper::PixelsFromInchesY(HDC hDC, float inches) const
+{
+    return inches * ::GetDeviceCaps(hDC, LOGPIXELSY);
 }
 
 //////////////////////////////////////////////////////////////////////////////
