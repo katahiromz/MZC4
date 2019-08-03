@@ -151,6 +151,7 @@ public:
                            (LONG)(LONG_PTR)m_hwndSelected);
             MsgBoxDx(szText, TEXT("Selected Window"), MB_ICONINFORMATION);
         }
+        return 0;
     }
 };
 

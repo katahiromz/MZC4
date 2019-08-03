@@ -235,6 +235,7 @@ public:
             StringCbPrintf(szText, sizeof(szText), TEXT("pid: 0x%08lX"), m_pid);
             MsgBoxDx(szText, TEXT("Selected Process"), MB_ICONINFORMATION);
         }
+        return 0;
     }
 };
 
