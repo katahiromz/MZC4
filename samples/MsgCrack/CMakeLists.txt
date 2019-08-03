@@ -69,12 +69,12 @@ set(BUILD_SHARED_LIBRARIES OFF)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # using Clang
-    SET(CMAKE_C_FLAGS "-static")
-    SET(CMAKE_CXX_FLAGS "-static")
+    SET(CMAKE_C_FLAGS "-static -s")
+    SET(CMAKE_CXX_FLAGS "-static -s")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
-    SET(CMAKE_C_FLAGS "-static -static-libgcc -static-libstdc++")
-    SET(CMAKE_CXX_FLAGS "-static -static-libgcc -static-libstdc++")
+    SET(CMAKE_C_FLAGS "-static -static-libgcc -static-libstdc++ -s")
+    SET(CMAKE_CXX_FLAGS "-static -static-libgcc -static-libstdc++ -s")
 elseif (MSVC)
     # replace "/MD" with "/MT" (building without runtime DLLs)
     set(CompilerFlags
