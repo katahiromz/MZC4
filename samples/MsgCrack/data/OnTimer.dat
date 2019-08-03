@@ -1,0 +1,1 @@
+void OnTimer(HWND hwnd, UINT id)

@@ -1,0 +1,1 @@
+void OnPaint(HWND hwnd)

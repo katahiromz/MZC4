@@ -1,0 +1,41 @@
+class MDialogClass : public MDialogBase
+{
+public:
+    MDialogClass()
+    {
+    }
+
+    virtual ~MDialogClass()
+    {
+    }
+
+    BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
+    {
+        return TRUE;
+    }
+
+    void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
+    {
+        switch (id)
+        {
+        case IDOK:
+            EndDialog(IDOK);
+            break;
+        case IDCANCEL:
+            EndDialog(IDCANCEL);
+            break;
+        }
+    }
+
+    virtual INT_PTR CALLBACK
+    DialogProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+        HANDLE_MSG(hwnd, WM_INITDIALOG, OnInitDialog);
+        HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
+        default:
+            return DefaultProcDx();
+        }
+    }
+};

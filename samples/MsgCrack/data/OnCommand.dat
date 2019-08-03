@@ -1,0 +1,1 @@
+void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)

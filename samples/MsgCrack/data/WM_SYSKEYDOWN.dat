@@ -1,0 +1,1 @@
+void OnSysKey(HWND hwnd, UINT vk, BOOL fDown, int cRepeat, UINT flags)

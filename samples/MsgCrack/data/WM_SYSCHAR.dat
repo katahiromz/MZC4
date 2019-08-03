@@ -1,0 +1,1 @@
+void OnSysChar(HWND hwnd, TCHAR ch, int cRepeat)

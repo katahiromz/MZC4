@@ -1,0 +1,1 @@
+void OnActivateApp(HWND hwnd, BOOL fActivate, DWORD dwThreadId)

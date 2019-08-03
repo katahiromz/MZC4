@@ -1,0 +1,1 @@
+HWND OnNextDlgCtl(HWND hwnd, HWND hwndSetFocus, BOOL fNext)

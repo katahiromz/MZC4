@@ -1,0 +1,1 @@
+void OnSetRedraw(HWND hwnd, BOOL fRedraw)

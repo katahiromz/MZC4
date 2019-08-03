@@ -1,0 +1,141 @@
+// MHeaderCtrl.hpp -- Win32API header control wrapper           -*- C++ -*-
+// This file is part of MZC4.  See file "ReadMe.txt" and "License.txt".
+////////////////////////////////////////////////////////////////////////////
+
+#ifndef MZC4_MHEADERCTRL_HPP_
+#define MZC4_MHEADERCTRL_HPP_       2       /* Version 2 */
+
+class MHeaderCtrl;
+
+////////////////////////////////////////////////////////////////////////////
+
+#include "MWindowBase.hpp"
+
+class MHeaderCtrl : public MWindowBase
+{
+public:
+    MHeaderCtrl();
+    virtual LPCTSTR GetWndClassNameDx() const;
+
+    INT GetItemCount() const;
+    BOOL GetItem(INT nPos, HDITEM* pHeaderItem) const;
+    BOOL SetItem(INT nPos, HDITEM* pHeaderItem);
+
+    #if (_WIN32_IE >= 0x0300)
+        BOOL GetItemRect(INT nIndex, LPRECT prc) const;
+
+        HIMAGELIST GetImageList() const;
+        HIMAGELIST SetImageList(HIMAGELIST hImageList);
+
+        BOOL GetOrderArray(LPINT piArray, INT iCount = -1);
+        BOOL SetOrderArray(INT iCount, LPINT piArray);
+
+        INT OrderToIndex(INT nOrder) const;
+    #endif  // (_WIN32_IE >= 0x0300)
+
+    INT InsertItem(INT nPos, HDITEM* phdi);
+    BOOL DeleteItem(INT nPos);
+    BOOL Layout(HDLAYOUT* pHeaderLayout);
+
+    #if (_WIN32_IE >= 0x0300)
+        HIMAGELIST CreateDragImage(INT nIndex);
+
+        INT SetHotDivider(MPoint pt);
+        INT SetHotDivider(INT nIndex);
+    #endif  // (_WIN32_IE >= 0x0300)
+};
+
+////////////////////////////////////////////////////////////////////////////
+
+inline MHeaderCtrl::MHeaderCtrl()
+{
+}
+
+inline /*virtual*/ LPCTSTR MHeaderCtrl::GetWndClassNameDx() const
+{
+    return WC_HEADER;
+}
+
+inline INT MHeaderCtrl::GetItemCount() const
+{
+    return (INT)SendMessageDx(HDM_GETITEMCOUNT);
+}
+
+inline BOOL MHeaderCtrl::GetItem(INT nPos, HDITEM* pHeaderItem) const
+{
+    return (BOOL)SendMessageDx(HDM_GETITEM, (WPARAM)nPos, (LPARAM)pHeaderItem);
+}
+
+inline BOOL MHeaderCtrl::SetItem(INT nPos, HDITEM* pHeaderItem)
+{
+    return (BOOL)SendMessageDx(HDM_SETITEM, (WPARAM)nPos, (LPARAM)pHeaderItem);
+}
+
+#if (_WIN32_IE >= 0x0300)
+    inline HIMAGELIST MHeaderCtrl::GetImageList() const
+    {
+        return (HIMAGELIST)SendMessageDx(HDM_GETIMAGELIST);
+    }
+
+    inline HIMAGELIST MHeaderCtrl::SetImageList(HIMAGELIST hImageList)
+    {
+        return (HIMAGELIST)SendMessageDx(HDM_SETIMAGELIST, 0, (LPARAM)hImageList);
+    }
+
+    inline BOOL MHeaderCtrl::GetItemRect(INT nIndex, LPRECT prc) const
+    {
+        return (BOOL)SendMessageDx(HDM_GETITEMRECT, (WPARAM)nIndex, (LPARAM)prc);
+    }
+
+    inline BOOL MHeaderCtrl::GetOrderArray(LPINT piArray, INT iCount/* = -1*/)
+    {
+        return (BOOL)SendMessageDx(
+            HDM_GETORDERARRAY, (WPARAM)iCount, (LPARAM)piArray);
+    }
+
+    inline BOOL MHeaderCtrl::SetOrderArray(INT iCount, LPINT piArray)
+    {
+        return (BOOL)SendMessageDx(HDM_SETORDERARRAY, (WPARAM)iCount, (LPARAM)piArray);
+    }
+
+    inline INT MHeaderCtrl::OrderToIndex(INT nOrder) const
+    {
+        return (INT)SendMessageDx(HDM_ORDERTOINDEX, (WPARAM)nOrder);
+    }
+#endif  // (_WIN32_IE >= 0x0300)
+
+inline INT MHeaderCtrl::InsertItem(INT nPos, HDITEM* phdi)
+{
+    return (INT)SendMessageDx(HDM_INSERTITEM, (WPARAM)nPos, (LPARAM)phdi);
+}
+
+inline BOOL MHeaderCtrl::DeleteItem(INT nPos)
+{
+    return (BOOL)SendMessageDx(HDM_DELETEITEM, (WPARAM)nPos);
+}
+
+inline BOOL MHeaderCtrl::Layout(HDLAYOUT* pHeaderLayout)
+{
+    return (BOOL)SendMessageDx(HDM_LAYOUT, 0, (LPARAM)pHeaderLayout);
+}
+
+#if (_WIN32_IE >= 0x0300)
+    inline HIMAGELIST MHeaderCtrl::CreateDragImage(INT nIndex)
+    {
+        return (HIMAGELIST)SendMessageDx(HDM_CREATEDRAGIMAGE, (WPARAM)nIndex);
+    }
+
+    inline INT MHeaderCtrl::SetHotDivider(MPoint pt)
+    {
+        return (INT)SendMessageDx(HDM_SETHOTDIVIDER, TRUE, MAKELPARAM(pt.x, pt.y));
+    }
+
+    inline INT MHeaderCtrl::SetHotDivider(INT nIndex)
+    {
+        return (INT)SendMessageDx(HDM_SETHOTDIVIDER, FALSE, nIndex);
+    }
+#endif  // (_WIN32_IE >= 0x0300)
+
+////////////////////////////////////////////////////////////////////////////
+
+#endif  // ndef MZC4_MHEADERCTRL_HPP_

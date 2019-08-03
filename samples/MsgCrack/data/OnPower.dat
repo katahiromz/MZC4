@@ -1,0 +1,1 @@
+void OnPower(HWND hwnd, int code)

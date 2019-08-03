@@ -1,0 +1,1 @@
+void OnCommNotify(HWND hwnd, int cid, UINT flags)

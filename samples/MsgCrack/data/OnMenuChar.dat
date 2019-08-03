@@ -1,0 +1,1 @@
+DWORD OnMenuChar(HWND hwnd, UINT ch, UINT flags, HMENU hmenu)

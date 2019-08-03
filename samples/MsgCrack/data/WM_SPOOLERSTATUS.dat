@@ -1,0 +1,1 @@
+void OnSpoolerStatus(HWND hwnd, UINT status, int cJobInQueue)

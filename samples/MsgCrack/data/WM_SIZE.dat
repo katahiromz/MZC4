@@ -1,0 +1,1 @@
+void OnSize(HWND hwnd, UINT state, int cx, int cy)

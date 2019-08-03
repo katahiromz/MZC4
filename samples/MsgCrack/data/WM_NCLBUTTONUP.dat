@@ -1,0 +1,1 @@
+void OnNCLButtonUp(HWND hwnd, int x, int y, UINT codeHitTest)

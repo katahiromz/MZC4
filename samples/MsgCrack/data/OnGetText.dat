@@ -1,0 +1,1 @@
+INT OnGetText(HWND hwnd, int cchTextMax, LPTSTR lpszText)

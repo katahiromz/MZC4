@@ -1,0 +1,1 @@
+void OnChar(HWND hwnd, TCHAR ch, int cRepeat)

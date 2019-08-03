@@ -1,0 +1,1 @@
+void OnWindowPosChanged(HWND hwnd, const LPWINDOWPOS lpwpos)

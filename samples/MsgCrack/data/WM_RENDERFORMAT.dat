@@ -1,0 +1,1 @@
+HANDLE OnRenderFormat(HWND hwnd, UINT fmt)

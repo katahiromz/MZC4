@@ -1,0 +1,1 @@
+void OnHotKey(HWND hwnd, int idHotKey, UINT fuModifiers, UINT vk)

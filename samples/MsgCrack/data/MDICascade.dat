@@ -1,0 +1,1 @@
+BOOL MDICascade(HWND hwnd, UINT cmd)

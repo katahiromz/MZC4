@@ -1,0 +1,1 @@
+void OnContextMenu(HWND hwnd, HWND hwndContext, UINT xPos, UINT yPos)

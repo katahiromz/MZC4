@@ -1,0 +1,1 @@
+HBRUSH OnCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)

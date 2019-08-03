@@ -1,0 +1,1 @@
+void OnVScrollClipboard(HWND hwnd, HWND hwndCBViewer, UINT code, int pos)

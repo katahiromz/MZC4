@@ -1,0 +1,1 @@
+void OnPaletteIsChanging(HWND hwnd, HWND hwndPaletteChange)

@@ -1,0 +1,1 @@
+HWND MDINext(HWND hwnd, HWND hwndCur, BOOL fPrev)

@@ -1,0 +1,1 @@
+void OnChangeCBChain(HWND hwnd, HWND hwndRemove, HWND hwndNext)

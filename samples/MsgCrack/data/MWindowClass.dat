@@ -1,0 +1,36 @@
+class MWindowClass : public MWindowBase
+{
+public:
+    MWindowClass()
+    {
+    }
+
+    virtual ~MWindowClass()
+    {
+    }
+
+    virtual LPCTSTR GetWndClassNameDx() const
+    {
+        return TEXT("MZC4 MWindowClass Class");
+    }
+
+    virtual VOID ModifyWndClassDx(WNDCLASSEX& wcx)
+    {
+    }
+
+    BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
+    {
+        return TRUE;
+    }
+
+    virtual LRESULT CALLBACK
+    WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+        HANDLE_MSG(hwnd, WM_CREATE, OnCreate);
+        default:
+            return DefaultProcDx();
+        }
+    }
+};

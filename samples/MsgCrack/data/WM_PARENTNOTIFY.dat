@@ -1,0 +1,1 @@
+void OnParentNotify(HWND hwnd, UINT msg, HWND hwndChild, int idChild)

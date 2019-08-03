@@ -1,0 +1,1 @@
+void OnQuit(HWND hwnd, int exitCode)

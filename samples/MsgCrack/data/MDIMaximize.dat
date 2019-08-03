@@ -1,0 +1,1 @@
+void MDIMaximize(HWND hwnd, HWND hwndMaximize)

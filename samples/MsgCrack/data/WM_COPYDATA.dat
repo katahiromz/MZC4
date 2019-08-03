@@ -1,0 +1,1 @@
+BOOL OnCopyData(HWND hwnd, HWND hwndFrom, PCOPYDATASTRUCT pcds);

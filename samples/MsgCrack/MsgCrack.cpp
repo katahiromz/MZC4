@@ -66,7 +66,6 @@ public:
 
     typedef std::map<MString, MString> map_type;
     map_type  m_map1;
-    map_type  m_map2;
 
     MMsgCrackApp(int argc, TCHAR **targv, HINSTANCE hInst) :
         m_argc(argc), m_targv(targv),
@@ -105,39 +104,6 @@ public:
         return TRUE;
     }
 
-    BOOL ParseLine(char *line)
-    {
-        char *pch1 = strstr(line, "<>");
-        if (pch1 == NULL)
-            return FALSE;
-
-        char *pch2 = strstr(pch1 + 2, "<>");
-        if (pch2 == NULL)
-            return FALSE;
-
-        *pch1 = *pch2 = 0;
-
-        MStringA str1 = line;
-        MStringA str2 = pch1 + 2;
-        MStringA str3 = pch2 + 2;
-
-        mstr_trim(str1);
-        mstr_trim(str2);
-        mstr_trim(str3);
-
-        mstr_replace_all(str3, "\\\\", "<<>>");
-
-        mstr_replace_all(str3, "\\r\\n", "\r\n");
-        mstr_replace_all(str3, "\\n", "\r\n");
-
-        mstr_replace_all(str3, "<<>>", "\\");
-
-        m_map1[str1] = str3;
-        m_map2[str2] = str3;
-
-        return TRUE;
-    }
-
     BOOL LoadDataFile()
     {
         TCHAR Path[MAX_PATH];
@@ -150,38 +116,56 @@ public:
         // find "DATA.DAT" file
         TCHAR *pch = _tcsrchr(Path, TEXT('\\'));
         size_t diff = pch - Path;
-        StringCchCopy(pch, diff, TEXT("\\DATA.DAT"));
+        StringCchCopy(pch, diff, TEXT("\\data"));
         if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
         {
-            StringCchCopy(pch, diff, TEXT("\\..\\DATA.DAT"));
+            StringCchCopy(pch, diff, TEXT("\\..\\data"));
             if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
             {
-                StringCchCopy(pch, diff, TEXT("\\..\\..\\DATA.DAT"));
+                StringCchCopy(pch, diff, TEXT("\\..\\..\\data"));
                 if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
                 {
-                    StringCchCopy(pch, diff, TEXT("\\..\\samples\\MsgCrack\\DATA.DAT"));
+                    StringCchCopy(pch, diff, TEXT("\\..\\samples\\MsgCrack\\data"));
                     if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
                     {
-                        StringCchCopy(pch, diff, TEXT("\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
+                        StringCchCopy(pch, diff, TEXT("\\..\\..\\samples\\MsgCrack\\data"));
                         if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
                         {
-                            StringCchCopy(pch, diff, TEXT("\\..\\..\\..\\samples\\MsgCrack\\DATA.DAT"));
+                            StringCchCopy(pch, diff, TEXT("\\..\\..\\..\\samples\\MsgCrack\\data"));
                         }
                     }
                 }
             }
         }
 
+        TCHAR szCurDir[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, szCurDir);
+        if (SetCurrentDirectory(Path))
         {
-            std::ifstream ifs(Path);
-            if (ifs.fail())
-                return FALSE;
-
-            std::string str;
-            while (getline(ifs, str))
+            WIN32_FIND_DATA find;
+            HANDLE hFind = FindFirstFile(TEXT("*.dat"), &find);
+            if (hFind != INVALID_HANDLE_VALUE)
             {
-                ParseLine(&str[0]);
+                do
+                {
+                    if (FILE *fp = fopen(find.cFileName, "rb"))
+                    {
+                        std::string str;
+                        char buf[256];
+                        while (fgets(buf, 256, fp) != NULL)
+                        {
+                            str += buf;
+                        }
+                        fclose(fp);
+
+                        *strrchr(find.cFileName, '.') = 0;
+                        m_map1[find.cFileName] = str;
+                    }
+                } while (FindNextFile(hFind, &find));
+                FindClose(hFind);
             }
+
+            SetCurrentDirectory(szCurDir);
         }
 
         return TRUE;
@@ -222,11 +206,6 @@ public:
         {
             m_hLst1.AddString(it->first.c_str());
         }
-        end = m_map2.end();
-        for (it = m_map2.begin(); it != end; ++it)
-        {
-            m_hLst1.AddString(it->first.c_str());
-        }
     }
 
     void OnLst1SelChange(HWND hwnd)
@@ -245,13 +224,6 @@ public:
 
         it = m_map1.find(str);
         if (it != m_map1.end())
-        {
-            m_hEdt2.SetWindowText(it->second.c_str());
-            return;
-        }
-
-        it = m_map2.find(str);
-        if (it != m_map2.end())
         {
             m_hEdt2.SetWindowText(it->second.c_str());
             return;

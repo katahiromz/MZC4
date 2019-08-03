@@ -1,0 +1,1 @@
+void OnEnterIdle(HWND hwnd, UINT source, HWND hwndSource)

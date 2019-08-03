@@ -1,0 +1,1 @@
+void OnVScroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)

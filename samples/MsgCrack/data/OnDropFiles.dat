@@ -1,0 +1,1 @@
+void OnDropFiles(HWND hwnd, HDROP hdrop)

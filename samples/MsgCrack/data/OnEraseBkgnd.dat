@@ -1,0 +1,1 @@
+BOOL OnEraseBkgnd(HWND hwnd, HDC hdc)

@@ -1,0 +1,1 @@
+BOOL MDITile(HWND hwnd, UINT cmd)

@@ -1,0 +1,1 @@
+void OnTimeChange(HWND hwnd)

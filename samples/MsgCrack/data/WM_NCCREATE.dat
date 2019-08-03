@@ -1,0 +1,1 @@
+BOOL OnNCCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)

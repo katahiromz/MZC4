@@ -1,0 +1,1 @@
+void OnNCRButtonUp(HWND hwnd, int x, int y, UINT codeHitTest)

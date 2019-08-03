@@ -1,0 +1,1 @@
+void OnGetMinMaxInfo(HWND hwnd, LPMINMAXINFO lpMinMaxInfo)

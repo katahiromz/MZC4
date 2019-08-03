@@ -1,0 +1,1 @@
+void OnDeadChar(HWND hwnd, TCHAR ch, int cRepeat)

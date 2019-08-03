@@ -1,0 +1,1 @@
+void OnSetFont(HWND hwndCtl, HFONT hfont, BOOL fRedraw)

@@ -1,0 +1,1 @@
+void OnMove(HWND hwnd, int x, int y)

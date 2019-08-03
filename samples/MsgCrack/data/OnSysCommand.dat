@@ -1,0 +1,1 @@
+void OnSysCommand(HWND hwnd, UINT cmd, int x, int y)

@@ -1,0 +1,1 @@
+void OnSystemError(HWND hwnd, int errCode)

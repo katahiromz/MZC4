@@ -1,0 +1,1 @@
+void OnSysColorChange(HWND hwnd)

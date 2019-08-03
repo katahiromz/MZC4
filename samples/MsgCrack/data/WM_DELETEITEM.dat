@@ -1,0 +1,1 @@
+void OnDeleteItem(HWND hwnd, const DELETEITEMSTRUCT * lpDeleteItem)

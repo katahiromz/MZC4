@@ -1,0 +1,1 @@
+void OnKillFocus(HWND hwnd, HWND hwndNewFocus)

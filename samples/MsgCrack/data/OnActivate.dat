@@ -1,0 +1,1 @@
+void OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized)

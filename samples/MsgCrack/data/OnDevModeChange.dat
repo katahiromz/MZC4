@@ -1,0 +1,1 @@
+void OnDevModeChange(HWND hwnd, LPCTSTR lpszDeviceName)

@@ -1,0 +1,5 @@
+extern "C" INT WINAPI
+wWinMain(HINSTANCE   hInstance,
+         HINSTANCE   hPrevInstance,
+         LPWSTR      lpCmdLine,
+         INT         nCmdShow)

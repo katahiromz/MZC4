@@ -1,0 +1,87 @@
+class MMainWnd : public MWindowBase
+{
+public:
+    INT         m_argc;         // number of command line parameters
+    TCHAR **    m_targv;        // command line parameters
+    HINSTANCE   m_hInst;        // the instance handle
+    HICON       m_hIcon;        // the main icon
+    HICON       m_hIconSm;      // the small icon
+    HACCEL      m_hAccel;       // the access keys
+
+    MMainWnd(INT argc, TCHAR **targv, HINSTANCE hInst)
+        : m_argc(argc), m_targv(targv), m_hInst(hInst),
+          m_hIcon(NULL), m_hIconSm(NULL), m_hAccel(NULL)
+    {
+    }
+
+    virtual ~MMainWnd()
+    {
+    }
+
+    virtual LPCTSTR GetWndClassNameDx() const
+    {
+        return TEXT("MZC4 MMainWnd Class");
+    }
+
+    virtual VOID ModifyWndClassDx(WNDCLASSEX& wcx)
+    {
+        wcx.lpszMenuName = MAKEINTRESOURCE(1);
+        wcx.hIcon = m_hIcon;
+        wcx.hIconSm = m_hIconSm;
+    }
+
+    BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
+    {
+        return TRUE;
+    }
+
+    void OnDestroy(HWND hwnd)
+    {
+        ::PostQuitMessage(0);
+    }
+
+    virtual LRESULT CALLBACK
+    WindowProcDx(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+        HANDLE_MSG(hwnd, WM_CREATE, OnCreate);
+        HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
+        default:
+            return DefaultProcDx();
+        }
+    }
+
+    BOOL StartDx(INT nCmdShow)
+    {
+        m_hIcon = LoadIconDx(1);
+        m_hIconSm = LoadSmallIconDx(1);
+        m_hAccel = ::LoadAccelerators(m_hInst, MAKEINTRESOURCE(1));
+
+        if (!CreateWindowDx(NULL, LoadStringDx(1)))
+        {
+            MsgBoxDx(TEXT("failure of CreateWindow"), NULL, MB_ICONERROR);
+            return FALSE;
+        }
+
+        ::ShowWindow(*this, nCmdShow);
+        ::UpdateWindow(*this);
+
+        return TRUE;
+    }
+
+    INT RunDx()
+    {
+        // message loop
+        MSG msg;
+        while (::GetMessage(&msg, NULL, 0, 0))
+        {
+            if (!::TranslateAccelerator(m_hwnd, m_hAccel, &msg))
+            {
+                ::TranslateMessage(&msg);
+                ::DispatchMessage(&msg);
+            }
+        }
+        return INT(msg.wParam);
+    }
+};

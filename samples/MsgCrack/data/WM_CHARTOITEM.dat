@@ -1,0 +1,1 @@
+int OnCharToItem(HWND hwnd, UINT ch, HWND hwndListbox, int iCaret)

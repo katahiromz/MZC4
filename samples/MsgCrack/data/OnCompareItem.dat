@@ -1,0 +1,1 @@
+int OnCompareItem(HWND hwnd, const COMPAREITEMSTRUCT * lpCompareItem)

@@ -1,0 +1,1 @@
+void OnSizeClipboard(HWND hwnd, HWND hwndCBViewer, const LPRECT lprc)
