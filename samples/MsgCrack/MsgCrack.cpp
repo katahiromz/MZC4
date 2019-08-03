@@ -168,6 +168,11 @@ public:
             SetCurrentDirectory(szCurDir);
         }
 
+        if (m_map1.empty())
+        {
+            ErrorBoxDx(2);
+        }
+
         return TRUE;
     }
 
