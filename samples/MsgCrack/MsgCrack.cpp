@@ -138,6 +138,16 @@ public:
             }
         }
 
+        if (!LoadData(Path))
+        {
+            ErrorBoxDx(2);
+        }
+
+        return TRUE;
+    }
+
+    BOOL LoadData(const TCHAR *Path)
+    {
         TCHAR szCurDir[MAX_PATH];
         GetCurrentDirectory(MAX_PATH, szCurDir);
         if (SetCurrentDirectory(Path))
@@ -148,17 +158,19 @@ public:
             {
                 do
                 {
-                    if (FILE *fp = fopen(find.cFileName, "rb"))
+                    if (FILE *fp = _tfopen(find.cFileName, TEXT("rb")))
                     {
-                        std::string str;
+                        MStringW str;
                         char buf[256];
+                        WCHAR szText[256];
                         while (fgets(buf, 256, fp) != NULL)
                         {
-                            str += buf;
+                            MultiByteToWideChar(CP_UTF8, 0, buf, -1, szText, 256);
+                            str += szText;
                         }
                         fclose(fp);
 
-                        *strrchr(find.cFileName, '.') = 0;
+                        *wcsrchr(find.cFileName, L'.') = 0;
                         m_map1[find.cFileName] = str;
                     }
                 } while (FindNextFile(hFind, &find));
@@ -168,12 +180,7 @@ public:
             SetCurrentDirectory(szCurDir);
         }
 
-        if (m_map1.empty())
-        {
-            ErrorBoxDx(2);
-        }
-
-        return TRUE;
+        return !m_map1.empty();
     }
 
     INT RunDx()
@@ -422,10 +429,10 @@ public:
 // Win32 App main function
 
 extern "C"
-INT APIENTRY _tWinMain(
+INT APIENTRY WinMain(
     HINSTANCE   hInstance,
     HINSTANCE   hPrevInstance,
-    LPTSTR      lpCmdLine,
+    LPSTR       lpCmdLine,
     INT         nCmdShow)
 {
     int ret;

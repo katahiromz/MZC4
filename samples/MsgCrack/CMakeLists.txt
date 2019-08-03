@@ -37,6 +37,9 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 # include directories
 include_directories(../../include)
 
+# Unicode support
+add_definitions(-DUNICODE -D_UNICODE)
+
 # set source files
 set(SOURCES MsgCrack.cpp)
 
@@ -72,7 +75,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
     SET(CMAKE_C_FLAGS "-static -static-libgcc -static-libstdc++")
     SET(CMAKE_CXX_FLAGS "-static -static-libgcc -static-libstdc++")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (MSVC)
     # replace "/MD" with "/MT" (building without runtime DLLs)
     set(CompilerFlags
         CMAKE_C_FLAGS
