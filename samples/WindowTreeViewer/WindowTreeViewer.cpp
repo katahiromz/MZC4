@@ -60,6 +60,9 @@ public:
     {
         EnableProcessPriviledge(SE_DEBUG_NAME);
 
+#ifndef ctl1
+#define ctl1 0x04A0
+#endif
         SubclassChildDx(m_ctl1, ctl1);
 
         //m_ctl1.set_style(MWTVS_PROCESSWINDOW);
@@ -147,8 +150,13 @@ public:
         if (IDOK == DialogBoxDx(NULL))
         {
             TCHAR szText[64];
+#ifdef NO_STRSAFE
+            wsprintf(szText, TEXT("HWND: 0x%08lX"),
+                           (LONG)(LONG_PTR)m_hwndSelected);
+#else
             StringCbPrintf(szText, sizeof(szText), TEXT("HWND: 0x%08lX"),
                            (LONG)(LONG_PTR)m_hwndSelected);
+#endif
             MsgBoxDx(szText, TEXT("Selected Window"), MB_ICONINFORMATION);
         }
         return 0;

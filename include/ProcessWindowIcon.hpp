@@ -165,6 +165,10 @@ inline DWORD ProcessFromWindowDx(HWND hwnd)
     return pid;
 }
 
+#ifndef ARRAYSIZE
+    #define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
+#endif
+
 inline MString GetPathOfProcessDx(DWORD pid)
 {
     MString ret;

@@ -2,6 +2,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "MTriStateTreeView.hpp"
+#ifndef ctl1
+    #define ctl1 0x04A0
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -72,8 +75,9 @@ struct MTriStateTVSample : public MDialogBase
 
         m_hTV.SubclassDx(GetDlgItem(hwnd, ctl1));
         m_hTV.InitStateImageList(1);
+#if (_WIN32_IE >= 0x0400)
         m_hTV.SetItemHeight(16);
-
+#endif
         m_himl = ImageList_LoadBitmap(m_hInst, MAKEINTRESOURCE(2), 16, 0, RGB(255, 0, 255));
         assert(m_himl);
         m_hTV.SetImageList(m_himl, TVSIL_NORMAL);

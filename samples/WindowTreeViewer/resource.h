@@ -9,6 +9,8 @@
 
 #define IDI_MAIN                            100
 
+#define ctl1 0x04A0
+
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1

@@ -10,7 +10,9 @@
 #include "MListBox.hpp"
 #include <tlhelp32.h>   // for CreateToolhelp32Snapshot, Process32First, ...
 #include <psapi.h>      // for GetModuleFileNameEx
-#include <strsafe.h>    // for StringC...
+#ifndef NO_STRSAFE
+    #include <strsafe.h>    // for StringC...
+#endif
 #include <vector>       // for std::vector
 
 #include "ProcessWindowIcon.hpp"
@@ -176,7 +178,10 @@ inline bool MProcessList::get_list()
 {
     clear();
 
-    const DWORD dwFlags = TH32CS_SNAPPROCESS | TH32CS_SNAPMODULE32;
+#ifndef TH32CS_SNAPMODULE32
+    #define TH32CS_SNAPMODULE32 0x00000010
+#endif
+    const DWORD dwFlags = TH32CS_SNAPPROCESS | TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32;
     HANDLE hSnapshot = ::CreateToolhelp32Snapshot(dwFlags, 0);
     if (hSnapshot == INVALID_HANDLE_VALUE)
         return false;
@@ -221,9 +226,15 @@ inline MString MProcessListBox::text_from_entry(const entry_type& entry) const
     }
 
     TCHAR szText[MAX_PATH * 2];
+#ifdef NO_STRSAFE
+    wsprintf(szText, TEXT("PID %08X hwnd %p %s %s %s"),
+        entry.th32ProcessID, hwnd, entry.szExeFile, strWindowText.c_str(),
+        strFullPath.c_str());
+#else
     StringCbPrintf(szText, sizeof(szText), TEXT("PID %08X hwnd %p %s %s %s"),
         entry.th32ProcessID, hwnd, entry.szExeFile, strWindowText.c_str(),
         strFullPath.c_str());
+#endif
 
     return szText;
 }

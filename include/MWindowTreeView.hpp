@@ -496,7 +496,11 @@ inline MString MWindowTreeView::text_from_node(const node_type *node) const
     if (node->m_type == MWindowTreeNode::THREAD)
     {
         TCHAR szText[64];
+#ifdef NO_STRSAFE
+        wsprintf(szText, TEXT("TID %lu "), node->m_id);
+#else
         StringCbPrintf(szText, sizeof(szText), TEXT("TID %lu "), node->m_id);
+#endif
         MString strText = szText;
         return strText;
     }
@@ -505,7 +509,11 @@ inline MString MWindowTreeView::text_from_node(const node_type *node) const
         DWORD pid = node->m_id;
 
         TCHAR szText[64];
+#ifdef NO_STRSAFE
+        wsprintf(szText, TEXT("PID %lu "), pid);
+#else
         StringCbPrintf(szText, sizeof(szText), TEXT("PID %lu "), pid);
+#endif
         MString strText = szText;
         MString strPath = GetPathOfProcessDx(pid);
 
@@ -532,8 +540,13 @@ inline MString MWindowTreeView::text_from_node(const node_type *node) const
         HWND hwndTarget = node->m_hwndTarget;
 
         TCHAR szText[64];
+#ifdef NO_STRSAFE
+        wsprintf(szText, TEXT("%08lX "),
+                       (LONG)(LONG_PTR)hwndTarget);
+#else
         StringCbPrintf(szText, sizeof(szText), TEXT("%08lX "),
                        (LONG)(LONG_PTR)hwndTarget);
+#endif
         MString strText = szText;
 
         strText += TEXT(" [");

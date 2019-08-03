@@ -115,6 +115,29 @@ public:
 
         // find "DATA.DAT" file
         TCHAR *pch = _tcsrchr(Path, TEXT('\\'));
+#ifdef NO_STRSAFE
+        _tcscpy(pch, TEXT("\\data"));
+        if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+        {
+            _tcscpy(pch, TEXT("\\..\\data"));
+            if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+            {
+                _tcscpy(pch, TEXT("\\..\\..\\data"));
+                if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+                {
+                    _tcscpy(pch, TEXT("\\..\\samples\\MsgCrack\\data"));
+                    if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+                    {
+                        _tcscpy(pch, TEXT("\\..\\..\\samples\\MsgCrack\\data"));
+                        if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
+                        {
+                            _tcscpy(pch, TEXT("\\..\\..\\..\\samples\\MsgCrack\\data"));
+                        }
+                    }
+                }
+            }
+        }
+#else
         size_t diff = pch - Path;
         StringCchCopy(pch, diff, TEXT("\\data"));
         if (GetFileAttributes(Path) == INVALID_FILE_ATTRIBUTES)
@@ -137,6 +160,7 @@ public:
                 }
             }
         }
+#endif
 
         if (!LoadData(Path))
         {
@@ -438,8 +462,11 @@ INT APIENTRY WinMain(
     int ret;
 
     {
-        MMsgCrackApp app(__argc, __targv, hInstance);
-
+#ifdef UNICODE
+        MMsgCrackApp app(__argc, __wargv, hInstance);
+#else
+        MMsgCrackApp app(__argc, __argv, hInstance);
+#endif
         InitCommonControls();
         MEditCtrl::SetCtrlAHookDx(TRUE);
 

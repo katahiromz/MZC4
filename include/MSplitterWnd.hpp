@@ -259,6 +259,10 @@ public:
         HANDLE_MSG(hwnd, WM_SETCURSOR, OnSetCursor);
         HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
         HANDLE_MSG(hwnd, WM_NOTIFY, OnNotify);
+#ifndef HANDLE_WM_CONTEXTMENU
+    #define HANDLE_WM_CONTEXTMENU(hwnd,wParam,lParam,fn) ((fn)((hwnd),(HWND)(wParam),(UINT)LOWORD(lParam),(UINT)HIWORD(lParam)),(LRESULT)0)
+    #define FORWARD_WM_CONTEXTMENU(hwnd,hwndContext,xPos,yPos,fn) (void)(fn)((hwnd),WM_CONTEXTMENU,(WPARAM)(HWND)(hwndContext),MAKELPARAM((UINT)(xPos),(UINT)(yPos)))
+#endif
         HANDLE_MSG(hwnd, WM_CONTEXTMENU, OnContextMenu);
         HANDLE_MSG(hwnd, WM_SYSCOLORCHANGE, OnSysColorChange);
         case WM_CAPTURECHANGED:

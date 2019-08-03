@@ -173,17 +173,47 @@ public:
         rc.left = s_nItemHeight;
         rc.top += s_nItemHeight / 6;
         rc.bottom = (rc.top + rc.bottom) / 2;
+#ifdef NO_STRSAFE
+        if (window)
+            wsprintf(szText, TEXT("PID %lu, HWND %p"),
+                           pid, (HWND)window);
+        else
+            wsprintf(szText, TEXT("PID %lu"), pid);
+#else
         if (window)
             StringCbPrintf(szText, sizeof(szText), TEXT("PID %lu, HWND %p"),
                            pid, (HWND)window);
         else
             StringCbPrintf(szText, sizeof(szText), TEXT("PID %lu"), pid);
+#endif
         DrawText(hDC, szText, -1, &rc, uFormat);
 
         rc = rcItem;
         rc.left = s_nItemHeight;
         rc.top = (rc.top + rc.bottom) / 2;
         rc.bottom -= s_nItemHeight / 6;
+#ifdef NO_STRSAFE
+        if (strFullPath.size() && strWindowText.size())
+        {
+            wsprintf(szText, TEXT("%s %s"),
+                           strWindowText.c_str(), strFullPath.c_str());
+        }
+        else if (!strFullPath.size() && strWindowText.size())
+        {
+            wsprintf(szText, TEXT("%s %s"),
+                           strWindowText.c_str(), entry->szExeFile);
+        }
+        else if (strFullPath.size() && !strWindowText.size())
+        {
+            wsprintf(szText, TEXT("%s"),
+                           strFullPath.c_str());
+        }
+        else if (!strFullPath.size() && !strWindowText.size())
+        {
+            wsprintf(szText, TEXT("%s"),
+                           entry->szExeFile);
+        }
+#else
         if (strFullPath.size() && strWindowText.size())
         {
             StringCbPrintf(szText, sizeof(szText), TEXT("%s %s"),
@@ -204,6 +234,7 @@ public:
             StringCbPrintf(szText, sizeof(szText), TEXT("%s"),
                            entry->szExeFile);
         }
+#endif
         DrawText(hDC, szText, -1, &rc, uFormat);
     }
 
@@ -232,7 +263,11 @@ public:
         if (IDOK == DialogBoxDx(NULL))
         {
             TCHAR szText[64];
+#ifdef NO_STRSAFE
+            wsprintf(szText, TEXT("pid: 0x%08lX"), m_pid);
+#else
             StringCbPrintf(szText, sizeof(szText), TEXT("pid: 0x%08lX"), m_pid);
+#endif
             MsgBoxDx(szText, TEXT("Selected Process"), MB_ICONINFORMATION);
         }
         return 0;

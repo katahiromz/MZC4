@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MWAVFILE_HPP_
-#define MZC4_MWAVFILE_HPP_      3   // Version 3
+#define MZC4_MWAVFILE_HPP_      4   // Version 4
 
 #ifdef _WIN32
     #ifndef _INC_WINDOWS
@@ -17,7 +17,7 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <cstdint>
+#include "pstdint.h"
 #include <cstring>
 #include <cassert>
 #include <vector>

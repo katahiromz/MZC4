@@ -86,6 +86,9 @@ struct MMyBrowser : public MWindowBase
 
         style = CCS_BOTTOM | SBARS_SIZEGRIP | WS_VISIBLE;
         exstyle = 0;
+#ifndef ctl1
+#define ctl1 0x04A0
+#endif
         if (!m_status_bar.CreateAsChildDx(hwnd, NULL, style, exstyle, ctl1))
             return FALSE;
 
@@ -109,8 +112,8 @@ struct MMyBrowser : public MWindowBase
 
         TBBUTTON buttons[] =
         {
-            { -1, IDM_BACK, TBSTATE_ENABLED, BTNS_BUTTON | BTNS_AUTOSIZE, {0}, 0, iBack },
-            { -1, IDM_FORWARD, TBSTATE_ENABLED, BTNS_BUTTON | BTNS_AUTOSIZE, {0}, 0, iForward },
+            { -1, IDM_BACK, TBSTATE_ENABLED, TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, {0}, 0, iBack },
+            { -1, IDM_FORWARD, TBSTATE_ENABLED, TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, {0}, 0, iForward },
         };
         BOOL b = m_toolbar.AddButtons(_countof(buttons), buttons);
         assert(b);
@@ -370,8 +373,11 @@ INT APIENTRY WinMain(
     int ret;
 
     {
-        MMyBrowser app(__argc, __targv, hInstance);
-
+#ifdef UNICODE
+        MMyBrowser app(__argc, __wargv, hInstance);
+#else
+        MMyBrowser app(__argc, __argv, hInstance);
+#endif
         ::InitCommonControls();
         HRESULT hres = ::OleInitialize(NULL);
 

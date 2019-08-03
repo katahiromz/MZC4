@@ -81,6 +81,9 @@ inline BOOL MTriStateTreeView::IsValidCheckState(INT nState) const
 
 inline INT MTriStateTreeView::GetCheckState(HTREEITEM hItem)
 {
+#ifndef TVM_GETITEMSTATE
+    #define TVM_GETITEMSTATE (TV_FIRST+39)
+#endif
     LRESULT res = SendMessageDx(TVM_GETITEMSTATE, (WPARAM)hItem, TVIS_STATEIMAGEMASK);
     INT nState = (UINT(res) >> 12) - 1;
     assert(IsValidCheckState(nState));
@@ -111,6 +114,9 @@ inline BOOL MTriStateTreeView::InitStateImageList(INT nBitmapResourceID)
 {
     assert(IsWindow(m_hwnd));
 
+#ifndef TVS_CHECKBOXES
+    #define TVS_CHECKBOXES 0x100
+#endif
     ModifyStyleDx(0, TVS_CHECKBOXES);
 
     if (m_himl)
@@ -211,6 +217,16 @@ MTriStateTreeView::OnTriStateTreeViewClick(HWND hwnd, WPARAM wParam, LPARAM lPar
     ChangeItemState(hItem, nState);
 	return 0;
 }
+
+#ifndef TV_KEYDOWN
+    #include <pshpack1.h>
+    typedef struct tagTVKEYDOWN {
+      NMHDR hdr;
+      WORD wVKey;
+      UINT flags;
+    } NMTVKEYDOWN,*LPNMTVKEYDOWN;
+    #include <poppack.h>
+#endif
 
 inline LRESULT
 MTriStateTreeView::OnNotifyFromParent(HWND hwnd, int idFrom, LPNMHDR pnmhdr)
