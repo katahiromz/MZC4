@@ -31,15 +31,15 @@ public:
         m_vecPanes.resize(1);
     }
 
-    BOOL CreateDx(HWND hwndParent, INT nPaneCount = 2,
-                  DWORD dwStyle = WS_CHILD | WS_VISIBLE | SWS_HORZ | SWS_LEFTALIGN,
+    BOOL CreateDx(HWND hwndParent, INT nPaneCount = 2, 
+                  DWORD dwStyle = WS_CHILD | WS_VISIBLE | SWS_HORZ | SWS_LEFTALIGN, 
                   DWORD dwExStyle = 0)
     {
         RECT rc;
         GetClientRect(hwndParent, &rc);
 
-        if (!CreateWindowDx(hwndParent, NULL, dwStyle, dwExStyle,
-                            rc.left, rc.top,
+        if (!CreateWindowDx(hwndParent, NULL, dwStyle, dwExStyle, 
+                            rc.left, rc.top, 
                             rc.right - rc.left, rc.bottom - rc.top))
         {
             return FALSE;
@@ -165,7 +165,7 @@ public:
     VOID GetPaneRect(INT nIndex, RECT *prc) const
     {
         assert(0 <= nIndex && nIndex < m_nPaneCount);
-        ::GetClientRect(m_hwnd, prc);
+        GetClientRect(m_hwnd, prc);
         if (IsVertical())
         {
             prc->top = m_vecPanes[nIndex].xyPos;
@@ -185,7 +185,7 @@ public:
     INT HitTestBorder(POINT ptClient) const
     {
         RECT rcClient;
-        ::GetClientRect(m_hwnd, &rcClient);
+        GetClientRect(m_hwnd, &rcClient);
         if (!::PtInRect(&rcClient, ptClient))
             return -1;
 
@@ -233,7 +233,7 @@ public:
 
             GetPaneRect(i, &rc);
             hDWP = DeferWindowPos(hDWP, hwndPane, NULL, 
-                rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+                rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, 
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
         EndDeferWindowPos(hDWP);
@@ -259,10 +259,6 @@ public:
         HANDLE_MSG(hwnd, WM_SETCURSOR, OnSetCursor);
         HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
         HANDLE_MSG(hwnd, WM_NOTIFY, OnNotify);
-#ifndef HANDLE_WM_CONTEXTMENU
-    #define HANDLE_WM_CONTEXTMENU(hwnd,wParam,lParam,fn) ((fn)((hwnd),(HWND)(wParam),(UINT)LOWORD(lParam),(UINT)HIWORD(lParam)),(LRESULT)0)
-    #define FORWARD_WM_CONTEXTMENU(hwnd,hwndContext,xPos,yPos,fn) (void)(fn)((hwnd),WM_CONTEXTMENU,(WPARAM)(HWND)(hwndContext),MAKELPARAM((UINT)(xPos),(UINT)(yPos)))
-#endif
         HANDLE_MSG(hwnd, WM_CONTEXTMENU, OnContextMenu);
         HANDLE_MSG(hwnd, WM_SYSCOLORCHANGE, OnSysColorChange);
         case WM_CAPTURECHANGED:
@@ -344,13 +340,13 @@ protected:
         if (iBorder < 0)
             return;
 
-        ::SetCapture(hwnd);
+        SetCapture(hwnd);
         m_iDraggingBorder = iBorder;
 
         if (IsVertical())
-            ::SetCursor(CursorNS());
+            SetCursor(CursorNS());
         else
-            ::SetCursor(CursorWE());
+            SetCursor(CursorWE());
     }
 
     void OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags)
@@ -362,7 +358,7 @@ protected:
         UpdatePanes();
 
         m_iDraggingBorder = -1;
-        ::ReleaseCapture();
+        ReleaseCapture();
     }
 
     void OnMouseMove(HWND hwnd, int x, int y, UINT keyFlags)
@@ -403,19 +399,19 @@ protected:
     BOOL OnSetCursor(HWND hwnd, HWND hwndCursor, UINT codeHitTest, UINT msg)
     {
         POINT pt;
-        ::GetCursorPos(&pt);
-        ::ScreenToClient(hwnd, &pt);
+        GetCursorPos(&pt);
+        ScreenToClient(hwnd, &pt);
 
         if (HitTestBorder(pt) == -1)
         {
-            ::SetCursor(::LoadCursor(NULL, IDC_ARROW));
+            SetCursor(::LoadCursor(NULL, IDC_ARROW));
             return TRUE;
         }
 
         if (IsVertical())
-            ::SetCursor(CursorNS());
+            SetCursor(CursorNS());
         else
-            ::SetCursor(CursorWE());
+            SetCursor(CursorWE());
         return TRUE;
     }
 };

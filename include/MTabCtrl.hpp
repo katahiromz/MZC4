@@ -3,14 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MTABCTRL_HPP_
-#define MZC4_MTABCTRL_HPP_      2   /* Version 2 */
+#define MZC4_MTABCTRL_HPP_      4   /* Version 4 */
 
 class MTabCtrl;
 
 ////////////////////////////////////////////////////////////////////////////
 
 #include "MWindowBase.hpp"
-#include "MPointSizeRect.hpp"
 
 class MTabCtrl : public MWindowBase
 {
@@ -31,8 +30,8 @@ public:
     INT GetCurSel() const;
     INT SetCurSel(INT iItem);
 
-    MSize SetItemSize(MSize size);
-    VOID SetPadding(MSize size);
+    SIZE SetItemSize(SIZE size);
+    VOID SetPadding(SIZE size);
     INT GetRowCount() const;
 
     HWND GetToolTips() const;
@@ -51,11 +50,11 @@ public:
         BOOL HighlightItem(INT nIndex, BOOL fHighlight = TRUE);
     #endif  // (_WIN32_IE >= 0x0400)
 
-    BOOL InsertItem(INT iItem, TCITEM* pTabCtrlItem);
-    BOOL InsertItem(INT iItem, LPCTSTR lpszItem);
-    BOOL InsertItem(INT iItem, LPCTSTR lpszItem, INT iImage);
-    BOOL InsertItem(UINT nMask, INT iItem, LPCTSTR lpszItem, INT iImage,
-        LPARAM lParam);
+    INT InsertItem(INT iItem, TCITEM* pTabCtrlItem);
+    INT InsertItem(INT iItem, LPCTSTR lpszItem);
+    INT InsertItem(INT iItem, LPCTSTR lpszItem, INT iImage);
+    INT InsertItem(UINT nMask, INT iItem, LPCTSTR lpszItem,
+                   INT iImage, LPARAM lParam);
     BOOL DeleteItem(INT iItem);
     BOOL DeleteAllItems();
     VOID AdjustRect(BOOL bLarger, LPRECT prc);
@@ -124,13 +123,14 @@ inline INT MTabCtrl::SetCurSel(INT iItem)
     return (INT)SendMessageDx(TCM_SETCURSEL, (WPARAM)iItem);
 }
 
-inline MSize MTabCtrl::SetItemSize(MSize size)
+inline SIZE MTabCtrl::SetItemSize(SIZE size)
 {
     DWORD dwSize = (DWORD)SendMessageDx(TCM_SETITEMSIZE, 0, MAKELPARAM(size.cx, size.cy));
-    return MSize(GET_X_LPARAM(dwSize), GET_Y_LPARAM(dwSize));
+    SIZE ret = { GET_X_LPARAM(dwSize), GET_Y_LPARAM(dwSize) };
+    return ret;
 }
 
-inline VOID MTabCtrl::SetPadding(MSize size)
+inline VOID MTabCtrl::SetPadding(SIZE size)
 {
     SendMessageDx(TCM_SETPADDING, 0, MAKELPARAM(size.cx, size.cy));
 }
@@ -186,22 +186,22 @@ inline VOID MTabCtrl::SetCurFocus(INT iItem)
     }
 #endif  // (_WIN32_IE >= 0x0400)
 
-inline BOOL MTabCtrl::InsertItem(INT iItem, TCITEM* pTabCtrlItem)
+inline INT MTabCtrl::InsertItem(INT iItem, TCITEM* pTabCtrlItem)
 {
     return (INT)SendMessageDx(TCM_INSERTITEM, (WPARAM)iItem, (LPARAM)pTabCtrlItem);
 }
 
-inline BOOL MTabCtrl::InsertItem(INT iItem, LPCTSTR lpszItem)
+inline INT MTabCtrl::InsertItem(INT iItem, LPCTSTR lpszItem)
 {
     return InsertItem(TCIF_TEXT, iItem, lpszItem, 0, 0);
 }
 
-inline BOOL MTabCtrl::InsertItem(INT iItem, LPCTSTR lpszItem, INT iImage)
+inline INT MTabCtrl::InsertItem(INT iItem, LPCTSTR lpszItem, INT iImage)
 {
     return InsertItem(TCIF_TEXT | TCIF_IMAGE, iItem, lpszItem, iImage, 0);
 }
 
-inline BOOL MTabCtrl::InsertItem(UINT nMask, INT iItem,
+inline INT MTabCtrl::InsertItem(UINT nMask, INT iItem,
     LPCTSTR lpszItem, INT iImage, LPARAM lParam)
 {
     TCITEM tci;
