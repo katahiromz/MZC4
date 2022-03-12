@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef MZC4_MREGKEY_HPP_
-#define MZC4_MREGKEY_HPP_       9   /* Version 9 */
+#define MZC4_MREGKEY_HPP_       10   /* Version 10 */
 
 #ifndef HKCR
     #define HKCR    HKEY_CLASSES_ROOT
@@ -302,7 +302,7 @@ LONG MRegKey::QueryExpandSz(LPCTSTR pszValueName, T_STRING& strValue)
     {
         result = RegQueryValueEx(pszValueName, NULL, NULL,
                                  reinterpret_cast<LPBYTE>(psz), &cbData);
-        if (result != ERROR_SUCCESS)
+        if (result == ERROR_SUCCESS)
         {
             strValue = psz;
         }
@@ -842,7 +842,7 @@ inline /*static*/ size_t MRegKey::MultiSzSizeDx(LPCTSTR pszz)
         ++siz;
     }
     ++siz;
-    siz *= static_cast<size_t>(sizeof(TCHAR));
+    siz *= sizeof(TCHAR);
     return siz;
 }
 
