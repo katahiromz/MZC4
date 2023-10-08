@@ -24,6 +24,14 @@ CMakeFiles
 Debug
 Makefile
 Release
+TMP1.$$$
 build
 ipch
 x64
+*-old
+*.skrold
+a.*
+*.ninja
+.ninja*
+lib*.a
+*.dll
